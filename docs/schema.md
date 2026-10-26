@@ -33,8 +33,11 @@ One schema for both modes. Mode A writes `.flowmap/architecture.json` (`"mode": 
 | `status` | | `active` (default) or `deactivated` (dimmed, label gets "(Deactivated)") |
 | `confidence` | | `high` (default) `med` `low` |
 | `evidence` | ✓¹ | `[{file, line, note?}]` (Mode B also `{req}`, `{screen}`, `{section}`) |
+| `pos` | | `{x, y}` manual position saved by the editor (wins over auto layout) |
+| `edited`, `confirmed` | | set by the editor: changed by a person / checked by a person |
 
-¹ Required unless `confidence` is `low`.
+¹ Required unless `confidence` is `low`. Evidence written in the editor is `{"user": true, "note": "…"}`
+(accepted, reported as a warning so it is visible).
 
 Rendering: `entrypoint`/`trigger` get the red bolt and rounded-left shape; `hub` is the wide card with
 ports; nodes with `hub` set are circles; `merge` is a small square; everything else is the 64 px square.
@@ -55,7 +58,7 @@ A node with no outgoing main edge shows the n8n "+" stub.
 | `inferred` + `reason` | | dashed with a `?` badge; must not be `high` confidence and must say why |
 | `confidence`, `evidence` | ✓² | as for nodes |
 
-² `evidence` is required unless `inferred` is true.
+² `evidence` is required unless `inferred` is true. Edges also take `edited` / `confirmed`.
 
 ## Flow
 
@@ -74,3 +77,9 @@ A node with no outgoing main edge shows the n8n "+" stub.
 
 Rule for steps after the first: `edge.to == step.node` and `edge.from` is a node the flow has
 already visited. Fan-out from a hub is fine (hub → DB, then hub → Stripe), and a node may repeat.
+
+## Groups and big graphs
+
+`groups` (with `node.group`) can be collapsed into one stacked card in the viewer. Graphs with more than
+60 nodes and no `groups` are grouped automatically by top-level folder (`files[0]`). Graphs with more
+than 150 nodes open with all groups collapsed. Circles always travel with their hub.

@@ -1,0 +1,31 @@
+// Time first render, expand-all and a flow selection on a big graph.  Usage: node tests/perf.cjs big.html shot.png
+const { chromium } = require("playwright");
+const path = require("path");
+(async () => {
+  const b = await chromium.launch();
+  const p = await b.newPage({ viewport: { width: 1600, height: 900 } });
+  const errors = [];
+  p.on("pageerror", (e) => errors.push(String(e)));
+  let t = Date.now();
+  await p.goto("file://" + path.resolve(process.argv[2]));
+  await p.waitForSelector(".react-flow__node");
+  const first = Date.now() - t;
+  const collapsedNodes = await p.locator(".react-flow__node").count();
+  await p.locator("[data-testid=view-tab]").click();
+  t = Date.now();
+  await p.locator("button", { hasText: "Expand all" }).click();
+  await p.waitForFunction((n) => document.querySelectorAll(".react-flow__node").length !== n, collapsedNodes, { timeout: 60000 });
+  const expand = Date.now() - t;
+  await p.waitForTimeout(800);
+  const rendered = await p.locator(".react-flow__node").count();
+  const stats = await p.locator(".fm-stats").innerText();
+  await p.locator(".fm-tabs button").first().click();
+  t = Date.now();
+  await p.locator(".fm-flow-list li").first().click();
+  await p.waitForSelector(".fm-caption");
+  const flow = Date.now() - t;
+  await p.waitForTimeout(900);
+  await p.screenshot({ path: process.argv[3] });
+  console.log(JSON.stringify({ stats, firstRenderMs: first, collapsedNodes, expandAllMs: expand, renderedAfterExpand: rendered, selectFlowMs: flow, errors }));
+  await b.close();
+})();

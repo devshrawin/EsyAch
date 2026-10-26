@@ -1187,6 +1187,475 @@
           }
         }
       ]
+    },
+    {
+      "id": "payment_declined",
+      "name": "Checkout: card declined",
+      "kind": "failure",
+      "actor": "Shopper",
+      "trigger": "ui_storefront",
+      "description": "Stripe rejects the card: the order is left as payment_failed and the shopper gets a 402.",
+      "steps": [
+        {
+          "node": "ui_storefront",
+          "description": "Shopper clicks Pay now.",
+          "evidence": {
+            "file": "web/src/pages/Checkout.tsx",
+            "line": 9
+          }
+        },
+        {
+          "node": "ep_checkout",
+          "description": "POST /api/orders.",
+          "edge": "e_ui_checkout",
+          "payload": "{user_id, items}",
+          "evidence": {
+            "file": "web/src/api.ts",
+            "line": 19
+          }
+        },
+        {
+          "node": "hub_orders",
+          "description": "create_order() computes the total.",
+          "edge": "e_checkout_orders",
+          "evidence": {
+            "file": "api/services/orders.py",
+            "line": 7
+          }
+        },
+        {
+          "node": "ds_postgres",
+          "description": "INSERT the order with status = pending.",
+          "edge": "e_orders_pg",
+          "evidence": {
+            "file": "api/services/orders.py",
+            "line": 14
+          }
+        },
+        {
+          "node": "ext_stripe",
+          "description": "PaymentIntent.create raises CardError, re-raised as PaymentDeclined.",
+          "edge": "e_orders_stripe",
+          "evidence": {
+            "file": "api/payments.py",
+            "line": 22
+          }
+        },
+        {
+          "node": "ds_postgres",
+          "description": "Set status = payment_failed, then re-raise.",
+          "edge": "e_orders_pg",
+          "payload": "status='payment_failed'",
+          "evidence": {
+            "file": "api/services/orders.py",
+            "line": 20
+          }
+        }
+      ]
+    },
+    {
+      "id": "signup",
+      "name": "User signup",
+      "kind": "happy",
+      "actor": "Shopper",
+      "trigger": "ui_storefront",
+      "description": "Create an account: check the e-mail is free, store a hashed password.",
+      "steps": [
+        {
+          "node": "ui_storefront",
+          "description": "Signup form submits e-mail and password.",
+          "evidence": {
+            "file": "web/src/pages/Signup.tsx",
+            "line": 7
+          }
+        },
+        {
+          "node": "ep_signup",
+          "description": "POST /api/users.",
+          "edge": "e_ui_signup",
+          "payload": "{email, password}",
+          "evidence": {
+            "file": "web/src/api.ts",
+            "line": 4
+          }
+        },
+        {
+          "node": "svc_users",
+          "description": "register_user() hashes the password (unsalted SHA-256).",
+          "edge": "e_signup_users",
+          "evidence": {
+            "file": "api/services/users.py",
+            "line": 15
+          }
+        },
+        {
+          "node": "ds_postgres",
+          "description": "SELECT by e-mail finds nothing; INSERT the user. Returns 201 {id, email}.",
+          "edge": "e_users_pg",
+          "payload": "users(email, password_hash)",
+          "evidence": {
+            "file": "api/services/users.py",
+            "line": 20
+          }
+        }
+      ]
+    },
+    {
+      "id": "signup_taken",
+      "name": "Signup: e-mail already registered",
+      "kind": "failure",
+      "actor": "Shopper",
+      "trigger": "ui_storefront",
+      "description": "The e-mail exists: EmailTaken becomes 409, and the storefront throws 'signup failed'.",
+      "steps": [
+        {
+          "node": "ui_storefront",
+          "description": "Signup form submits an e-mail that is already used.",
+          "evidence": {
+            "file": "web/src/pages/Signup.tsx",
+            "line": 7
+          }
+        },
+        {
+          "node": "ep_signup",
+          "description": "POST /api/users.",
+          "edge": "e_ui_signup",
+          "payload": "{email, password}",
+          "evidence": {
+            "file": "web/src/api.ts",
+            "line": 4
+          }
+        },
+        {
+          "node": "svc_users",
+          "description": "register_user() checks for an existing user.",
+          "edge": "e_signup_users",
+          "evidence": {
+            "file": "api/services/users.py",
+            "line": 15
+          }
+        },
+        {
+          "node": "ds_postgres",
+          "description": "SELECT finds the row; EmailTaken is raised and the route answers 409.",
+          "edge": "e_users_pg",
+          "evidence": {
+            "file": "api/main.py",
+            "line": 16
+          }
+        }
+      ]
+    },
+    {
+      "id": "login",
+      "name": "Log in",
+      "kind": "happy",
+      "actor": "API client",
+      "trigger": "ep_login",
+      "description": "Credential check that returns a token. No storefront page calls this route.",
+      "steps": [
+        {
+          "node": "ep_login",
+          "description": "POST /api/login with e-mail and password.",
+          "payload": "{email, password}",
+          "evidence": {
+            "file": "api/main.py",
+            "line": 19
+          }
+        },
+        {
+          "node": "svc_users",
+          "description": "authenticate() compares the SHA-256 hash.",
+          "edge": "e_login_users",
+          "evidence": {
+            "file": "api/services/users.py",
+            "line": 25
+          }
+        },
+        {
+          "node": "ds_postgres",
+          "description": "SELECT the user by e-mail. A match returns {token: 'user-<id>'}.",
+          "edge": "e_users_pg",
+          "evidence": {
+            "file": "api/services/users.py",
+            "line": 27
+          }
+        }
+      ]
+    },
+    {
+      "id": "login_bad",
+      "name": "Log in: wrong password",
+      "kind": "failure",
+      "actor": "API client",
+      "trigger": "ep_login",
+      "description": "No user or a hash mismatch: authenticate() returns None and the route answers 401.",
+      "steps": [
+        {
+          "node": "ep_login",
+          "description": "POST /api/login.",
+          "evidence": {
+            "file": "api/main.py",
+            "line": 19
+          }
+        },
+        {
+          "node": "svc_users",
+          "description": "authenticate() finds no user or a different hash.",
+          "edge": "e_login_users",
+          "evidence": {
+            "file": "api/services/users.py",
+            "line": 28
+          }
+        },
+        {
+          "node": "ds_postgres",
+          "description": "SELECT user by e-mail (no match). The route raises 401 invalid credentials.",
+          "edge": "e_users_pg",
+          "evidence": {
+            "file": "api/main.py",
+            "line": 23
+          }
+        }
+      ]
+    },
+    {
+      "id": "browse",
+      "name": "Browse products (cache hit)",
+      "kind": "happy",
+      "actor": "Shopper",
+      "trigger": "ui_storefront",
+      "description": "The product list comes straight from the Redis cache.",
+      "steps": [
+        {
+          "node": "ui_storefront",
+          "description": "Products page loads.",
+          "evidence": {
+            "file": "web/src/pages/Products.tsx",
+            "line": 7
+          }
+        },
+        {
+          "node": "ep_products",
+          "description": "GET /api/products.",
+          "edge": "e_ui_products",
+          "evidence": {
+            "file": "web/src/api.ts",
+            "line": 14
+          }
+        },
+        {
+          "node": "hub_catalog",
+          "description": "list_products() asks the cache first.",
+          "edge": "e_products_catalog",
+          "evidence": {
+            "file": "api/services/catalog.py",
+            "line": 6
+          }
+        },
+        {
+          "node": "cache_redis",
+          "description": "GET products:all hits; the cached list is returned.",
+          "edge": "e_catalog_cache",
+          "payload": "[{id, name, price}]",
+          "evidence": {
+            "file": "api/services/catalog.py",
+            "line": 9
+          }
+        }
+      ]
+    },
+    {
+      "id": "browse_miss",
+      "name": "Browse products (cache miss)",
+      "kind": "alternate",
+      "actor": "Shopper",
+      "trigger": "ui_storefront",
+      "description": "Cold cache: read in-stock products from Postgres, then fill the cache for 300 s.",
+      "steps": [
+        {
+          "node": "ui_storefront",
+          "description": "Products page loads.",
+          "evidence": {
+            "file": "web/src/pages/Products.tsx",
+            "line": 7
+          }
+        },
+        {
+          "node": "ep_products",
+          "description": "GET /api/products.",
+          "edge": "e_ui_products",
+          "evidence": {
+            "file": "web/src/api.ts",
+            "line": 14
+          }
+        },
+        {
+          "node": "hub_catalog",
+          "description": "list_products() asks the cache first.",
+          "edge": "e_products_catalog",
+          "evidence": {
+            "file": "api/services/catalog.py",
+            "line": 6
+          }
+        },
+        {
+          "node": "cache_redis",
+          "description": "GET products:all misses.",
+          "edge": "e_catalog_cache",
+          "evidence": {
+            "file": "api/services/catalog.py",
+            "line": 7
+          }
+        },
+        {
+          "node": "ds_postgres",
+          "description": "SELECT products WHERE stock > 0.",
+          "edge": "e_catalog_pg",
+          "evidence": {
+            "file": "api/services/catalog.py",
+            "line": 11
+          }
+        },
+        {
+          "node": "cache_redis",
+          "description": "SETEX products:all (TTL 300 s), then return the list.",
+          "edge": "e_catalog_cache",
+          "payload": "[{id, name, price}]",
+          "evidence": {
+            "file": "api/services/catalog.py",
+            "line": 13
+          }
+        }
+      ]
+    },
+    {
+      "id": "order_status",
+      "name": "Check order status",
+      "kind": "happy",
+      "actor": "Shopper",
+      "trigger": "ui_storefront",
+      "description": "Read one order. An unknown id gives 404.",
+      "steps": [
+        {
+          "node": "ui_storefront",
+          "description": "Order status page polls the order.",
+          "evidence": {
+            "file": "web/src/pages/OrderStatus.tsx",
+            "line": 7
+          }
+        },
+        {
+          "node": "ep_order_status",
+          "description": "GET /api/orders/{id}.",
+          "edge": "e_ui_status",
+          "evidence": {
+            "file": "web/src/api.ts",
+            "line": 29
+          }
+        },
+        {
+          "node": "hub_orders",
+          "description": "get_order() loads the order.",
+          "edge": "e_status_orders",
+          "evidence": {
+            "file": "api/services/orders.py",
+            "line": 32
+          }
+        },
+        {
+          "node": "ds_postgres",
+          "description": "SELECT the order by id; returns {id, status, total} or 404.",
+          "edge": "e_orders_pg",
+          "evidence": {
+            "file": "api/services/orders.py",
+            "line": 34
+          }
+        }
+      ]
+    },
+    {
+      "id": "webhook",
+      "name": "Stripe webhook reconciliation",
+      "kind": "side_effect",
+      "actor": "Stripe",
+      "trigger": "tr_stripe_webhook",
+      "description": "Stripe confirms a payment; a matching order not yet fulfilled is marked paid.",
+      "steps": [
+        {
+          "node": "tr_stripe_webhook",
+          "description": "Stripe POSTs an event; the signature is verified with STRIPE_WEBHOOK_SECRET.",
+          "evidence": {
+            "file": "api/payments.py",
+            "line": 27
+          }
+        },
+        {
+          "node": "hub_orders",
+          "description": "reconcile_payment() ignores everything except payment_intent.succeeded.",
+          "edge": "e_webhook_orders",
+          "payload": "Stripe Event",
+          "evidence": {
+            "file": "api/services/orders.py",
+            "line": 41
+          }
+        },
+        {
+          "node": "ds_postgres",
+          "description": "Find the order by payment_intent; if it is not fulfilled, set status = paid.",
+          "edge": "e_orders_pg",
+          "evidence": {
+            "file": "api/services/orders.py",
+            "line": 45
+          }
+        }
+      ]
+    },
+    {
+      "id": "nightly",
+      "name": "Nightly sales report (ETL)",
+      "kind": "scheduled",
+      "actor": "cron",
+      "trigger": "tr_cron",
+      "description": "At 02:00, aggregate yesterday's orders by status into a CSV.",
+      "steps": [
+        {
+          "node": "tr_cron",
+          "description": "crontab fires at 02:00.",
+          "evidence": {
+            "file": "ops/crontab",
+            "line": 2
+          }
+        },
+        {
+          "node": "job_nightly",
+          "description": "jobs.nightly main() picks yesterday's date.",
+          "edge": "e_cron_job",
+          "evidence": {
+            "file": "jobs/nightly.py",
+            "line": 30
+          }
+        },
+        {
+          "node": "ds_postgres",
+          "description": "Extract: SELECT status, COUNT(*), SUM(total) GROUP BY status.",
+          "edge": "e_job_pg",
+          "evidence": {
+            "file": "jobs/nightly.py",
+            "line": 15
+          }
+        },
+        {
+          "node": "ds_reports",
+          "description": "Load: write sales-<day>.csv to REPORT_DIR.",
+          "edge": "e_job_csv",
+          "payload": "status, orders, revenue",
+          "evidence": {
+            "file": "jobs/nightly.py",
+            "line": 23
+          }
+        }
+      ]
     }
   ]
 }

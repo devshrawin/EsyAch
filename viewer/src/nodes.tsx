@@ -27,6 +27,10 @@ function stateClass(d: NodeData) {
     d.g.status === "deactivated" && "is-deact", d.g.confidence === "low" && "is-low");
 }
 
+function Reviewed({ d }: { d: NodeData }) {
+  return d.g.confirmed ? <span className="fm-ok-badge" title="Reviewed by a person">✓</span> : null;
+}
+
 function Label({ d }: { d: NodeData }) {
   return (
     <div className="fm-label-wrap">
@@ -61,6 +65,7 @@ export function StdNode({ data }: NodeProps) {
       <Handle type="source" position={Position.Right} id="out" className="fm-handle-out" />
       <Handle type="source" position={Position.Bottom} id="bottom" className={hidden} />
       {!d.hasOut && <Stub />}
+      <Reviewed d={d} />
       <Label d={d} />
     </div>
   );
@@ -80,6 +85,7 @@ export function TriggerNode({ data }: NodeProps) {
       <Handle type="source" position={Position.Right} id="out" className="fm-handle-out" />
       <Handle type="source" position={Position.Bottom} id="bottom" className={hidden} />
       {!d.hasOut && <Stub />}
+      <Reviewed d={d} />
       <Label d={d} />
     </div>
   );
@@ -115,6 +121,7 @@ export function HubNode({ data }: NodeProps) {
         );
       })}
       {!d.hasOut && <Stub />}
+      <Reviewed d={d} />
     </div>
   );
 }
@@ -130,6 +137,7 @@ export function SubNode({ data }: NodeProps) {
       <Icon name={icon} size={24} style={{ color }} />
       <Handle type="source" position={Position.Right} id="out" className={d.hasOut ? "fm-handle-out" : hidden} />
       <Handle type="source" position={Position.Bottom} id="bottom" className={hidden} />
+      <Reviewed d={d} />
       <Label d={d} />
     </div>
   );
@@ -149,4 +157,21 @@ export function MergeNode({ data }: NodeProps) {
   );
 }
 
-export const nodeTypes = { std: StdNode, trigger: TriggerNode, hub: HubNode, sub: SubNode, merge: MergeNode };
+export function GroupNode({ data }: NodeProps) {
+  const d = data as NodeData;
+  return (
+    <div className={cls("fm-node fm-std fm-group", stateClass(d))} style={{ width: d.w, height: d.h }} title="Click to expand">
+      <span className="fm-group-layer l2" />
+      <span className="fm-group-layer l1" />
+      <Handle type="target" position={Position.Left} id="in" className="fm-handle-in" />
+      <Handle type="target" position={Position.Top} id="top" className={hidden} />
+      <Icon name="layers" size={28} style={{ color: "#c9ccd1" }} />
+      <span className="fm-count">{d.g.count}</span>
+      <Handle type="source" position={Position.Right} id="out" className="fm-handle-out" />
+      <Handle type="source" position={Position.Bottom} id="bottom" className={hidden} />
+      <Label d={d} />
+    </div>
+  );
+}
+
+export const nodeTypes = { std: StdNode, trigger: TriggerNode, hub: HubNode, sub: SubNode, merge: MergeNode, group: GroupNode };

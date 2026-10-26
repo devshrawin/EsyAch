@@ -14,11 +14,13 @@ export const G = {
   subGapY: 92, // hub bottom -> circle top
   subSpacing: 112,
   merge: 40,
+  groupW: 96, // collapsed group card
 };
 
-export type Visual = "std" | "trigger" | "hub" | "sub" | "merge";
+export type Visual = "std" | "trigger" | "hub" | "sub" | "merge" | "group";
 
 export function visualOf(n: GNode): Visual {
+  if (n.collapsedGroup) return "group";
   if (n.hub) return "sub";
   if (n.kind === "hub") return "hub";
   if (n.kind === "trigger" || n.kind === "entrypoint") return "trigger";
@@ -68,6 +70,7 @@ export async function layoutGraph(g: Graph): Promise<Map<string, Placed>> {
       return { w: w + 40, h };
     }
     if (v === "merge") return { w: G.labelW, h: G.merge + G.labelH };
+    if (v === "group") return { w: G.labelW, h: G.box + G.labelH + 8 };
     return { w: G.labelW, h: G.box + G.labelH };
   };
 
@@ -152,10 +155,50 @@ export async function layoutGraph(g: Graph): Promise<Map<string, Placed>> {
           out.set(c2[0].id, { x: hx + c2[1] + shift - G.subD / 2, y: y + G.hubH + G.subGapY, w: G.subD, h: G.subD });
         }
       }
+    } else if (v === "group") {
+      out.set(n.id, { x: x + (W - G.groupW) / 2, y, w: G.groupW, h: G.box });
     } else {
       const b = v === "merge" ? G.merge : G.box;
       out.set(n.id, { x: x + (W - b) / 2, y, w: b, h: b });
     }
+  }
+  return out;
+}
+
+export function boxSize(n: GNode): { w: number; h: number } {
+  const v = visualOf(n);
+  if (v === "hub") return { w: hubWidth(n, 0), h: G.hubH };
+  if (v === "sub") return { w: G.subD, h: G.subD };
+  if (v === "merge") return { w: G.merge, h: G.merge };
+  if (v === "group") return { w: G.groupW, h: G.box };
+  return { w: G.box, h: G.box };
+}
+
+/** Only what changes the automatic layout: label or summary edits must not re-run ELK. */
+export function layoutKey(g: Graph) {
+  return JSON.stringify([
+    g.nodes.map((n) => [n.id, n.kind, n.hub ?? "", n.port ?? "", n.ports ?? [], n.collapsedGroup ?? ""]),
+    g.edges.map((e) => [e.from, e.to, e.kind]),
+  ]);
+}
+
+/** Apply positions saved from the editor. Circles of a moved hub move with it unless pinned. */
+export function withManual(auto: Map<string, Placed>, nodes: GNode[], drag?: Map<string, { x: number; y: number }>) {
+  const out = new Map(auto);
+  const moved = new Map<string, { dx: number; dy: number }>();
+  for (const n of nodes) {
+    const m = drag?.get(n.id) ?? n.pos;
+    // Nodes added in the editor have a position but were never laid out.
+    const p = out.get(n.id) ?? (m ? { x: m.x, y: m.y, ...boxSize(n) } : undefined);
+    if (!p || !m) continue;
+    moved.set(n.id, { dx: m.x - p.x, dy: m.y - p.y });
+    out.set(n.id, { ...p, x: m.x, y: m.y });
+  }
+  for (const n of nodes) {
+    if (!n.hub || n.pos || drag?.has(n.id)) continue;
+    const d = moved.get(n.hub);
+    const p = out.get(n.id);
+    if (d && p) out.set(n.id, { ...p, x: p.x + d.dx, y: p.y + d.dy });
   }
   return out;
 }

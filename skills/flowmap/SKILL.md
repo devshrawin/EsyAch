@@ -54,6 +54,17 @@ helpers into their caller and list them in `symbols`.
 Each step names the node, the edge used to reach it (the edge must start at a node the flow has
 already visited), a one-line description, the payload where useful, and `file:line` evidence.
 
+## Reviewer edits are authoritative
+
+People correct maps in the viewer (Edit mode). Saved JSON carries `edited: true`, `confirmed: true`,
+manual `pos`, and reviewer evidence `{"user": true, "note": …}`. When re-analysing a target whose
+`.flowmap/architecture.json` already exists:
+- keep every `confirmed` node or edge as it is, and every manual `pos`;
+- keep `edited` items unless the code now contradicts them. If it does, keep the edit and tell the
+  user what changed;
+- never silently delete a reviewer-added node, edge or flow.
+To only re-render after edits, use `/flowmap-update`, not a new analysis.
+
 ## Mode B: SRS + screenshots → screens.json
 
 Coming in Stage 3. Until then, tell the user Mode B is not available yet.

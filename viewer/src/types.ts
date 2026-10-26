@@ -13,6 +13,7 @@ export interface Evidence {
   req?: string;
   screen?: string;
   section?: string;
+  user?: boolean; // added or corrected by a person in the editor
 }
 
 export interface GNode {
@@ -32,6 +33,12 @@ export interface GNode {
   status?: "active" | "deactivated";
   confidence?: Confidence;
   evidence?: Evidence[];
+  pos?: { x: number; y: number }; // manual position from the editor (overrides auto layout)
+  edited?: boolean;
+  confirmed?: boolean;
+  // view-only (never saved): a collapsed group drawn as one node
+  collapsedGroup?: string;
+  count?: number;
 }
 
 export interface GEdge {
@@ -49,6 +56,9 @@ export interface GEdge {
   reason?: string;
   confidence?: Confidence;
   evidence?: Evidence[];
+  edited?: boolean;
+  confirmed?: boolean;
+  aggregate?: string[]; // view-only: original edge ids merged into this one
 }
 
 export interface FlowStep {
@@ -67,6 +77,7 @@ export interface Flow {
   description?: string;
   trigger: string;
   steps: FlowStep[];
+  edited?: boolean;
 }
 
 export interface Graph {

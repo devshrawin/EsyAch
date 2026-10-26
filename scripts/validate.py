@@ -53,6 +53,7 @@ class EvidenceChecker:
     def __init__(self, root: Path | None):
         self.root = root.resolve() if root else None
         self._lines: dict[str, int | None] = {}
+        self.user_only: set[str] = set()  # items carrying reviewer ("user") evidence
 
     def line_count(self, rel):
         if rel not in self._lines:
@@ -77,8 +78,10 @@ class EvidenceChecker:
                     r.err(f"{where}: evidence file not found: {ev['file']}")
                 elif isinstance(line, int) and line > n:
                     r.err(f"{where}: evidence {ev['file']}:{line} beyond end of file ({n} lines)")
+        elif ev.get("user"):
+            self.user_only.add(where.split(" step")[0])
         elif not ({"req", "screen", "section"} & ev.keys()):
-            r.err(f"{where}: evidence needs file+line, req, screen or section")
+            r.err(f"{where}: evidence needs file+line, req, screen, section or user")
 
 
 def validate(g: dict, root: Path | None = None) -> Report:
@@ -206,6 +209,12 @@ def validate(g: dict, root: Path | None = None) -> Report:
             elif g.get("mode") == "code":
                 r.warn(f"{sw}: no file:line evidence")
             visited.add(s["node"])
+
+    for n in g["nodes"]:
+        if "pos" in n and not (isinstance(n["pos"], dict) and all(isinstance(n["pos"].get(k), (int, float)) for k in "xy")):
+            r.err(f"node {n.get('id')}: pos must be {{x, y}} numbers")
+    for where in sorted(ev.user_only):
+        r.warn(f"{where}: has reviewer-provided evidence (from the editor), not file:line")
 
     # coverage: every entry point / trigger should start (or appear in) some flow
     in_flows = {s.get("node") for f in g["flows"] for s in f.get("steps", [])}

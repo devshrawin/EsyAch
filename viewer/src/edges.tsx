@@ -8,10 +8,12 @@ export interface EdgeData {
   dim: boolean;
   inFlow: boolean;
   current: boolean;
-  cross: boolean;
-  fanOut: boolean; // source has several main outputs: spread port labels along the curves // dependency edge to a circle owned by another hub (or a non-hub source)
+  cross: boolean; // dependency edge to a circle owned by another hub (or a non-hub source)
+  fanOut: boolean; // source has several main outputs: spread port labels along the curves
   animKey: number;
+  selected?: boolean;
   showLabels: boolean;
+  payloads?: boolean; // Detail level: payloads in the mid-edge label
   [key: string]: unknown;
 }
 
@@ -25,12 +27,12 @@ export function FlowEdge(props: EdgeProps) {
     curvature: dep ? 0.35 : 0.3,
   });
   const cls = ["fm-edge", dep && "is-dep", d.cross && "is-cross", e.inferred && "is-inferred", d.dim && "is-dim", d.inFlow && "in-flow",
-    d.current && "is-current"].filter(Boolean).join(" ");
+    d.current && "is-current", d.selected && "is-selected"].filter(Boolean).join(" ");
   // Main edges: action label near the source port, payload/condition in the mid pill.
   // Dependency edges leave a named hub port already, so their short label goes in the pill.
   const portLabel = dep ? undefined : e.label;
   // Hub -> own circle lines are already named by the port, as in n8n; their label lives in the hover card.
-  let pill = dep ? (d.cross ? e.label : undefined) : e.condition ? `if ${e.condition}` : e.payload;
+  let pill = dep ? (d.cross ? e.label : undefined) : e.condition ? `if ${e.condition}` : d.payloads !== false || d.inFlow ? e.payload : undefined;
   if (dep && !d.cross && d.current) pill = e.label;
   if (d.cross && !d.inFlow) pill = undefined; // long cross-hub lines: label only while replaying
   // n8n puts the port label right after the output dot; with several outputs on one handle
@@ -78,7 +80,7 @@ export function FlowEdge(props: EdgeProps) {
 }
 
 // Same control points as xyflow's getBezierPath for a Right -> Left edge.
-function bezierPoint(sx: number, sy: number, tx: number, ty: number, curvature: number, t: number) {
+export function bezierPoint(sx: number, sy: number, tx: number, ty: number, curvature: number, t: number) {
   const dist = tx - sx;
   const off = dist >= 0 ? 0.5 * dist : curvature * 25 * Math.sqrt(-dist);
   const c1x = sx + off, c2x = tx - off;

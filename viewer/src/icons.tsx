@@ -142,6 +142,16 @@ const P: Record<string, JSX.Element> = {
   moon: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />,
   fit: <path d="M3 7V3h4M17 3h4v4M21 17v4h-4M7 21H3v-4" />,
   x: <path d="M18 6 6 18M6 6l12 12" />,
+  undo: <path d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />,
+  redo: <path d="m15 14 5-5-5-5M20 9H9.5a5.5 5.5 0 0 0 0 11H13" />,
+  download: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />,
+  layout: (
+    <>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+      <path d="M10 6.5h4a2 2 0 0 1 2 2V14" />
+    </>
+  ),
   search: (
     <>
       <circle cx="11" cy="11" r="8" />
