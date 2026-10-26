@@ -353,7 +353,7 @@ const modeB = [
     return `offset ${dx.toFixed(1)} px, width error ${dw.toFixed(1)} px`;
   }),
   tc("VB-10", "Viewer B", "Variant switch shows the error state image and its hotspots", "Error tab -> 02-sign-in-error.png", async ({ page }) => {
-    await page.locator(".fm-lb-variants button", { hasText: "error" }).click(); await page.waitForTimeout(200);
+    await page.locator(".fm-lb-variants button", { hasText: "Invalid credentials" }).click(); await page.waitForTimeout(200);
     const chip = await page.locator(".fm-lb-side .fm-badges").innerText();
     assert(chip.includes("02-sign-in-error.png"), chip);
     return "02-sign-in-error.png";

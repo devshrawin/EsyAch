@@ -33,6 +33,10 @@ SAFE_EMAIL = re.compile(r"@(example|test|invalid|localhost)\b|@(example|test)\.(
 NO_UI = re.compile(r"no (user )?interface|non-ui|no ui\b|backend only", re.I)
 
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+R = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
+A_BLIP = "{http://schemas.openxmlformats.org/drawingml/2006/main}blip"
+V_IMG = "{urn:schemas-microsoft-com:vml}imagedata"
+PKG_REL = "{http://schemas.openxmlformats.org/package/2006/relationships}Relationship"
 
 
 # ------------------------------------------------------------------ readers -> blocks
@@ -98,16 +102,41 @@ def blocks_docx(path: Path):
                 name = st.find(f"{W}name")
                 if sid and name is not None:
                     styles[sid] = name.get(f"{W}val", sid)
+        rels = {}
+        if "word/_rels/document.xml.rels" in zf.namelist():
+            for r in ET.fromstring(zf.read("word/_rels/document.xml.rels")).iter(PKG_REL):
+                if r.get("TargetMode") != "External":
+                    rels[r.get("Id")] = "word/" + r.get("Target", "").lstrip("/").removeprefix("word/")
     body = root.find(f"{W}body")
     out, n = [], 0
 
+    def images(el):
+        """Embedded pictures inside a paragraph/table, as zip paths (external links are ignored)."""
+        found = []
+        for b in el.iter(A_BLIP):
+            rid = b.get(f"{R}embed")
+            if rid in rels:
+                found.append(rels[rid])
+        for v in el.iter(V_IMG):
+            rid = v.get(f"{R}id")
+            if rid in rels:
+                found.append(rels[rid])
+        return found
+
     def ptext(p):
         return "".join(t.text or "" for t in p.iter(f"{W}t"))
+
+    def cell_text(c):
+        """Cell text with one line per paragraph (nested tables flattened row by row)."""
+        lines = [_clean(ptext(p)) for p in c.iter(f"{W}p")]
+        return "\n".join(x for x in lines if x)
 
     for el in body:
         if el.tag == f"{W}p":
             n += 1
             txt = _clean(ptext(el))
+            for img in images(el):
+                out.append({"type": "image", "image": img, "loc": f"paragraph {n}"})
             if not txt:
                 continue
             ps = el.find(f"{W}pPr/{W}pStyle")
@@ -120,8 +149,10 @@ def blocks_docx(path: Path):
             else:
                 out.append({"type": "para", "text": txt, "loc": f"paragraph {n}"})
         elif el.tag == f"{W}tbl":
-            rows = [[_clean(ptext(c)) for c in tr.iter(f"{W}tc")] for tr in el.iter(f"{W}tr")]
+            rows = [[cell_text(c) for c in tr.findall(f"{W}tc")] for tr in el.iter(f"{W}tr")]
             out.append({"type": "table", "rows": rows, "loc": f"table after paragraph {n}"})
+            for img in images(el):
+                out.append({"type": "image", "image": img, "loc": f"table after paragraph {n}"})
     return out
 
 
@@ -170,6 +201,8 @@ def blocks_pdf(path: Path):
 
 
 def _clean(s: str) -> str:
+    if "\n" in s:
+        return "\n".join(_clean(x) for x in s.split("\n"))
     s = s.replace("\u201c", '"').replace("\u201d", '"').replace("\u201e", '"').replace("\u2018", "'").replace("\u2019", "'")
     s = re.sub(r"\*\*|__|`", "", s)
     s = re.sub(r"(?<!\w)\*(?!\s)|(?<!\s)\*(?!\w)", "", s)
@@ -178,10 +211,52 @@ def _clean(s: str) -> str:
 
 # ------------------------------------------------------------------ structure
 
+GENERIC_HEADINGS = re.compile(r"(?i)^(screens?(\(s\))?|use cases?|wireframes?(\(s\))?|mock-?ups?|ui|figures?|description)$")
+UC_KEYS = re.compile(r"(?i)^(use case|requirement|story|feature|req)\s*(id|no\.?|number|#)\s*:?$")
+
+
+def use_case(rows):
+    """A key/value table with a 'Use Case ID' (or Requirement ID) row -> requirement record."""
+    kv = {}
+    for r in rows:
+        if len(r) >= 2 and r[0] and len(r[0]) < 60:
+            k = re.sub(r"[:\s]+$", "", r[0]).strip()
+            kv.setdefault(k.lower(), r[1])
+    key = next((k for k in kv if UC_KEYS.match(k)), None)
+    if not key:
+        return None
+    rid = kv[key].split("\n")[0].strip()
+    if not rid or len(rid) > 60:
+        return None
+    name = kv.get("use case name") or kv.get("name") or kv.get("title") or ""
+    text = " — ".join(x for x in [name.replace("\n", " "), (kv.get("objective") or kv.get("description") or "").split("\n")[0]] if x)
+    fields = []
+    for r in rows:  # data-field rows: '#', 'Field Title', 'Input Control', ...
+        if len(r) >= 3 and re.fullmatch(r"\d{1,3}", r[0] or "") and r[1]:
+            fields.append({"no": int(r[0]), "title": r[1], "control": r[2] if len(r) > 2 else "",
+                           "mandatory": r[3] if len(r) > 3 else "", "validation": r[-1] if len(r) > 5 else ""})
+    detail = {k: v for k, v in kv.items() if k in ("actors", "objective", "description", "pre-conditions", "post conditions",
+                                                     "normal course", "alternative courses", "exception flow", "business rules")}
+    return {"id": rid, "text": text or rid, "priority": (kv.get("priority") or "").split("\n")[0].capitalize() or None,
+            "kind": "use_case", "detail": detail, "fields": fields}
+
+
 def structure(blocks, source: str, fmt: str):
-    sections, reqs, pii = [], {}, []
+    sections, reqs, pii, figures = [], {}, [], []
     current = ""
-    for b in blocks:
+    topic = ""  # nearest meaningful heading (skips 'Screen(s)', 'Use Case' ...)
+    for i, b in enumerate(blocks):
+        if b["type"] == "image":
+            figures.append({"image": b["image"], "section": topic, "loc": b["loc"], "caption": _caption(blocks, i)})
+            continue
+        if b["type"] == "heading" and not GENERIC_HEADINGS.match(b["text"].strip()):
+            topic = b["text"]
+        if b["type"] == "table":
+            uc = use_case(b["rows"])
+            if uc and uc["id"] not in reqs:
+                uc.update(section=topic, loc=b["loc"], ui=True)
+                reqs[uc["id"]] = uc
+                continue
         if b["type"] == "heading":
             current = b["text"]
             sections.append({"title": b["text"], "level": b["level"], "loc": b["loc"]})
@@ -200,14 +275,18 @@ def structure(blocks, source: str, fmt: str):
             d = REQ_DEF.match(t)
             if d and d.group(1).upper() not in reqs:
                 rid = d.group(1).upper().replace("_", "-")
-                body = d.group(3).strip()
+                body = d.group(3).strip().lstrip("|").strip()
                 reqs[rid] = {
                     "id": rid, "text": body, "priority": (d.group(2) or "").capitalize() or None,
-                    "section": current, "loc": b["loc"], "ui": not NO_UI.search(body),
+                    "section": current, "loc": b["loc"],
+                    # non-functional requirements are not expected on a screen unless the text says so
+                    "ui": not NO_UI.search(body) and (_kind(rid) != "nonfunctional" or bool(re.search(r"(?i)\b(screen|page|form|button)\b", body))),
                     "kind": _kind(rid),
                 }
     refs = {}
     for b in blocks:
+        if b["type"] == "image":
+            continue
         for t in ([b.get("text", "")] if b["type"] != "table" else [" ".join(r) for r in b["rows"]]):
             for m in REQ_ID.finditer(t):
                 refs.setdefault(m.group(1).upper(), []).append(b["loc"])
@@ -215,8 +294,18 @@ def structure(blocks, source: str, fmt: str):
         "tool": "flowmap-spec-extract/0.1", "source": source, "format": fmt,
         "sections": sections, "requirements": list(reqs.values()),
         "references": {k: v for k, v in refs.items() if k not in reqs or len(v) > 1},
-        "pii": pii, "blocks": blocks,
+        "pii": pii, "figures": figures, "blocks": blocks,
     }
+
+
+def _caption(blocks, i):
+    """'Figure 3: Scheme list' style text right after (or before) an image, else ''."""
+    for j in (i + 1, i - 1, i + 2):
+        if 0 <= j < len(blocks) and blocks[j]["type"] in ("para", "list"):
+            t = blocks[j]["text"]
+            if re.match(r"(?i)^(fig(ure)?|screen(shot)?|image)\s*[\d.:-]", t) or (len(t) < 90 and j == i + 1):
+                return t[:120]
+    return ""
 
 
 def _kind(rid: str) -> str:

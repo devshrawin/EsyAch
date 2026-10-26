@@ -174,9 +174,9 @@ export function Lightbox(props: {
         </div>
         {!!n.variants?.length && (
           <div className="fm-seg fm-lb-variants">
-            <button className={!cur.v ? "is-on" : ""} onClick={() => walk ? null : setStack((s) => [...s.slice(0, -1), { s: n.id }])}>{n.state ?? "default"}</button>
+            <button className={!cur.v ? "is-on" : ""} onClick={() => walk ? null : setStack((s) => [...s.slice(0, -1), { s: n.id }])}>{n.label}</button>
             {n.variants.map((v) => (
-              <button key={v.id} className={cur.v === v.id ? "is-on" : ""} onClick={() => walk ? null : setStack((s) => [...s.slice(0, -1), { s: n.id, v: v.id }])}>{v.state ?? v.label}</button>
+              <button key={v.id} className={cur.v === v.id ? "is-on" : ""} title={v.state} onClick={() => walk ? null : setStack((s) => [...s.slice(0, -1), { s: n.id, v: v.id }])}>{v.label ?? v.state}</button>
             ))}
           </div>
         )}

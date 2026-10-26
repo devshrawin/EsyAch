@@ -868,7 +868,7 @@ def _():
 
 @case("PKG-06", "Packaging", "Scripts import only the stdlib (Pillow/pypdf optional, guarded)", "no other third-party imports")
 def _():
-    std = set(sys.stdlib_module_names) | {"fm_common", "fm_spec", "inventory", "build", "validate"}
+    std = set(sys.stdlib_module_names) | {f.stem for f in (ROOT / "scripts").glob("*.py")}
     bad = []
     for f in (ROOT / "scripts").glob("*.py"):
         for m in re.finditer(r"^\s*(?:from|import)\s+([\w.]+)", f.read_text(), re.M):

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Prepare a screenshot set for Mode B -> screens_manifest.json (+ gridded copies for vision).
 
-Usage: screens_prep.py <folder | .zip> -o OUT_DIR
+Usage: screens_prep.py <folder | .zip | srs.docx> -o OUT_DIR
 
 - Zips are extracted safely (images only; traversal, symlinks and bombs are rejected).
+- A .docx SRS with screenshots pasted in: the pictures are extracted in document order and named
+  after their section / caption (01-scheme-list.png ...). Logos and icons (< 200 px) are skipped.
 - For each PNG/JPG/WebP: size, order hint from the filename, a perceptual hash, and the files it
   nearly duplicates (same screen in another state: empty/filled/error/modal).
 - OUT_DIR/grid/<name>.png: a copy with a labelled 10 % grid, so the model can read normalised 0-1
@@ -64,10 +66,56 @@ def grid_copy(img, out: Path, ImageDraw):
     im.save(out)
 
 
+def _slug(s: str, n: int = 40) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")[:n].strip("-") or "screen"
+
+
+def from_docx(docx: Path, dest: Path, Image) -> dict:
+    """Extract pictures embedded in a Word SRS, in document order, with their section and caption."""
+    import io
+    import zipfile
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import spec_extract
+    figures = spec_extract.structure(spec_extract.blocks_docx(docx), str(docx), "docx")["figures"]
+    if dest.exists():
+        shutil.rmtree(dest)
+    dest.mkdir(parents=True)
+    context, seen, k = {}, set(), 0
+    with zipfile.ZipFile(docx) as zf:
+        names = set(zf.namelist())
+        for f in figures:
+            src = f["image"]
+            ext = Path(src).suffix.lower()
+            if src in seen or src not in names or ext not in IMG_EXT:
+                continue
+            seen.add(src)
+            info = zf.getinfo(src)
+            if info.file_size > 40_000_000:
+                continue
+            data = zf.read(src)
+            try:
+                with Image.open(io.BytesIO(data)) as im:
+                    w, h = im.size
+            except Exception:
+                continue
+            if min(w, h) < 200 or not f["section"]:  # logos, icons, cover-page art before the first heading
+                context.setdefault("_skipped", []).append({"image": src, "size": [w, h], "section": f["section"]})
+                continue
+            k += 1
+            name = f"{k:02d}-{_slug(f['caption'] or f['section'] or Path(src).stem)}{ext}"
+            (dest / name).write_bytes(data)
+            context[name] = {"from": src, "section": f["section"], "caption": f["caption"], "loc": f["loc"]}
+    return context
+
+
 def prepare(src: Path, out_dir: Path, grid: bool = True):
     Image, ImageDraw = _pil()
     out_dir.mkdir(parents=True, exist_ok=True)
-    if src.is_file() and src.suffix.lower() == ".zip":
+    context: dict = {}
+    if src.is_file() and src.suffix.lower() == ".docx":
+        root = out_dir / "screens"
+        context = from_docx(src, root, Image)
+    elif src.is_file() and src.suffix.lower() == ".zip":
         dest = out_dir / "screens"
         if dest.exists():
             shutil.rmtree(dest)
@@ -102,13 +150,15 @@ def prepare(src: Path, out_dir: Path, grid: bool = True):
             "sha1": hashlib.sha1(p.read_bytes()).hexdigest()[:12],
             "dhash": f"{hsh:064x}", "order": int(m.group(1)) if m else None,
             "name_hint": re.sub(r"[-_]+", " ", re.sub(r"^\d+[-_ ]*", "", Path(rel).stem)).strip(),
+            **({"srs_context": context[rel]} if rel in context else {}),
         })
     ok = [i for i in items if "dhash" in i]
     for a in ok:
         a["near_duplicates"] = [b["file"] for b in ok if b is not a and
                                 bin(int(a["dhash"], 16) ^ int(b["dhash"], 16)).count("1") < HASH * HASH * 0.10
                                 and abs(a["width"] / a["height"] - b["width"] / b["height"]) < 0.05]
-    manifest = {"tool": "flowmap-screens-prep/0.1", "root": str(root), "count": len(ok), "screens": items}
+    manifest = {"tool": "flowmap-screens-prep/0.1", "root": str(root), "count": len(ok), "screens": items,
+                **({"skipped_small_images": context["_skipped"]} if context.get("_skipped") else {})}
     dump_json(manifest, out_dir / "screens_manifest.json")
     return manifest
 
