@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="1.4" cy="1.4" r="1.4" fill="#45464a"/></pattern>
+    <linearGradient id="fade" x1="0" x2="1">
+      <stop offset="0" stop-color="#1e1f21" stop-opacity="1"/>
+      <stop offset="0.36" stop-color="#1e1f21" stop-opacity="0.94"/>
+      <stop offset="0.46" stop-color="#1e1f21" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glow"><stop offset="0" stop-color="#ff6d5a" stop-opacity="0.9"/><stop offset="1" stop-color="#ff6d5a" stop-opacity="0"/></radialGradient>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b9babd"/></marker>
+    <path id="p1" d="M 672 146 C 712 146, 712 146, 752 146"/>
+    <path id="p2" d="M 1004 146 C 1044 146, 1044 146, 1084 146"/>
+    <path id="flow" d="M 672 146 C 712 146, 712 146, 752 146 L 878 146 L 878 196 C 878 236, 878 236, 878 272 M 878 196 L 1004 146 C 1044 146, 1044 146, 1084 146"/>
+    <style>
+      .node { fill: #404143; stroke: #c9cacf; stroke-width: 1.5; }
+      .sub { fill: #2f3036; stroke: #c9cacf; stroke-width: 1.5; }
+      .lbl { fill: #ececec; font-size: 13px; font-weight: 600; }
+      .sml { fill: #9b9ea4; font-size: 11px; }
+      .edge { stroke: #b9babd; stroke-width: 1.6; fill: none; }
+      .dep { stroke: #b9babd; stroke-width: 1.4; fill: none; stroke-dasharray: 5 5; animation: dash 1.4s linear infinite; }
+      @keyframes dash { to { stroke-dashoffset: -20; } }
+      .pulse { animation: pulse 4.8s ease-in-out infinite; }
+      .d1 { animation-delay: 0s; } .d2 { animation-delay: 1.2s; } .d3 { animation-delay: 2.4s; } .d4 { animation-delay: 3.6s; }
+      @keyframes pulse { 0%, 30%, 100% { stroke: #c9cacf; stroke-width: 1.5; } 8%, 20% { stroke: #ff6d5a; stroke-width: 2.6; } }
+      .title { fill: #ffffff; font-size: 64px; font-weight: 800; letter-spacing: -1.5px; }
+      .tag { fill: #d6d7da; font-size: 22px; font-weight: 500; }
+      .chip { fill: #2c2d31; stroke: #44464b; }
+      .chipt { fill: #c9cacf; font-size: 13px; font-weight: 600; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="420" rx="18" fill="#1e1f21"/>
+  <rect width="1280" height="420" rx="18" fill="url(#dots)"/>
+
+  <!-- mini canvas -->
+  <g transform="translate(40,40)">
+    <!-- trigger -->
+    <path class="node pulse d1" d="M 600 74 H 624 a8 8 0 0 1 8 8 V 130 a8 8 0 0 1 -8 8 H 600 a32 32 0 0 1 -32 -32 a32 32 0 0 1 32 -32 Z"/>
+    <path transform="translate(544,96) scale(0.7)" d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" fill="#ff6d5a"/>
+    <g transform="translate(588,94)" fill="none" stroke="#c86dd7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"/><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"/><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"/>
+    </g>
+    <circle cx="632" cy="106" r="5.5" fill="#c9cacf"/>
+    <text class="lbl" x="600" y="162" text-anchor="middle">Checkout</text>
+    <text class="sml" x="600" y="177" text-anchor="middle">POST /api/orders</text>
+
+    <!-- hub -->
+    <rect class="node pulse d2" x="712" y="70" width="252" height="72" rx="10"/>
+    <g transform="translate(728,92)" fill="none" stroke="#f5c542" stroke-width="1.8" stroke-linecap="round"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></g>
+    <text class="lbl" x="766" y="104" font-size="15">Order Service</text>
+    <text class="sml" x="766" y="121">create · charge · enqueue</text>
+    <rect x="708" y="102" width="5" height="14" rx="1" fill="#c9cacf"/>
+    <circle cx="964" cy="106" r="5.5" fill="#c9cacf"/>
+    <g fill="#c9cacf">
+      <rect x="779" y="137.5" width="9" height="9" transform="rotate(45 783.5 142)"/>
+      <rect x="833.5" y="137.5" width="9" height="9" transform="rotate(45 838 142)"/>
+      <rect x="888" y="137.5" width="9" height="9" transform="rotate(45 892.5 142)"/>
+    </g>
+    <text class="sml" x="783" y="164" text-anchor="middle">DB</text>
+    <text class="sml" x="838" y="164" text-anchor="middle">Payments</text>
+    <text class="sml" x="892" y="164" text-anchor="middle">Queue</text>
+
+    <!-- circles -->
+    <path class="dep" d="M 783 146 C 783 190, 760 200, 760 230"/>
+    <path class="dep" d="M 838 146 C 838 190, 838 200, 838 230"/>
+    <path class="dep" d="M 892 146 C 892 190, 916 200, 916 230"/>
+    <circle class="sub pulse d3" cx="760" cy="256" r="26"/>
+    <g transform="translate(748,244)" fill="none" stroke="#5b9bd5" stroke-width="1.8"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5M3 12a9 3 0 0 0 18 0"/></g>
+    <circle class="sub" cx="838" cy="256" r="26"/>
+    <g transform="translate(826,244)" fill="none" stroke="#8b7dff" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></g>
+    <circle class="sub" cx="916" cy="256" r="26"/>
+    <g transform="translate(904,244)" fill="none" stroke="#e5533d" stroke-width="1.8"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5M3 12a9 3 0 0 0 18 0"/></g>
+    <text class="lbl" x="760" y="302" text-anchor="middle" font-size="12">PostgreSQL</text>
+    <text class="lbl" x="838" y="302" text-anchor="middle" font-size="12">Stripe</text>
+    <text class="lbl" x="916" y="302" text-anchor="middle" font-size="12">orders queue</text>
+
+    <!-- worker -->
+    <rect class="node pulse d4" x="1044" y="74" width="64" height="64" rx="10"/>
+    <g transform="translate(1062,92)" fill="none" stroke="#e8a33d" stroke-width="1.8" stroke-linejoin="round"><rect x="2" y="4" width="24" height="18" rx="2" transform="scale(.85)"/><path d="m21 6-9 6-9-6" transform="scale(.85) translate(2,0)"/></g>
+    <rect x="1040" y="99" width="5" height="14" rx="1" fill="#c9cacf"/>
+    <circle cx="1108" cy="106" r="5.5" fill="#c9cacf"/>
+    <line x1="1113" y1="106" x2="1146" y2="106" stroke="#b9babd" stroke-width="1.5"/>
+    <rect x="1146" y="97" width="18" height="18" rx="4" fill="none" stroke="#c9cacf" stroke-width="1.5"/>
+    <text x="1155" y="110.5" fill="#9b9ea4" font-size="13" text-anchor="middle">+</text>
+    <text class="lbl" x="1076" y="162" text-anchor="middle">Worker</text>
+    <text class="sml" x="1076" y="177" text-anchor="middle">e-mail receipt</text>
+
+    <!-- main edges -->
+    <path class="edge" d="M 638 106 C 676 106, 670 106, 706 106" marker-end="url(#arr)"/>
+    <path class="edge" d="M 970 106 C 1006 106, 1000 106, 1036 106" marker-end="url(#arr)"/>
+    <text class="sml" x="643" y="99">POST</text>
+    <text class="sml" x="975" y="99">BRPOP</text>
+
+    <!-- travelling dot -->
+    <g>
+      <circle r="16" fill="url(#glow)">
+        <animateMotion dur="4.8s" repeatCount="indefinite" keyPoints="0;0.22;0.22;0.62;0.62;1" keyTimes="0;0.18;0.3;0.55;0.75;1" calcMode="linear"
+          path="M 632 106 L 712 106 L 783 106 L 783 142 L 760 230 L 783 142 L 964 106 L 1044 106"/>
+      </circle>
+      <circle r="5.5" fill="#ff6d5a">
+        <animateMotion dur="4.8s" repeatCount="indefinite" keyPoints="0;0.22;0.22;0.62;0.62;1" keyTimes="0;0.18;0.3;0.55;0.75;1" calcMode="linear"
+          path="M 632 106 L 712 106 L 783 106 L 783 142 L 760 230 L 783 142 L 964 106 L 1044 106"/>
+      </circle>
+    </g>
+  </g>
+
+  <rect width="1280" height="420" rx="18" fill="url(#fade)"/>
+
+  <!-- title block -->
+  <g transform="translate(64,0)">
+    <rect x="0" y="92" width="52" height="52" rx="13" fill="#ff6d5a"/>
+    <path transform="translate(10,102) scale(1.35)" d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" fill="#fff"/>
+    <text class="title" x="70" y="140">flowmap</text>
+    <text class="tag" x="0" y="196">See how your code and your product</text>
+    <text class="tag" x="0" y="226">actually flow, step by step.</text>
+    <g transform="translate(0,262)">
+      <rect class="chip" x="0" y="0" width="190" height="30" rx="15"/><text class="chipt" x="95" y="20" text-anchor="middle">Code → live data flows</text>
+      <rect class="chip" x="200" y="0" width="232" height="30" rx="15"/><text class="chipt" x="316" y="20" text-anchor="middle">SRS + screens → prototype</text>
+    </g>
+    <g transform="translate(0,302)">
+      <rect class="chip" x="0" y="0" width="128" height="30" rx="15"/><text class="chipt" x="64" y="20" text-anchor="middle">100% offline</text>
+      <rect class="chip" x="138" y="0" width="128" height="30" rx="15"/><text class="chipt" x="202" y="20" text-anchor="middle">Editable</text>
+      <rect class="chip" x="276" y="0" width="156" height="30" rx="15"/><text class="chipt" x="354" y="20" text-anchor="middle">Claude Code plugin</text>
+    </g>
+  </g>
+</svg>

@@ -214,7 +214,13 @@ export function Lightbox(props: {
               <div className="fm-hs is-sel" style={{ left: `${temp.box[0] * 100}%`, top: `${temp.box[1] * 100}%`, width: `${temp.box[2] * 100}%`, height: `${temp.box[3] * 100}%` }} />
             )}
             {chooser && (
-              <div className="fm-chooser" style={{ left: `${(chooser.h.box[0] + chooser.h.box[2]) * 100}%`, top: `${chooser.h.box[1] * 100}%` }} onMouseDown={(e) => e.stopPropagation()}>
+              <div className="fm-chooser" onMouseDown={(e) => e.stopPropagation()} style={{
+                // open on the side with room: controls near the right/bottom edge flip left/up
+                ...(chooser.h.box[0] + chooser.h.box[2] > 0.6
+                  ? { right: `${(1 - chooser.h.box[0]) * 100}%`, marginRight: 8, marginLeft: 0 }
+                  : { left: `${(chooser.h.box[0] + chooser.h.box[2]) * 100}%` }),
+                ...(chooser.h.box[1] > 0.6 ? { bottom: `${(1 - chooser.h.box[1] - chooser.h.box[3]) * 100}%` } : { top: `${chooser.h.box[1] * 100}%` }),
+              }}>
                 <div className="fm-section-title">"{chooser.h.label}" leads to…</div>
                 {chooser.edges.map((e) => (
                   <button key={e.id} onClick={() => follow(e)}>
