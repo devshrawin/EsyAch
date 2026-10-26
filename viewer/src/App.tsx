@@ -18,6 +18,7 @@ import { assetSrc, badges, coverage } from "./coverage";
 import { Lightbox } from "./Lightbox";
 import { CoverageTab, RequirementsTab } from "./specpanels";
 import { printSpecBook } from "./export";
+import { THEMES, themeOf, type ThemeId } from "./themes";
 import type { Flow, GEdge, GNode, Graph } from "./types";
 
 const STEP_MS = 1700;
@@ -74,7 +75,12 @@ function Viewer({ initial }: { initial: Graph }) {
   const [draft, setDraft] = useState<{ at: string; graph: Graph } | null>(() =>
     store(() => JSON.parse(localStorage.getItem(draftKey) ?? "null"), null));
 
-  const [theme, setTheme] = useState<"dark" | "light">(() => store(() => (localStorage.getItem("flowmap-theme") as "dark" | "light") || "dark", "dark"));
+  // A theme baked into the file (build.py --theme, or an exported HTML) wins; else the viewer's last choice.
+  const [theme, setTheme] = useState<ThemeId>(() =>
+    themeOf(initial.view?.theme ?? store(() => localStorage.getItem("flowmap-theme"), null) ?? "dark").id);
+  const [expTheme, setExpTheme] = useState<ThemeId | "screen">("screen");
+  const [expTransparent, setExpTransparent] = useState(false);
+  const exportTheme = (): ThemeId => (expTheme === "screen" ? theme : expTheme);
   const [editMode, setEditMode] = useState(false);
   const [tab, setTab] = useState<"flows" | "view" | "reqs" | "coverage">("flows");
   const [reqFocus, setReqFocus] = useState<string | null>(null);
@@ -119,6 +125,7 @@ function Viewer({ initial }: { initial: Graph }) {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.tone = themeOf(theme).tone;
     store(() => localStorage.setItem("flowmap-theme", theme), undefined);
   }, [theme]);
 
@@ -367,7 +374,7 @@ function Viewer({ initial }: { initial: Graph }) {
     say(`Downloaded ${fileBase}.json. Put it in .flowmap/ and run /flowmap-update.`);
   };
   const saveHTML = () => {
-    const html = buildHTML(graph);
+    const html = buildHTML({ ...graph, view: { ...graph.view, theme } });
     if (!html) {
       say("HTML export needs the built file (not the dev server).");
       return;
@@ -393,31 +400,43 @@ function Viewer({ initial }: { initial: Graph }) {
     }));
     return { nodes, edges };
   };
-  const exportImage = async (kind: "svg" | "png") => {
+  const exportImage = async (kind: "svg" | "png" | "copy") => {
     const st = renderState(flow);
     const title = `${graph.project.name}${flow ? ` · ${flow.name}` : ""}`;
-    const { svg, width, height } = renderSVG(st.nodes, st.edges, { payloads: opts.level === "detail", title, assets: graph.assets });
+    const { svg, width, height } = renderSVG(st.nodes, st.edges, {
+      payloads: opts.level === "detail", title: expTransparent ? undefined : title, assets: graph.assets,
+      theme: exportTheme(), transparent: expTransparent,
+    });
     const name = `${slug(graph.project.name)}${flow ? "-" + slug(flow.name) : ""}`;
     if (kind === "svg") download(`${name}.svg`, svg, "image/svg+xml");
-    else download(`${name}.png`, await svgToPng(svg, width, height, 2));
+    else if (kind === "png") download(`${name}.png`, await svgToPng(svg, width, height, 2));
+    else {
+      try {
+        const blob = await svgToPng(svg, width, height, 2);
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        say("Image copied. Paste it into Word, Google Docs, Slides or Confluence.");
+      } catch {
+        say("This browser blocked clipboard access. Use PNG instead.");
+      }
+    }
   };
   const exportPrototype = () => {
     const start = cov?.entries[0] ?? graph.nodes.find((n) => n.kind === "screen")?.id;
-    const html = buildHTML({ ...graph, view: { prototype: true, start } });
+    const html = buildHTML({ ...graph, view: { prototype: true, start, theme } });
     if (!html) return say("Prototype export needs the built file (not the dev server).");
     download(`${slug(graph.project.name)}.prototype.html`, html, "text/html");
   };
   const exportPrint = () => {
     if (isSpec && cov) {
       const all = renderState();
-      printSpecBook(graph, cov, renderSVG(all.nodes, all.edges, { payloads: false, assets: graph.assets }).svg);
+      printSpecBook(graph, cov, renderSVG(all.nodes, all.edges, { payloads: false, assets: graph.assets, theme: "paper" }).svg);
       return;
     }
     const all = renderState();
-    const overview = renderSVG(all.nodes, all.edges, { payloads: false }).svg;
+    const overview = renderSVG(all.nodes, all.edges, { payloads: false, theme: "paper" }).svg;
     const per = graph.flows.map((f) => {
       const st = renderState(f);
-      return { flow: f, svg: renderSVG(st.nodes, st.edges, { payloads: false }).svg };
+      return { flow: f, svg: renderSVG(st.nodes, st.edges, { payloads: false, theme: "paper" }).svg };
     });
     printBook(graph, overview, per);
   };
@@ -613,6 +632,17 @@ function Viewer({ initial }: { initial: Graph }) {
             { label: "Discard all edits", disabled: !dirty, onClick: () => { reset(saved); say("Edits discarded."); } },
           ]} />
           <Menu label="Export" icon="image" testid="export-menu" items={[
+            { custom: (
+              <div className="fm-export-style" data-testid="export-style">
+                <span>Style</span>
+                <select className="fm-input" value={expTheme} onChange={(e) => setExpTheme(e.target.value as ThemeId | "screen")}>
+                  <option value="screen">Same as screen ({themeOf(theme).label})</option>
+                  {THEMES.map((t) => <option key={t.id} value={t.id}>{t.label}{t.id === "paper" ? " (documents)" : ""}</option>)}
+                </select>
+                <label className="fm-check"><input type="checkbox" checked={expTransparent} onChange={(e) => setExpTransparent(e.target.checked)} /> Transparent background</label>
+              </div>
+            ) },
+            { label: "Copy as image", hint: "paste into Word / Docs / Slides", onClick: () => exportImage("copy") },
             { label: "PNG image", hint: flow ? `current view · ${flow.name}` : "current view", onClick: () => exportImage("png") },
             { label: "SVG (vector)", hint: "Figma, Inkscape, slides", onClick: () => exportImage("svg") },
             { label: "Mermaid", hint: "paste into Markdown / GitHub", onClick: () => download(`${slug(graph.project.name)}.mmd`, toMermaid(graph, flow), "text/plain") },
@@ -625,9 +655,8 @@ function Viewer({ initial }: { initial: Graph }) {
             { label: isSpec ? "Print / PDF flow book" : "Print / PDF", hint: isSpec ? "coverage + every journey with screenshots" : "overview + one page per flow", onClick: exportPrint },
           ]} />
           <button className="fm-btn" onClick={() => rf.fitView({ padding: 0.15, duration: 400 })} title="Fit to view"><Icon name="fit" size={16} /></button>
-          <button className="fm-btn" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} title="Toggle theme">
-            <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
-          </button>
+          <Menu label={themeOf(theme).label} icon="palette" testid="theme-menu" title="Theme"
+            items={THEMES.map((t) => ({ label: t.label, hint: t.hint, swatch: t.swatch, on: t.id === theme, onClick: () => setTheme(t.id) }))} />
         </div>
       </header>
 
@@ -713,7 +742,10 @@ function Viewer({ initial }: { initial: Graph }) {
           onEdgeMouseMove={(ev, e) => setHover({ e: viewEdgeById.get(e.id)!, x: ev.clientX, y: ev.clientY })}
           onEdgeMouseLeave={() => setHover(null)}
         >
-          <Background variant={BackgroundVariant.Dots} gap={22} size={1.4} color="var(--dot)" />
+          {themeOf(theme).grid !== "none" && (
+            <Background variant={themeOf(theme).grid === "lines" ? BackgroundVariant.Lines : BackgroundVariant.Dots} gap={22}
+              size={themeOf(theme).grid === "lines" ? 1 : 1.4} color="var(--dot)" />
+          )}
           <MiniMap pannable zoomable nodeColor={(n) => miniColor(n)} maskColor="var(--minimap-mask)" />
           <Controls showInteractive={false} />
         </ReactFlow>

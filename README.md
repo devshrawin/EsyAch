@@ -13,7 +13,7 @@
 **Point it at a codebase, or at a requirements doc plus screenshots.<br>
 Get an interactive, n8n-style map you can replay, click through, edit and share.**
 
-[Install](#-install) · [Code maps](#-map-any-codebase) · [SRS → prototype](#-turn-an-srs--screenshots-into-a-clickable-prototype) · [Coverage](#-catch-the-gaps-before-they-ship) · [Edit](#-fix-it-yourself) · [Export](#-take-it-anywhere) · [FAQ](#-faq)
+[Install](#-install) · [Code maps](#-map-any-codebase) · [SRS → prototype](#-turn-an-srs--screenshots-into-a-clickable-prototype) · [Coverage](#-catch-the-gaps-before-they-ship) · [Edit](#-fix-it-yourself) · [Export](#-take-it-anywhere) · [Themes](#-themes-and-dropping-maps-into-your-srs) · [FAQ](#-faq)
 
 </div>
 
@@ -26,6 +26,7 @@ Most diagram tools draw boxes and arrows. flowmap shows **what actually happens*
 - 🧭 **"What happens when a user clicks Pay?"** Watch the request travel from the button to the API, the database, Stripe, the queue, the worker and the e-mail. Every step links to the exact `file:line`.
 - 📱 **"Does the app match the spec?"** Turn an SRS and a folder of screenshots into a **clickable prototype**, and get a list of **missing screens, contradictions and dead buttons**.
 - 🪄 **"The map is slightly wrong."** Fix it in the browser, save, re-render. Your edits survive the next analysis.
+- 🎨 **Five themes**, including **Paper** for dropping maps straight into an SRS, a Word doc or slides.
 - 🔒 **Everything stays on your machine.** The output is one self-contained HTML file that makes zero network requests.
 
 <br>
@@ -121,12 +122,51 @@ Switch to **Edit** and:
 
 | Export | Best for |
 |---|---|
-| 🖼️ **PNG** · **SVG** (real vectors) | Slides, Figma, docs. Exports what you're looking at, with the selected flow highlighted. |
+| 📋 **Copy as image** | Pasting straight into Word, Google Docs, Slides or Confluence. |
+| 🖼️ **PNG** · **SVG** (real vectors) | Slides, Figma, docs. Exports what you're looking at, with the selected flow highlighted, **in any theme**, with an optional transparent background. |
 | 🧜 **Mermaid** | Pasting into GitHub / Markdown. |
 | 🌐 **Interactive HTML** | Sending the whole explorer to someone. One file, works offline. |
 | 📱 **Clickable prototype** | Stakeholders who just want to click through the screens. |
 | 📄 **PDF flow book** | Reviews and sign-off: every flow or journey, step by step, with screenshots and the highlighted control. |
 | `{ }` **JSON** | Your own tooling. |
+
+<br>
+
+## 🎨 Themes, and dropping maps into your SRS
+
+<img src="docs/media/themes.png" alt="The same map in five themes: Dark, Midnight, Light, Paper, Blueprint" width="100%">
+
+Pick a theme from the **🎨 menu** (top right). Your choice is remembered:
+
+| Theme | Use it for |
+|---|---|
+| **Dark** | The n8n canvas look, for working in. |
+| **Midnight** | Demos and screen-shares: indigo with neon accents. |
+| **Light** | Bright rooms and projectors. |
+| **Paper** | **Documents and print**: pure white, crisp black lines, blue accent. |
+| **Blueprint** | Architecture reviews: engineering blue with a line grid. |
+
+**Putting a map into an SRS, a Word doc, Confluence or slides takes three clicks:**
+
+1. Select a flow or journey if you want it highlighted.
+2. **Export → Style: Paper**, and tick **Transparent background** if the page isn't white.
+3. **Copy as image** and paste, or download **SVG** (stays sharp at any zoom) or **PNG**.
+
+You can work in Dark and export in Paper; the export style is separate from the screen theme. The
+**PDF flow book** always uses Paper. To ship a file that *opens* in a given theme:
+
+```bash
+python3 scripts/build.py .flowmap/screens.json -o srs-flows.html --theme paper
+```
+
+<details>
+<summary><b>What a Paper export looks like</b></summary>
+<br>
+
+![Screen map exported in Paper](docs/media/paper-export-spec.png)
+![Code map exported in Paper](docs/media/paper-export-code.png)
+
+</details>
 
 <br>
 
@@ -217,7 +257,7 @@ The viewer, validator and exports do. Any `architecture.json` / `screens.json` t
 ```bash
 (cd viewer && npm install && npm run build)        # after viewer changes
 tests/render_examples.sh                           # rebuild, validate, render the examples
-python3 tests/qa.py                                # full QA: 140 cases → docs/qa-results.md
+python3 tests/qa.py                                # full QA → docs/qa-results.md
 node docs/media/record.cjs                         # re-record the README animations
 ```
 

@@ -59,6 +59,7 @@ target, and never upload its code, text or images anywhere.
    `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/gaps.py OUT/screens.json --md OUT/coverage.md`
 7. **Build**
    `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/build.py OUT/screens.json -o OUT/flowmap.html`
+   (add `--theme paper` if the user wants the map for a document or print).
    Screenshots are embedded as WebP at most 1200 px wide; the build warns above 50 MB.
 8. **Report**: the HTML path, the coverage %, every requirement without a screen, every contradiction
    and missing state, inferred transitions to confirm, and the journeys.

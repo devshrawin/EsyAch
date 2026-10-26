@@ -86,6 +86,8 @@ def main():
     ap.add_argument("-o", "--out", type=Path, required=True)
     ap.add_argument("--template", type=Path, default=DEFAULT_TEMPLATE)
     ap.add_argument("--screens", type=Path, help="Mode B: screenshot folder (default: project.screens_dir next to the JSON)")
+    ap.add_argument("--theme", choices=["dark", "midnight", "light", "paper", "blueprint"],
+                    help="theme the file opens in (viewers can still switch); 'paper' suits documents and print")
     args = ap.parse_args()
     if not args.template.is_file():
         raise SystemExit(f"viewer template not found: {args.template} (run `npm run build` in viewer/)")
@@ -94,6 +96,8 @@ def main():
         sd = args.screens or (args.graph.parent / graph.get("project", {}).get("screens_dir", "screens"))
         graph = embed_images(graph, sd)
         print(f"embedded {len(graph['assets'])} screenshot(s) from {sd}")
+    if args.theme:
+        graph = {**graph, "view": {**graph.get("view", {}), "theme": args.theme}}
     html = build(graph, args.template)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(html, encoding="utf-8")

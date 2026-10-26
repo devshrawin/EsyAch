@@ -89,7 +89,8 @@ than 150 nodes open with all groups collapsed. Circles always travel with their 
 Top level: `requirements: [{id, text, priority, section, kind, ui}]`, `actors: [{id, label}]`,
 `findings: [{id, type, severity, req, screen, hotspot, text, srs_says, screen_shows, evidence}]`,
 `project.screens_dir` (screenshot folder relative to the JSON). `assets` (image name → `data:` URI) and
-`view: {prototype, start}` are written by `build.py` / the prototype export, never by hand.
+`view: {prototype, start, theme}` are written by `build.py` (`--theme dark|midnight|light|paper|blueprint`) or by the
+HTML/prototype exports, never by hand.
 
 Screen node (`kind: "screen"`):
 

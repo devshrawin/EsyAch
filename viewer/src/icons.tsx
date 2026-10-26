@@ -142,6 +142,12 @@ const P: Record<string, JSX.Element> = {
   moon: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />,
   fit: <path d="M3 7V3h4M17 3h4v4M21 17v4h-4M7 21H3v-4" />,
   x: <path d="M18 6 6 18M6 6l12 12" />,
+  palette: (
+    <>
+      <path d="M12 22a10 10 0 1 1 10-10c0 2.8-2.2 4-4 4h-2.3a2 2 0 0 0-1.5 3.3c.6.7.3 2.7-2.2 2.7Z" />
+      <circle cx="7.5" cy="10.5" r="1.2" /><circle cx="10.5" cy="6.5" r="1.2" /><circle cx="15.5" cy="7" r="1.2" />
+    </>
+  ),
   undo: <path d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />,
   redo: <path d="m15 14 5-5-5-5M20 9H9.5a5.5 5.5 0 0 0 0 11H13" />,
   download: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />,
@@ -188,20 +194,20 @@ const TECH: Record<string, [string, string]> = {
   python: ["code", "#f5c542"], node: ["code", "#8cc84b"], go: ["code", "#00add8"], java: ["code", "#f89820"],
   http: ["globe", "#5ac8a8"], fastapi: ["globe", "#5ac8a8"], express: ["globe", "#5ac8a8"],
   postgres: ["database", "#5b9bd5"], mysql: ["database", "#4f9bb8"], sqlite: ["database", "#7fb3d5"],
-  mongodb: ["database", "#58aa50"], redis: ["database", "#e5533d"], file: ["file", "#c7c9cc"], s3: ["cloud", "#e8a33d"],
+  mongodb: ["database", "#58aa50"], redis: ["database", "#e5533d"], file: ["file", "var(--icon-neutral)"], s3: ["cloud", "#e8a33d"],
   stripe: ["card", "#8b7dff"], paypal: ["card", "#2f8fdc"], smtp: ["mail", "#e8a33d"], sendgrid: ["mail", "#3aa0e8"],
-  cron: ["clock", "#e8a33d"], kafka: ["layers", "#c9c9c9"], rabbitmq: ["layers", "#ff6600"],
+  cron: ["clock", "#e8a33d"], kafka: ["layers", "var(--icon-neutral)"], rabbitmq: ["layers", "#ff6600"],
   webhook: ["webhook", "#c86dd7"], openai: ["cpu", "#b8e0d2"], anthropic: ["cpu", "#d4a27f"],
 };
 const KIND: Record<string, [string, string]> = {
-  entrypoint: ["globe", "#5ac8a8"], trigger: ["bolt", "#ff6d5a"], hub: ["cpu", "#c9ccd1"], service: ["cog", "#9aa4b2"],
-  module: ["box", "#9aa4b2"], datastore: ["database", "#5b9bd5"], external: ["cloud", "#b18cf5"], queue: ["layers", "#f0a33f"],
-  ui: ["monitor", "#61dafb"], job: ["clock", "#f0a33f"], config: ["key", "#a8a8a8"], util: ["wrench", "#a8a8a8"],
-  merge: ["merge", "#c9ccd1"], screen: ["image", "#c9ccd1"],
+  entrypoint: ["globe", "#5ac8a8"], trigger: ["bolt", "#ff6d5a"], hub: ["cpu", "var(--icon-neutral)"], service: ["cog", "var(--icon-neutral)"],
+  module: ["box", "var(--icon-neutral)"], datastore: ["database", "#5b9bd5"], external: ["cloud", "#b18cf5"], queue: ["layers", "#f0a33f"],
+  ui: ["monitor", "#61dafb"], job: ["clock", "#f0a33f"], config: ["key", "var(--icon-neutral)"], util: ["wrench", "var(--icon-neutral)"],
+  merge: ["merge", "var(--icon-neutral)"], screen: ["image", "var(--icon-neutral)"],
 };
 
 export function iconFor(n: Pick<GNode, "kind" | "tech">): { icon: string; color: string } {
   const t = n.tech ? TECH[n.tech.toLowerCase()] : undefined;
-  const [icon, color] = t ?? KIND[n.kind] ?? ["code", "#9aa4b2"];
+  const [icon, color] = t ?? KIND[n.kind] ?? ["code", "var(--icon-neutral)"];
   return { icon, color };
 }

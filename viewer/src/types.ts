@@ -118,7 +118,7 @@ export interface Graph {
   actors?: { id: string; label: string }[];
   findings?: Finding[];
   assets?: Record<string, string>; // image name -> data: URI (added by build.py)
-  view?: { prototype?: boolean; start?: string };
+  view?: { prototype?: boolean; start?: string; theme?: string };
   layers?: { id: string; label: string }[];
   groups?: { id: string; label: string; parent?: string }[];
   nodes: GNode[];

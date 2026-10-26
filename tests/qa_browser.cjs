@@ -231,12 +231,17 @@ const modeA = [
     assert(n === 11 && doc.includes("<table>"), n);
     return `${n} sections`;
   }),
-  tc("VA-19", "Viewer A", "Light theme toggle", "canvas turns light", async ({ page }) => {
-    await page.locator('button[title="Toggle theme"]').click(); await page.waitForTimeout(200);
-    const bg = await css(page, ".react-flow", "backgroundColor");
-    await page.locator('button[title="Toggle theme"]').click();
-    assert(bg === "rgb(244, 244, 246)", bg);
-    return bg;
+  tc("VA-19", "Viewer A", "Theme picker switches all five themes", "5 distinct canvas colours; Blueprint uses a line grid", async ({ page }) => {
+    const seen = {};
+    for (const t of ["Midnight", "Light", "Paper", "Blueprint", "Dark"]) {
+      await page.locator("[data-testid=theme-menu]").click();
+      await page.locator(".fm-menu-pop button", { hasText: t }).first().click();
+      await page.waitForTimeout(150);
+      seen[t] = await css(page, ".react-flow", "backgroundColor");
+    }
+    const lines = await page.evaluate(() => document.documentElement.dataset.theme);
+    assert(new Set(Object.values(seen)).size === 5 && seen.Paper === "rgb(255, 255, 255)" && lines === "dark", JSON.stringify(seen));
+    return Object.entries(seen).map(([k, v]) => `${k} ${v}`).join(", ");
   }),
   tc("VA-20", "Viewer A", "Unsaved edits survive a reload (draft restore)", "banner offers Restore; restore brings the edit back", async ({ page }) => {
     await page.locator('[data-id="hub_orders"]').click();
@@ -565,6 +570,47 @@ const misc = [
     await s.ctx.close();
     assert(first < 3000 && expand < 3000 && flow < 3000 && errs === 0 && groups === 12, `${first} ${expand} ${flow} ${groups}`);
     return `first ${first} ms (12 groups collapsed), expand ${expand} ms, flow ${flow} ms`;
+  }),
+  tc("TH-01", "Themes", "Export in Paper with a transparent background (for SRS / Word)", "PNG has alpha=0 corners; SVG has no background rect", async () => {
+    const s = await open(A);
+    await s.page.locator("[data-testid=export-menu]").click();
+    await s.page.locator("[data-testid=export-style] select").selectOption("paper");
+    await s.page.locator("[data-testid=export-style] input[type=checkbox]").check();
+    const png = fs.readFileSync(await grab(s.page, () => s.page.locator(".fm-menu-pop button", { hasText: "PNG" }).click()));
+    await s.page.locator("[data-testid=export-menu]").click();
+    const svg = fs.readFileSync(await grab(s.page, () => s.page.locator(".fm-menu-pop button", { hasText: "SVG" }).click()), "utf8");
+    const alpha = await s.page.evaluate(async (b64) => {
+      const img = new Image(); img.src = "data:image/png;base64," + b64; await img.decode();
+      const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+      const x = c.getContext("2d"); x.drawImage(img, 0, 0); return x.getImageData(2, 2, 1, 1).data[3];
+    }, png.toString("base64"));
+    await s.ctx.close();
+    assert(alpha === 0 && !svg.includes('fill="#2a2a2a"') && !svg.includes("url(#grid)") && svg.includes("#0f172a"), `alpha=${alpha}`);
+    return "transparent PNG + Paper-coloured SVG";
+  }),
+  tc("TH-02", "Themes", "Copy as image puts a PNG on the clipboard", "clipboard holds image/png", async () => {
+    const s = await open(B);
+    await s.ctx.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await s.page.locator("[data-testid=export-menu]").click();
+    await s.page.locator(".fm-menu-pop button", { hasText: "Copy as image" }).click();
+    await s.page.waitForTimeout(1500);
+    const types = await s.page.evaluate(async () => (await navigator.clipboard.read()).flatMap((i) => i.types));
+    await s.ctx.close();
+    assert(types.includes("image/png"), types);
+    return types.join(", ");
+  }),
+  tc("TH-03", "Themes", "Exported HTML / prototype reopen in the theme they were exported in", "Midnight export opens in Midnight", async () => {
+    const s = await open(A);
+    await s.page.locator("[data-testid=theme-menu]").click();
+    await s.page.locator(".fm-menu-pop button", { hasText: "Midnight" }).click();
+    const p = await grab(s.page, async () => (await menu(s.page, "export-menu", "Interactive HTML")).click());
+    await s.ctx.close();
+    const ctx = await browser.newContext(); const page = await ctx.newPage();
+    await page.goto("file://" + p); await page.waitForSelector(".react-flow__node");
+    const th = await page.evaluate(() => document.documentElement.dataset.theme);
+    await ctx.close();
+    assert(th === "midnight", th);
+    return th;
   }),
   tc("SEC-01", "Security", "HTML in labels is shown as text, never executed", "no script runs from a node label / summary", async () => {
     const html = tamper(A, (g) => {

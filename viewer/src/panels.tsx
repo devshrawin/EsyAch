@@ -638,9 +638,11 @@ export function SearchPalette({ graph, groups, onPick, onClose }: {
 
 // ------------------------------------------------------------------ dropdown menu
 
-export function Menu({ label, icon, items, testid }: {
-  label: string; icon?: string; testid?: string;
-  items: ({ label: string; hint?: string; onClick: () => void; disabled?: boolean } | "sep")[];
+type MenuItem = { label: string; hint?: string; onClick: () => void; disabled?: boolean; swatch?: string[]; on?: boolean }
+  | { custom: React.ReactNode } | "sep";
+
+export function Menu({ label, icon, items, testid, title }: {
+  label: string; icon?: string; testid?: string; title?: string; items: MenuItem[];
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -652,14 +654,15 @@ export function Menu({ label, icon, items, testid }: {
   }, [open]);
   return (
     <div className="fm-menu" ref={ref}>
-      <button className="fm-btn fm-btn-text" data-testid={testid} onClick={() => setOpen(!open)}>
+      <button className="fm-btn fm-btn-text" data-testid={testid} title={title} onClick={() => setOpen(!open)}>
         {icon && <Icon name={icon} size={15} />} {label} ▾
       </button>
       {open && (
         <div className="fm-menu-pop">
-          {items.map((it, k) => it === "sep" ? <hr key={k} /> : (
-            <button key={k} disabled={it.disabled} onClick={() => { setOpen(false); it.onClick(); }}>
-              <span>{it.label}</span>{it.hint && <small>{it.hint}</small>}
+          {items.map((it, k) => it === "sep" ? <hr key={k} /> : "custom" in it ? <div key={k} className="fm-menu-custom">{it.custom}</div> : (
+            <button key={k} disabled={it.disabled} className={it.on ? "is-on" : ""} onClick={() => { setOpen(false); it.onClick(); }}>
+              {it.swatch && <span className="fm-swatch">{it.swatch.map((c, j) => <i key={j} style={{ background: c }} />)}</span>}
+              <span className="fm-menu-label">{it.label}</span>{it.hint && <small>{it.hint}</small>}
             </button>
           ))}
         </div>

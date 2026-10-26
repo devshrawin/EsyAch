@@ -9,6 +9,7 @@ import { portX, type Placed, type Visual } from "./layout";
 import type { Coverage } from "./coverage";
 import type { Flow, GEdge, GNode, Graph } from "./types";
 import { TEMPLATE } from "./template";
+import { darken, themeOf, themeTokens, type ThemeId } from "./themes";
 
 export interface RNode {
   n: GNode; p: Placed; v: Visual; dim: boolean; inFlow: boolean; current: boolean; hasOut: boolean;
@@ -21,19 +22,30 @@ export interface REdge {
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
 
-function themeVars() {
-  const cs = getComputedStyle(document.documentElement);
-  const v = (k: string, d: string) => cs.getPropertyValue(k).trim() || d;
+function themeVars(id: ThemeId) {
+  const k = themeTokens(id);
+  const v = (key: string, d: string) => k[key] || d;
+  const th = themeOf(id);
   return {
-    bg: v("--bg", "#2a2a2a"), dot: v("--dot", "#4a4a4c"), node: v("--node-bg", "#404143"), sub: v("--sub-bg", "#2f3036"),
-    border: v("--node-border", "#c9cacf"), edge: v("--edge", "#b9babd"), active: v("--edge-active", "#fff"),
-    text: v("--text", "#ececec"), muted: v("--muted", "#9b9ea4"), accent: v("--accent", "#ff6d5a"), handle: v("--handle", "#c9cacf"),
+    bg: v("bg", "#2a2a2a"), dot: v("dot", "#4a4a4c"), node: v("node-bg", "#404143"), sub: v("sub-bg", "#2f3036"),
+    border: v("node-border", "#c9cacf"), edge: v("edge", "#b9babd"), active: v("edge-active", "#fff"),
+    text: v("text", "#ececec"), muted: v("muted", "#9b9ea4"), accent: v("accent", "#ff6d5a"), handle: v("handle", "#c9cacf"),
+    onAccent: v("on-accent", "#fff"), neutral: v("icon-neutral", "#c9ccd1"), ok: v("ok", "#4cc38a"), warn: v("warn", "#f0a33f"),
+    bad: v("bad", "#ef5b5b"), info: v("info", "#8fb8ff"), grid: th.grid, icons: th.icons,
   };
 }
+type Vars = ReturnType<typeof themeVars>;
 
-function iconMarkup(n: GNode, x: number, y: number, size: number, colorOverride?: string) {
+/** The icon colour as the chosen theme draws it (token resolved, brand colours darkened on white, white on blueprint). */
+function iconColor(color: string, t: Vars) {
+  if (t.icons === "white") return "#ffffff";
+  const c = color.startsWith("var(") ? t.neutral : color;
+  return t.icons === "darken" && !color.startsWith("var(") ? darken(c) : c;
+}
+
+function iconMarkup(n: GNode, x: number, y: number, size: number, t: Vars, colorOverride?: string) {
   const { icon, color } = iconFor(n);
-  const c = colorOverride ?? color;
+  const c = iconColor(colorOverride ?? color, t);
   const name = n.collapsedGroup ? "layers" : icon;
   return renderToStaticMarkup(createElement(Icon, { name, size }))
     .replace("<svg ", `<svg x="${x}" y="${y}" `)
@@ -53,8 +65,16 @@ function handlePoint(p: Placed, n: GNode, h: string): [number, number] {
   return [p.x + p.w / 2, p.y + p.h];
 }
 
-export function renderSVG(nodes: RNode[], edges: REdge[], opt: { payloads: boolean; title?: string; assets?: Record<string, string> }) {
-  const t = themeVars();
+export interface SvgOpts {
+  payloads: boolean;
+  title?: string;
+  assets?: Record<string, string>;
+  theme?: ThemeId; // default: the theme on screen
+  transparent?: boolean; // no background / grid (drop into documents and slides)
+}
+
+export function renderSVG(nodes: RNode[], edges: REdge[], opt: SvgOpts) {
+  const t = themeVars(opt.theme ?? themeOf(document.documentElement.dataset.theme).id);
   const byId = new Map(nodes.map((r) => [r.n.id, r]));
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const r of nodes) {
@@ -70,11 +90,12 @@ export function renderSVG(nodes: RNode[], edges: REdge[], opt: { payloads: boole
   const parts: string[] = [];
   const font = `font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"`;
   parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" ${font}>`);
-  parts.push(`<defs><pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="1.4" cy="1.4" r="1.4" fill="${t.dot}"/></pattern>`);
+  parts.push(`<defs><pattern id="grid" width="22" height="22" patternUnits="userSpaceOnUse">${t.grid === "lines"
+    ? `<path d="M22 0H0V22" fill="none" stroke="${t.dot}" stroke-width="1"/>` : `<circle cx="1.4" cy="1.4" r="1.4" fill="${t.dot}"/>`}</pattern>`);
   for (const [id, c] of [["a", t.edge], ["b", t.active], ["c", t.accent]]) {
     parts.push(`<marker id="arr-${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${c}"/></marker>`);
   }
-  parts.push(`</defs><rect width="100%" height="100%" fill="${t.bg}"/><rect width="100%" height="100%" fill="url(#dots)"/>`);
+  parts.push(`</defs>${opt.transparent ? "" : `<rect width="100%" height="100%" fill="${t.bg}"/>${t.grid === "none" ? "" : `<rect width="100%" height="100%" fill="url(#grid)"/>`}`}`);
   if (opt.title) parts.push(`<text x="${pad}" y="${pad}" font-size="18" font-weight="700" fill="${t.text}">${esc(opt.title)}</text>`);
   parts.push(`<g transform="translate(${ox},${oy})">`);
 
@@ -114,7 +135,7 @@ export function renderSVG(nodes: RNode[], edges: REdge[], opt: { payloads: boole
       parts.push(`<rect x="${lx - w / 2}" y="${ly - 8}" width="${w}" height="16" rx="8" fill="${t.bg}" opacity="${lop}"/>`);
       parts.push(`<text x="${lx}" y="${ly + 3.5}" font-size="10" text-anchor="middle" fill="${t.muted}" opacity="${lop}">${esc(txt)}</text>`);
     }
-    if (e.inferred) parts.push(`<circle cx="${lx + 4}" cy="${ly - 12}" r="7" fill="#f0a33f"/><text x="${lx + 4}" y="${ly - 8.5}" font-size="10" font-weight="700" text-anchor="middle" fill="#222">?</text>`);
+    if (e.inferred) parts.push(`<circle cx="${lx + 4}" cy="${ly - 12}" r="7" fill="${t.warn}"/><text x="${lx + 4}" y="${ly - 8.5}" font-size="10" font-weight="700" text-anchor="middle" fill="#222">?</text>`);
   }
 
   for (const r of nodes) {
@@ -139,13 +160,13 @@ export function renderSVG(nodes: RNode[], edges: REdge[], opt: { payloads: boole
       parts.push(`<rect x="${x - 2.5}" y="${y + h / 2 - 7}" width="5" height="14" rx="1" fill="${t.handle}"/><circle cx="${x + w}" cy="${y + h / 2}" r="5.5" fill="${t.handle}"/>`);
       parts.push(`<text x="${x + w / 2}" y="${y + h + 20}" font-size="13" font-weight="600" text-anchor="middle" fill="${t.text}">${esc(clip(n.label, 26))}</text>`);
       const chips = (n.requirements ?? []).slice(0, 4).map((q) => q.id).join("  ");
-      if (chips) parts.push(`<text x="${x + w / 2}" y="${y + h + 36}" font-size="10" text-anchor="middle" fill="#8fb8ff">${esc(chips)}</text>`);
+      if (chips) parts.push(`<text x="${x + w / 2}" y="${y + h + 36}" font-size="10" text-anchor="middle" fill="${t.info}">${esc(chips)}</text>`);
       if (nv) parts.push(`<circle cx="${x + w - 6}" cy="${y + 6}" r="10" fill="#5b6070"/><text x="${x + w - 6}" y="${y + 10}" font-size="10" font-weight="700" text-anchor="middle" fill="#fff">×${nv + 1}</text>`);
       if (n.entry) parts.push(`<path transform="translate(${x - 26},${y + 4}) scale(0.6667)" d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" fill="${t.accent}"/>`);
       const bd = r.badges ?? [];
       const red = bd.filter((b) => b.sev === "red").length, amber = bd.filter((b) => b.sev === "amber").length;
       let bx = x + 8;
-      for (const [cnt, col] of [[red, "#ef5b5b"], [amber, "#f0a33f"]] as [number, string][]) {
+      for (const [cnt, col] of [[red, t.bad], [amber, t.warn]] as [number, string][]) {
         if (!cnt) continue;
         parts.push(`<circle cx="${bx + 8}" cy="${y - 2}" r="9" fill="${col}"/><text x="${bx + 8}" y="${y + 2}" font-size="10" font-weight="700" text-anchor="middle" fill="#1b1b1b">${cnt}</text>`);
         bx += 22;
@@ -179,7 +200,7 @@ export function renderSVG(nodes: RNode[], edges: REdge[], opt: { payloads: boole
     }
     const deact = n.status === "deactivated" ? " (Deactivated)" : "";
     if (v === "hub") {
-      parts.push(iconMarkup(n, x + 16, y + h / 2 - 14, 28));
+      parts.push(iconMarkup(n, x + 16, y + h / 2 - 14, 28, t));
       parts.push(`<text x="${x + 56}" y="${y + h / 2 - 2}" font-size="14" font-weight="600" fill="${t.text}">${esc(n.label + deact)}</text>`);
       if (n.subtitle) parts.push(`<text x="${x + 56}" y="${y + h / 2 + 14}" font-size="11" fill="${t.muted}">${esc(clip(n.subtitle, Math.floor((w - 70) / 6)))}</text>`);
       const ports = n.ports ?? [];
@@ -190,7 +211,7 @@ export function renderSVG(nodes: RNode[], edges: REdge[], opt: { payloads: boole
       });
     } else {
       const is = v === "sub" ? 24 : v === "merge" ? 20 : 30;
-      parts.push(iconMarkup(n, x + w / 2 - is / 2, y + h / 2 - is / 2, is, v === "group" ? "#c9ccd1" : undefined));
+      parts.push(iconMarkup(n, x + w / 2 - is / 2, y + h / 2 - is / 2, is, t, v === "group" ? "var(--icon-neutral)" : undefined));
       const lw = v === "sub" ? 18 : 26;
       parts.push(`<text x="${x + w / 2}" y="${y + h + 20}" font-size="${v === "sub" ? 12 : 13}" font-weight="600" text-anchor="middle" fill="${t.text}">${esc(clip(n.label, lw))}</text>`);
       let ly = y + h + 20;
@@ -201,9 +222,9 @@ export function renderSVG(nodes: RNode[], edges: REdge[], opt: { payloads: boole
       if (n.subtitle) parts.push(`<text x="${x + w / 2}" y="${ly + 15}" font-size="11" text-anchor="middle" fill="${t.muted}">${esc(clip(n.subtitle, v === "sub" ? 17 : lw + 6))}</text>`);
     }
     if (v === "group") {
-      parts.push(`<circle cx="${x + w + 6}" cy="${y - 6}" r="10" fill="${t.accent}"/><text x="${x + w + 6}" y="${y - 2}" font-size="11" font-weight="700" text-anchor="middle" fill="#fff">${n.count}</text>`);
+      parts.push(`<circle cx="${x + w + 6}" cy="${y - 6}" r="10" fill="${t.accent}"/><text x="${x + w + 6}" y="${y - 2}" font-size="11" font-weight="700" text-anchor="middle" fill="${t.onAccent}">${n.count}</text>`);
     }
-    if (n.confirmed) parts.push(`<circle cx="${x}" cy="${y}" r="9" fill="#4cc38a"/><text x="${x}" y="${y + 4}" font-size="11" font-weight="700" text-anchor="middle" fill="#0f2a1c">✓</text>`);
+    if (n.confirmed) parts.push(`<circle cx="${x}" cy="${y}" r="9" fill="${t.ok}"/><text x="${x}" y="${y + 4}" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">✓</text>`);
     parts.push(`</g>`);
   }
   parts.push(`</g></svg>`);

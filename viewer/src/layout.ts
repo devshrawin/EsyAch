@@ -117,7 +117,7 @@ export async function layoutGraph(g: Graph): Promise<Map<string, Placed>> {
     layoutOptions: {
       "elk.algorithm": "layered",
       "elk.direction": "RIGHT",
-      "elk.layered.spacing.nodeNodeBetweenLayers": "170",
+      "elk.layered.spacing.nodeNodeBetweenLayers": g.mode === "spec" ? "110" : "170",
       "elk.spacing.nodeNode": "36",
       "elk.spacing.componentComponent": "90",
       "elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",

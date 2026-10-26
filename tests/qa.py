@@ -814,6 +814,16 @@ def _():
     return "refused"
 
 
+@case("BLD-08", "Build", "build.py --theme paper makes the file open in Paper", "view.theme = paper in the embedded graph")
+def _():
+    out = TMP / "paper.html"
+    r = run([PY, str(ROOT / "scripts/build.py"), str(ARCH), "-o", str(out), "--theme", "paper"])
+    data = out.read_text().split('<script id="flowmap-data" type="application/json">', 1)[1].split("</script>", 1)[0]
+    g = json.loads(data.replace("<\\/", "</"))
+    assert r.returncode == 0 and g["view"]["theme"] == "paper", g.get("view")
+    return "paper"
+
+
 # ====================================================================== packaging
 @case("PKG-01", "Packaging", "plugin.json is valid with name/version/description", "flowmap 0.x")
 def _():
