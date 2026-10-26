@@ -123,14 +123,14 @@ const modeA = [
   }),
   tc("VA-09", "Viewer A", "Edge hover card shows payload and evidence", "payload + file:line", async ({ page }) => {
     await page.keyboard.press("Escape");
-    const ok = await page.evaluate(() => {
-      const el = document.querySelector('[data-id="e_ui_checkout"] .react-flow__edge-interaction');
-      if (!el) return false;
-      const r = el.getBoundingClientRect();
-      return [r.x + r.width / 2, r.y + r.height / 2];
+    // hover a point that is ON the curve (the bbox centre of a curve can sit on a neighbouring edge)
+    const pt = await page.evaluate(() => {
+      const el = document.querySelector('[data-id="e_ui_checkout"] path.react-flow__edge-interaction');
+      const q = el.getPointAtLength(el.getTotalLength() * 0.7);
+      const m = el.getScreenCTM();
+      return [q.x * m.a + q.y * m.c + m.e, q.x * m.b + q.y * m.d + m.f];
     });
-    const pathEl = page.locator('[data-id="e_ui_checkout"] path.react-flow__edge-interaction');
-    await pathEl.hover({ force: true });
+    await page.mouse.move(pt[0], pt[1]);
     await page.waitForTimeout(300);
     const t = await page.locator(".fm-tip").innerText();
     assert(t.includes("{user_id, items") && t.includes("web/src/api.ts:19"), t);
@@ -495,6 +495,15 @@ const modeB = [
     const imgs = (doc.match(/<div class="shot"><img/g) || []).length;
     assert(imgs === steps && doc.includes('class="hs"') && doc.includes("FR-3") && doc.includes("Contradictions"), `${imgs}/${steps}`);
     return `${imgs}/${steps} step screenshots`;
+  }),
+  tc("VB-29", "Viewer B", "Mode B 'Download HTML with edits' keeps the embedded screenshots", "re-opened file shows 7 thumbnails", async ({ page }) => {
+    const p = await grab(page, async () => (await menu(page, "save-menu", "Download HTML")).click());
+    const re = await open(p);
+    const n = await re.page.locator(".fm-screen img.fm-thumb").count();
+    const ok = n === 7 && re.ext.length === 0 && re.errs.length === 0;
+    await re.ctx.close();
+    assert(ok, `${n} thumbnails`);
+    return `${n} thumbnails, ${(fs.statSync(p).size / 1048576).toFixed(1)} MB`;
   }),
   tc("VB-26", "Viewer B", "SVG export embeds the screenshots", "<image href=data:image/webp ...> per screen", async ({ page }) => {
     const svg = fs.readFileSync(await grab(page, async () => (await menu(page, "export-menu", "SVG")).click()), "utf8");

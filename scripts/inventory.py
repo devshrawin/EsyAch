@@ -519,6 +519,11 @@ class Inventory:
                 continue  # commented-out routes are reported as dead code instead
             kind = "webhook" if re.search(r"web-?hook|/hooks?/|callback", path, re.I) else "http_route"
             self.entrypoints.append(self.ev(rel, line_of(m.start()), kind=kind, method=method, path=path))
+        prefix = re.search(r"""@Controller\(\s*['"`]([^'"`]*)['"`]""", text)
+        for m in re.finditer(r"""@(Get|Post|Put|Patch|Delete|All)\(\s*(?:['"`]([^'"`]*)['"`])?\s*\)""", text):
+            sub = m.group(2) or ""
+            full = "/" + "/".join(x.strip("/") for x in ((prefix.group(1) if prefix else ""), sub) if x.strip("/"))
+            self.entrypoints.append(self.ev(rel, line_of(m.start()), kind="http_route", method=m.group(1).upper(), path=full, framework="nestjs"))
         for m in self.JS_FETCH.finditer(text):
             ln = line_of(m.start())
             window = "\n".join(lines[ln - 1: ln + 4])

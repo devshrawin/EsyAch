@@ -1,18 +1,22 @@
-# flowmap QA results (latest run)
+# flowmap QA results (after fixes)
 
-**84 test cases: 82 pass, 2 fail, 0 skipped.**
+**136 test cases: 134 pass, 2 fail, 0 skipped.**
 
 | Area | Pass | Fail | Skip |
 |---|---|---|---|
 | Ingest | 12 | 0 | 0 |
-| Inventory | 16 | 1 | 0 |
+| Inventory | 17 | 0 | 0 |
 | Validate | 18 | 0 | 0 |
-| SRS | 7 | 1 | 0 |
+| SRS | 8 | 0 | 0 |
 | Screens | 6 | 0 | 0 |
 | Coverage | 8 | 0 | 0 |
 | Hotspots | 1 | 0 | 0 |
 | Build | 7 | 0 | 0 |
 | Packaging | 7 | 0 | 0 |
+| Viewer A | 21 | 1 | 0 |
+| Viewer B | 25 | 1 | 0 |
+| Performance | 1 | 0 | 0 |
+| Security | 3 | 0 | 0 |
 
 ## Ingest
 
@@ -49,7 +53,7 @@
 | INV-12 | .gitignore, lockfiles, node_modules, binaries and >1 MB files skipped | only a.py, keep.log, .gitignore kept | kept ['.gitignore', 'a.py', 'keep.log'], skipped {'skipped_dir': 1, 'gitignored': 2, 'over_1mb': 1, 'binary': 1, 'lockfile': 1} | ✅ PASS |
 | INV-13 | Symlinks are not followed (no escape from the repo) | a symlink to /etc is skipped | skipped={'symlink': 2} | ✅ PASS |
 | INV-14 | A file with a syntax error does not crash the inventory | parse_error recorded, others analysed | invalid syntax (line 1) | ✅ PASS |
-| INV-15 | Express routes detected in JS | GET /health and POST /api/items | AssertionError:  (assert got == [("GET", "/health"), ("POST", "/api/items")] and any(x["reason"] == "commented-out route" for x in d["dead_code"])) | ❌ FAIL |
+| INV-15 | Express routes detected in JS | GET /health and POST /api/items | [('GET', '/health'), ('POST', '/api/items')] | ✅ PASS |
 | INV-16 | Go and Java routes via the regex fallback | Go HandleFunc + gin GET, Spring @PostMapping | ['/orders', '/ping', '/users'] | ✅ PASS |
 | INV-17 | Files containing NUL bytes are treated as binary | skipped as binary | {'binary': 1} | ✅ PASS |
 
@@ -73,7 +77,7 @@
 | VAL-14 | An action step that changes screen is rejected | error 'must stay' | flow[4] j_admin step 3: an action step without an edge must stay on the previous step's node | ✅ PASS |
 | VAL-15 | Requirement not present in the SRS extraction is caught (--spec) | error 'not in the SRS' | requirement FR-77: not in the SRS extraction (spec.json) | ✅ PASS |
 | VAL-16 | Duplicate node ids are caught | error 'duplicate id' | node[20] ui_storefront: duplicate id | ✅ PASS |
-| VAL-17 | Malformed JSON exits 1 with a message (no traceback) | ERROR cannot read | ERROR cannot read /tmp/flowmap-qa-5mylshm5/bad.json: Expecting property name enc | ✅ PASS |
+| VAL-17 | Malformed JSON exits 1 with a message (no traceback) | ERROR cannot read | ERROR cannot read /tmp/flowmap-qa-k8g4p8wl/bad.json: Expecting property name enc | ✅ PASS |
 | VAL-18 | Requirement mapping without a reason is caught | error 'needs a reason' | screen s_signin: requirement FR-1 needs a 'reason' (why this screen satisfies it) | ✅ PASS |
 
 ## SRS
@@ -85,7 +89,7 @@
 | SRS-03 | PDF SRS gives the same IDs, priorities and UI flags as Markdown | identical | 19/19 identical | ✅ PASS |
 | SRS-04 | Plain-text SRS (numbered headings, no Markdown) | 19 requirements, sections detected | 19 reqs, 7 sections | ✅ PASS |
 | SRS-05 | Non-UI requirements flagged | FR-12, NFR-1, NFR-2 ui=false | ['FR-12', 'NFR-1', 'NFR-2'] | ✅ PASS |
-| SRS-06 | Real-looking e-mail / phone flagged; example.com ignored | 2 PII hits, masked | AssertionError: [{'kind': 'email', 'value': 'ma…p.io', 'loc': 'line 2'}] (assert kinds == ["email", "phone"] and all("…" in x["value"] for x in d["pii"]), d["pii"]) | ❌ FAIL |
+| SRS-06 | Real-looking e-mail / phone flagged; example.com ignored | 2 PII hits, masked | [{'kind': 'email', 'value': 'ma…p.io', 'loc': 'line 2'}, {'kind': 'phone', 'value': '+4…0123', 'loc': 'line 2'}] | ✅ PASS |
 | SRS-07 | Dotted IDs like REQ-3.2 and US-4 extracted | REQ-3.2, US-4 | ['REQ-3.2', 'US-4'] | ✅ PASS |
 | SRS-08 | Unsupported SRS format refused | SystemExit | unsupported SRS format: .rtf (PDF, DOCX, MD or TXT) | ✅ PASS |
 
@@ -128,7 +132,7 @@
 | BLD-03 | Mode B screenshots embedded as WebP, max 1200 px wide | 8 data:image/webp assets, width <= 1200 | 8 images, widths [1200] | ✅ PASS |
 | BLD-04 | Output above the size limit prints a warning | WARNING ... larger than | WARNING: output is larger than 0 MB; consider fewer/smaller screenshots | ✅ PASS |
 | BLD-05 | Missing screenshot -> warning, build still succeeds | WARNING not found; HTML written | WARNING: 1 screenshot(s) not found in /home/user/EsyAch/examples/shop-spec/screens: ['gone | ✅ PASS |
-| BLD-06 | Template without the data placeholder is refused | SystemExit | template /tmp/flowmap-qa-5mylshm5/tpl.html has no single data placeholder; rebui | ✅ PASS |
+| BLD-06 | Template without the data placeholder is refused | SystemExit | template /tmp/flowmap-qa-k8g4p8wl/tpl.html has no single data placeholder; rebui | ✅ PASS |
 | BLD-07 | Mode B images cannot be read from outside the screens folder | ../ path not embedded | refused | ✅ PASS |
 
 ## Packaging
@@ -142,3 +146,75 @@
 | PKG-05 | Prebuilt viewer is newer than every viewer source file | dist mtime >= src mtimes | up to date | ✅ PASS |
 | PKG-06 | Scripts import only the stdlib (Pillow/pypdf optional, guarded) | no other third-party imports | stdlib + optional PIL/pypdf | ✅ PASS |
 | PKG-07 | README documents install, both modes, editing and exports | all keywords present | ok | ✅ PASS |
+
+## Viewer A
+
+| ID | Test case | Expected | Actual | Result |
+|---|---|---|---|---|
+| VA-01 | Opens offline: no network requests, no console errors | 0 requests, 0 errors | 20 nodes rendered | ✅ PASS |
+| VA-02 | n8n look: charcoal canvas background | rgb(42, 42, 42) | rgb(42, 42, 42) | ✅ PASS |
+| VA-03 | n8n look: dot grid | background pattern of dots | dot pattern present | ✅ PASS |
+| VA-04 | n8n look: labels sit under the node box | label top >= box bottom for every square node | 12 nodes checked | ✅ PASS |
+| VA-05 | n8n look: circles under hubs, joined by dashed lines | every circle below its hub; dashed dependency strokes | 5 circles under hubs, dasharray 5px, 5px | ✅ PASS |
+| VA-06 | n8n look: red trigger bolts on entry points | bolt fill = accent red on every trigger | 8 bolts, rgb(255, 109, 90) | ✅ PASS |
+| VA-07 | At least 3 replayable flows: select, step, play | 11 flows; caption advances; play reaches the end | 11 flows, caption 2/10 -> 10/10, animated dot 1 | ✅ PASS |
+| VA-08 | Node drawer shows summary, evidence, edges, flows | drawer lists file:line and flows | evidence + flows listed | ✅ PASS |
+| VA-09 | Edge hover card shows payload and evidence | payload + file:line | Storefront → Order status | ❌ FAIL |
+| VA-10 | Ctrl+K search finds a node by symbol name | typing 'create_order' opens Order Service | Order Service | ✅ PASS |
+| VA-11 | Detail levels and kind filter change what is drawn | Overview < Detail nodes; hiding datastores removes them | detail 20, overview 15, without datastores 17 | ✅ PASS |
+| VA-12 | Groups collapse into a stacked card and expand on click | 4 group cards; click expands one | 4 -> 3 | ✅ PASS |
+| VA-13 | Edit a label, undo, redo | label changes; Ctrl+Z restores; Ctrl+Shift+Z re-applies | edit / undo / redo ok | ✅ PASS |
+| VA-14 | Connect two nodes by dragging handles; drag a node | edge count +1; node keeps the dragged position | edges 23 -> 24, node moved 87 px | ✅ PASS |
+| VA-15 | Save JSON contains the edits (edited flag, reviewer evidence, pos) | label, new edge, pos saved; no view-only fields | architecture.json | ✅ PASS |
+| VA-16 | Download HTML with edits re-opens offline with the edits | edited label visible, 0 requests | shop-demo.flowmap.html | ✅ PASS |
+| VA-17 | Exports: PNG, vector SVG, Mermaid, JSON | valid files | PNG 893 KB, SVG 27 KB, Mermaid 68 lines | ✅ PASS |
+| VA-18 | Print / PDF book: overview + one section per flow | 11 flow sections with tables | 11 sections | ✅ PASS |
+| VA-19 | Light theme toggle | canvas turns light | rgb(244, 244, 246) | ✅ PASS |
+| VA-20 | Unsaved edits survive a reload (draft restore) | banner offers Restore; restore brings the edit back | restored | ✅ PASS |
+| VA-21 | Deactivated route shown dimmed with '(Deactivated)' | label suffix + reduced opacity | opacity 0.45 | ✅ PASS |
+| VA-22 | Minimap and controls rendered; fit view keeps all nodes on screen | minimap present; all nodes in viewport | all nodes visible | ✅ PASS |
+
+## Viewer B
+
+| ID | Test case | Expected | Actual | Result |
+|---|---|---|---|---|
+| VB-01 | Mode B opens offline with no errors | 0 requests, 0 errors | 7 screen cards | ✅ PASS |
+| VB-02 | Screen cards show the embedded screenshot thumbnail | 7 <img> with data:image/webp | 7 thumbnails decoded | ✅ PASS |
+| VB-03 | Variants: stacked card with ×2 badge on Sign in | ×2 on s_signin only | ×2 | ✅ PASS |
+| VB-04 | Gap badges: red + amber on Sign in, amber on Checkout | s_signin 1 red 1 amber; s_checkout 1 amber | badges ok | ✅ PASS |
+| VB-05 | At least 2 journeys, per actor | 5 journeys; actors Customer and Admin | 5 journeys (1 for Admin) | ✅ PASS |
+| VB-06 | Clicking hotspots navigates between screens; breadcrumb + Back | Cart -> Checkout -> Order confirmed; Back returns | Cart › Checkout › Order confirmed, back -> Checkout (chooser shown: true) | ✅ PASS |
+| VB-07 | One control, several destinations: chooser (Sign in by role) | 3 options; picking Admin opens Order Management | 3 options | ✅ PASS |
+| VB-08 | Dead control explains the gap; in-place control explains itself | 'leads nowhere' / 'stays on this screen' | "Forgot password?" leads nowhere in these screenshots (coverage gap). / "Admin" stays on this screen: selects the Admin role. | ✅ PASS |
+| VB-09 | Hotspot rectangles sit exactly on the screenshot controls | Sign in hotspot within 2 px of its 0-1 box | offset 0.0 px, width error 0.0 px | ✅ PASS |
+| VB-10 | Variant switch shows the error state image and its hotspots | Error tab -> 02-sign-in-error.png | 02-sign-in-error.png | ✅ PASS |
+| VB-11 | Journey walkthrough: pulsing hotspot, clicking it advances | step 1 pulses 'Sign in'; click -> step 2 Products | pulse=sign_in, now step 2 on Products | ✅ PASS |
+| VB-12 | Walkthrough Play auto-advances with requirement text | reaches Order status with FR-13 shown | step 6/6, FR-13 shown | ✅ PASS |
+| VB-13 | Requirements panel: picking FR-8 lights up the Cart screen and dims the rest | Cart in-flow, others dimmed | Cart highlighted, Order Management dimmed | ✅ PASS |
+| VB-14 | Reverse lookup: requirement chip in a screen focuses that requirement | clicking FR-13 in Order status focuses FR-13 | FR-13 | ✅ PASS |
+| VB-15 | Coverage panel catches the planted gap and contradiction | FR-3 under 'no screen'; FR-2 contradiction | 15/16 covered; FR-3 gap; FR-2 contradiction | ✅ PASS |
+| VB-16 | Actor filter Admin shows only the Admin's screens | Sign in + Order Management | s_admin, s_signin | ✅ PASS |
+| VB-17 | Inferred transition drawn dashed with a '?' badge | e_products_status dashed + ? | react-flow__edge-path fm-edge is-inferred in-flow, 1 '?' badges | ✅ PASS |
+| VB-18 | Self-loop transitions drawn (sign-in error, card declined) | 2 loop edges rendered | 2 loops | ✅ PASS |
+| VB-19 | Global navigation hidden by default, toggle shows it | edge count rises when enabled | 13 -> 25 edges | ✅ PASS |
+| VB-20 | Search finds a requirement | 'FR-13' focuses it in the Requirements tab | FR-13 | ✅ PASS |
+| VB-21 | Edit mode: draw a hotspot, link it, coverage updates live | new hotspot + edge; dead-control count drops after linking 'Forgot password?' | hotspots 5 -> 6, linked; Sign in amber badge cleared | ✅ PASS |
+| VB-22 | Edit mode: move a hotspot by dragging; delete a hotspot removes its links | box changes; edge removed | moved 60 px; edges 32 -> 31 | ✅ PASS |
+| VB-23 | Saved screens.json carries hotspot edits | new hotspot + user-evidence edge present | edits saved; embedded images not duplicated into the JSON | ✅ PASS |
+| VB-24 | Exported clickable prototype opens straight into the screens and navigates | prototype bar; hotspot click navigates; offline | page.waitForSelector: Timeout 20000ms exceeded. | ❌ FAIL |
+| VB-25 | Flow book: coverage + every journey step with its screenshot and highlighted hotspot | img per step; hotspot boxes; FR text | 23/23 step screenshots | ✅ PASS |
+| VB-26 | SVG export embeds the screenshots | <image href=data:image/webp ...> per screen | 7 images | ✅ PASS |
+
+## Performance
+
+| ID | Test case | Expected | Actual | Result |
+|---|---|---|---|---|
+| PRF-01 | 600+ node graph: first render, expand all, select flow | each under 3 s; no errors | first 1711 ms (12 groups collapsed), expand 1307 ms, flow 1001 ms | ✅ PASS |
+
+## Security
+
+| ID | Test case | Expected | Actual | Result |
+|---|---|---|---|---|
+| SEC-01 | HTML in labels is shown as text, never executed | no script runs from a node label / summary | rendered as text | ✅ PASS |
+| SEC-02 | Screens can only use embedded images; a URL in assets is ignored | no request to the URL; card shows placeholder | no network request | ✅ PASS |
+| SEC-03 | Exports escape user text (SVG, Mermaid, print book) | no raw <script> / quotes break out | SVG, Mermaid and book escaped | ✅ PASS |

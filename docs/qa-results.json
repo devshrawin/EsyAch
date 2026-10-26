@@ -17,7 +17,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "14 entry points, 37 calls (identical)",
-  "ms": 38
+  "ms": 37
  },
  {
   "id": "ING-03",
@@ -27,7 +27,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "cloned, depth=1, 1 file(s)",
-  "ms": 802
+  "ms": 907
  },
  {
   "id": "ING-04",
@@ -37,7 +37,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "https://github.com/octocat/Spoon-Knife.git",
-  "ms": 675
+  "ms": 738
  },
  {
   "id": "ING-05",
@@ -67,7 +67,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "rejected: suspicious compression ratio for 'a.txt'",
-  "ms": 267
+  "ms": 281
  },
  {
   "id": "ING-08",
@@ -87,7 +87,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "both refused",
-  "ms": 93
+  "ms": 113
  },
  {
   "id": "ING-10",
@@ -97,7 +97,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "marker absent",
-  "ms": 41
+  "ms": 45
  },
  {
   "id": "ING-11",
@@ -107,7 +107,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "target not found and not a recognised git URL: /nope/does-not-exist",
-  "ms": 44
+  "ms": 64
  },
  {
   "id": "ING-12",
@@ -127,7 +127,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "POST /api/users, POST /api/login, GET /api/products, POST /api/orders, GET /api/orders/{order_id}, POST /api/webhooks/stripe, POST /api/orders/{order_id}/refund",
-  "ms": 15
+  "ms": 14
  },
  {
   "id": "INV-02",
@@ -237,7 +237,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "kept ['.gitignore', 'a.py', 'keep.log'], skipped {'skipped_dir': 1, 'gitignored': 2, 'over_1mb': 1, 'binary': 1, 'lockfile': 1}",
-  "ms": 3
+  "ms": 4
  },
  {
   "id": "INV-13",
@@ -265,9 +265,9 @@
   "title": "Express routes detected in JS",
   "expected": "GET /health and POST /api/items",
   "steps": "",
-  "status": "FAIL",
-  "actual": "AssertionError:  (assert got == [(\"GET\", \"/health\"), (\"POST\", \"/api/items\")] and any(x[\"reason\"] == \"commented-out route\" for x in d[\"dead_code\"]))",
-  "ms": 2
+  "status": "PASS",
+  "actual": "[('GET', '/health'), ('POST', '/api/items')]",
+  "ms": 0
  },
  {
   "id": "INV-16",
@@ -277,7 +277,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "['/orders', '/ping', '/users']",
-  "ms": 0
+  "ms": 1
  },
  {
   "id": "INV-17",
@@ -297,7 +297,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "OK: 20 nodes, 23 edges, 11 flows",
-  "ms": 1
+  "ms": 2
  },
  {
   "id": "VAL-02",
@@ -317,7 +317,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "flow[0] checkout step 3: edge e_ui_signup goes to 'ep_signup', not 'hub_orders'",
-  "ms": 2
+  "ms": 1
  },
  {
   "id": "VAL-04",
@@ -327,7 +327,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "node[0] ui_storefront: evidence web/src/api.ts:9999 beyond end of file (32 lines)",
-  "ms": 2
+  "ms": 5
  },
  {
   "id": "VAL-05",
@@ -337,7 +337,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "node[0] ui_storefront: evidence file not found: nope.py",
-  "ms": 2
+  "ms": 1
  },
  {
   "id": "VAL-06",
@@ -347,7 +347,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "edge[0] e_ui_signup: inferred edges cannot be high confidence",
-  "ms": 1
+  "ms": 2
  },
  {
   "id": "VAL-07",
@@ -357,7 +357,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "node lonely: orphan (no edges)",
-  "ms": 2
+  "ms": 1
  },
  {
   "id": "VAL-08",
@@ -387,7 +387,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "edge e_signin_products: unknown requirement 'FR-999'",
-  "ms": 0
+  "ms": 1
  },
  {
   "id": "VAL-11",
@@ -407,7 +407,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "flow j_signin_fail step 2: variant 'nope' does not exist on s_signin",
-  "ms": 1
+  "ms": 0
  },
  {
   "id": "VAL-13",
@@ -456,8 +456,8 @@
   "expected": "ERROR cannot read",
   "steps": "",
   "status": "PASS",
-  "actual": "ERROR cannot read /tmp/flowmap-qa-5mylshm5/bad.json: Expecting property name enc",
-  "ms": 37
+  "actual": "ERROR cannot read /tmp/flowmap-qa-k8g4p8wl/bad.json: Expecting property name enc",
+  "ms": 53
  },
  {
   "id": "VAL-18",
@@ -477,7 +477,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "FR-1, FR-2, FR-3, FR-4, FR-5, FR-6, FR-7, FR-8, BR-1, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, NFR-1, NFR-2",
-  "ms": 2
+  "ms": 1
  },
  {
   "id": "SRS-02",
@@ -487,7 +487,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "19/19 identical",
-  "ms": 8
+  "ms": 6
  },
  {
   "id": "SRS-03",
@@ -497,7 +497,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "19/19 identical",
-  "ms": 111
+  "ms": 107
  },
  {
   "id": "SRS-04",
@@ -525,8 +525,8 @@
   "title": "Real-looking e-mail / phone flagged; example.com ignored",
   "expected": "2 PII hits, masked",
   "steps": "",
-  "status": "FAIL",
-  "actual": "AssertionError: [{'kind': 'email', 'value': 'ma\u2026p.io', 'loc': 'line 2'}] (assert kinds == [\"email\", \"phone\"] and all(\"\u2026\" in x[\"value\"] for x in d[\"pii\"]), d[\"pii\"])",
+  "status": "PASS",
+  "actual": "[{'kind': 'email', 'value': 'ma\u2026p.io', 'loc': 'line 2'}, {'kind': 'phone', 'value': '+4\u20260123', 'loc': 'line 2'}]",
   "ms": 0
  },
  {
@@ -557,7 +557,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "8 images",
-  "ms": 364
+  "ms": 387
  },
  {
   "id": "SCR-02",
@@ -587,7 +587,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "8 images, no scripts extracted",
-  "ms": 87
+  "ms": 112
  },
  {
   "id": "SCR-05",
@@ -597,7 +597,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "unsafe archive rejected: path traversal in archive: '../../x.png'",
-  "ms": 0
+  "ms": 1
  },
  {
   "id": "SCR-06",
@@ -607,7 +607,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "bad.png -> error, ok.png processed",
-  "ms": 34
+  "ms": 52
  },
  {
   "id": "COV-01",
@@ -687,7 +687,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "- UI requirements covered by a screen: **15/16 (94 %)**",
-  "ms": 32
+  "ms": 37
  },
  {
   "id": "HS-01",
@@ -697,7 +697,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "52 hotspots, worst IoU 1.000",
-  "ms": 0
+  "ms": 1
  },
  {
   "id": "BLD-01",
@@ -707,7 +707,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "2002 KB, 0 external refs",
-  "ms": 24
+  "ms": 35
  },
  {
   "id": "BLD-02",
@@ -717,7 +717,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "data tag intact, JSON round-trips",
-  "ms": 12
+  "ms": 17
  },
  {
   "id": "BLD-03",
@@ -727,7 +727,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "8 images, widths [1200]",
-  "ms": 664
+  "ms": 711
  },
  {
   "id": "BLD-04",
@@ -737,7 +737,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "WARNING: output is larger than 0 MB; consider fewer/smaller screenshots",
-  "ms": 60
+  "ms": 61
  },
  {
   "id": "BLD-05",
@@ -747,7 +747,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "WARNING: 1 screenshot(s) not found in /home/user/EsyAch/examples/shop-spec/screens: ['gone",
-  "ms": 680
+  "ms": 821
  },
  {
   "id": "BLD-06",
@@ -756,8 +756,8 @@
   "expected": "SystemExit",
   "steps": "",
   "status": "PASS",
-  "actual": "template /tmp/flowmap-qa-5mylshm5/tpl.html has no single data placeholder; rebui",
-  "ms": 0
+  "actual": "template /tmp/flowmap-qa-k8g4p8wl/tpl.html has no single data placeholder; rebui",
+  "ms": 2
  },
  {
   "id": "BLD-07",
@@ -767,7 +767,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "refused",
-  "ms": 570
+  "ms": 680
  },
  {
   "id": "PKG-01",
@@ -838,5 +838,525 @@
   "status": "PASS",
   "actual": "ok",
   "ms": 0
+ },
+ {
+  "id": "VA-01",
+  "area": "Viewer A",
+  "title": "Opens offline: no network requests, no console errors",
+  "expected": "0 requests, 0 errors",
+  "steps": "",
+  "actual": "20 nodes rendered",
+  "status": "PASS",
+  "ms": 6
+ },
+ {
+  "id": "VA-02",
+  "area": "Viewer A",
+  "title": "n8n look: charcoal canvas background",
+  "expected": "rgb(42, 42, 42)",
+  "steps": "",
+  "actual": "rgb(42, 42, 42)",
+  "status": "PASS",
+  "ms": 12
+ },
+ {
+  "id": "VA-03",
+  "area": "Viewer A",
+  "title": "n8n look: dot grid",
+  "expected": "background pattern of dots",
+  "steps": "",
+  "actual": "dot pattern present",
+  "status": "PASS",
+  "ms": 4
+ },
+ {
+  "id": "VA-04",
+  "area": "Viewer A",
+  "title": "n8n look: labels sit under the node box",
+  "expected": "label top >= box bottom for every square node",
+  "steps": "",
+  "actual": "12 nodes checked",
+  "status": "PASS",
+  "ms": 5
+ },
+ {
+  "id": "VA-05",
+  "area": "Viewer A",
+  "title": "n8n look: circles under hubs, joined by dashed lines",
+  "expected": "every circle below its hub; dashed dependency strokes",
+  "steps": "",
+  "actual": "5 circles under hubs, dasharray 5px, 5px",
+  "status": "PASS",
+  "ms": 121
+ },
+ {
+  "id": "VA-06",
+  "area": "Viewer A",
+  "title": "n8n look: red trigger bolts on entry points",
+  "expected": "bolt fill = accent red on every trigger",
+  "steps": "",
+  "actual": "8 bolts, rgb(255, 109, 90)",
+  "status": "PASS",
+  "ms": 12
+ },
+ {
+  "id": "VA-07",
+  "area": "Viewer A",
+  "title": "At least 3 replayable flows: select, step, play",
+  "expected": "11 flows; caption advances; play reaches the end",
+  "steps": "",
+  "actual": "11 flows, caption 2/10 -> 10/10, animated dot 1",
+  "status": "PASS",
+  "ms": 16674
+ },
+ {
+  "id": "VA-08",
+  "area": "Viewer A",
+  "title": "Node drawer shows summary, evidence, edges, flows",
+  "expected": "drawer lists file:line and flows",
+  "steps": "",
+  "actual": "evidence + flows listed",
+  "status": "PASS",
+  "ms": 100
+ },
+ {
+  "id": "VA-09",
+  "area": "Viewer A",
+  "title": "Edge hover card shows payload and evidence",
+  "expected": "payload + file:line",
+  "steps": "",
+  "status": "FAIL",
+  "actual": "Storefront \u2192 Order status",
+  "ms": 1728
+ },
+ {
+  "id": "VA-10",
+  "area": "Viewer A",
+  "title": "Ctrl+K search finds a node by symbol name",
+  "expected": "typing 'create_order' opens Order Service",
+  "steps": "",
+  "actual": "Order Service",
+  "status": "PASS",
+  "ms": 595
+ },
+ {
+  "id": "VA-11",
+  "area": "Viewer A",
+  "title": "Detail levels and kind filter change what is drawn",
+  "expected": "Overview < Detail nodes; hiding datastores removes them",
+  "steps": "",
+  "actual": "detail 20, overview 15, without datastores 17",
+  "status": "PASS",
+  "ms": 3471
+ },
+ {
+  "id": "VA-12",
+  "area": "Viewer A",
+  "title": "Groups collapse into a stacked card and expand on click",
+  "expected": "4 group cards; click expands one",
+  "steps": "",
+  "actual": "4 -> 3",
+  "status": "PASS",
+  "ms": 2827
+ },
+ {
+  "id": "VA-13",
+  "area": "Viewer A",
+  "title": "Edit a label, undo, redo",
+  "expected": "label changes; Ctrl+Z restores; Ctrl+Shift+Z re-applies",
+  "steps": "",
+  "actual": "edit / undo / redo ok",
+  "status": "PASS",
+  "ms": 987
+ },
+ {
+  "id": "VA-14",
+  "area": "Viewer A",
+  "title": "Connect two nodes by dragging handles; drag a node",
+  "expected": "edge count +1; node keeps the dragged position",
+  "steps": "",
+  "actual": "edges 23 -> 24, node moved 87 px",
+  "status": "PASS",
+  "ms": 1101
+ },
+ {
+  "id": "VA-15",
+  "area": "Viewer A",
+  "title": "Save JSON contains the edits (edited flag, reviewer evidence, pos)",
+  "expected": "label, new edge, pos saved; no view-only fields",
+  "steps": "",
+  "actual": "architecture.json",
+  "status": "PASS",
+  "ms": 115
+ },
+ {
+  "id": "VA-16",
+  "area": "Viewer A",
+  "title": "Download HTML with edits re-opens offline with the edits",
+  "expected": "edited label visible, 0 requests",
+  "steps": "",
+  "actual": "shop-demo.flowmap.html",
+  "status": "PASS",
+  "ms": 1448
+ },
+ {
+  "id": "VA-17",
+  "area": "Viewer A",
+  "title": "Exports: PNG, vector SVG, Mermaid, JSON",
+  "expected": "valid files",
+  "steps": "",
+  "actual": "PNG 893 KB, SVG 27 KB, Mermaid 68 lines",
+  "status": "PASS",
+  "ms": 604
+ },
+ {
+  "id": "VA-18",
+  "area": "Viewer A",
+  "title": "Print / PDF book: overview + one section per flow",
+  "expected": "11 flow sections with tables",
+  "steps": "",
+  "actual": "11 sections",
+  "status": "PASS",
+  "ms": 701
+ },
+ {
+  "id": "VA-19",
+  "area": "Viewer A",
+  "title": "Light theme toggle",
+  "expected": "canvas turns light",
+  "steps": "",
+  "actual": "rgb(244, 244, 246)",
+  "status": "PASS",
+  "ms": 345
+ },
+ {
+  "id": "VA-20",
+  "area": "Viewer A",
+  "title": "Unsaved edits survive a reload (draft restore)",
+  "expected": "banner offers Restore; restore brings the edit back",
+  "steps": "",
+  "actual": "restored",
+  "status": "PASS",
+  "ms": 1879
+ },
+ {
+  "id": "VA-21",
+  "area": "Viewer A",
+  "title": "Deactivated route shown dimmed with '(Deactivated)'",
+  "expected": "label suffix + reduced opacity",
+  "steps": "",
+  "actual": "opacity 0.45",
+  "status": "PASS",
+  "ms": 18
+ },
+ {
+  "id": "VA-22",
+  "area": "Viewer A",
+  "title": "Minimap and controls rendered; fit view keeps all nodes on screen",
+  "expected": "minimap present; all nodes in viewport",
+  "steps": "",
+  "actual": "all nodes visible",
+  "status": "PASS",
+  "ms": 673
+ },
+ {
+  "id": "VB-01",
+  "area": "Viewer B",
+  "title": "Mode B opens offline with no errors",
+  "expected": "0 requests, 0 errors",
+  "steps": "",
+  "actual": "7 screen cards",
+  "status": "PASS",
+  "ms": 4
+ },
+ {
+  "id": "VB-02",
+  "area": "Viewer B",
+  "title": "Screen cards show the embedded screenshot thumbnail",
+  "expected": "7 <img> with data:image/webp",
+  "steps": "",
+  "actual": "7 thumbnails decoded",
+  "status": "PASS",
+  "ms": 8
+ },
+ {
+  "id": "VB-03",
+  "area": "Viewer B",
+  "title": "Variants: stacked card with \u00d72 badge on Sign in",
+  "expected": "\u00d72 on s_signin only",
+  "steps": "",
+  "actual": "\u00d72",
+  "status": "PASS",
+  "ms": 8
+ },
+ {
+  "id": "VB-04",
+  "area": "Viewer B",
+  "title": "Gap badges: red + amber on Sign in, amber on Checkout",
+  "expected": "s_signin 1 red 1 amber; s_checkout 1 amber",
+  "steps": "",
+  "actual": "badges ok",
+  "status": "PASS",
+  "ms": 6
+ },
+ {
+  "id": "VB-05",
+  "area": "Viewer B",
+  "title": "At least 2 journeys, per actor",
+  "expected": "5 journeys; actors Customer and Admin",
+  "steps": "",
+  "actual": "5 journeys (1 for Admin)",
+  "status": "PASS",
+  "ms": 81
+ },
+ {
+  "id": "VB-06",
+  "area": "Viewer B",
+  "title": "Clicking hotspots navigates between screens; breadcrumb + Back",
+  "expected": "Cart -> Checkout -> Order confirmed; Back returns",
+  "steps": "",
+  "actual": "Cart \u203a Checkout \u203a Order confirmed, back -> Checkout (chooser shown: true)",
+  "status": "PASS",
+  "ms": 1272
+ },
+ {
+  "id": "VB-07",
+  "area": "Viewer B",
+  "title": "One control, several destinations: chooser (Sign in by role)",
+  "expected": "3 options; picking Admin opens Order Management",
+  "steps": "",
+  "actual": "3 options",
+  "status": "PASS",
+  "ms": 815
+ },
+ {
+  "id": "VB-08",
+  "area": "Viewer B",
+  "title": "Dead control explains the gap; in-place control explains itself",
+  "expected": "'leads nowhere' / 'stays on this screen'",
+  "steps": "",
+  "actual": "\"Forgot password?\" leads nowhere in these screenshots (coverage gap). / \"Admin\" stays on this screen: selects the Admin role.",
+  "status": "PASS",
+  "ms": 598
+ },
+ {
+  "id": "VB-09",
+  "area": "Viewer B",
+  "title": "Hotspot rectangles sit exactly on the screenshot controls",
+  "expected": "Sign in hotspot within 2 px of its 0-1 box",
+  "steps": "",
+  "actual": "offset 0.0 px, width error 0.0 px",
+  "status": "PASS",
+  "ms": 41
+ },
+ {
+  "id": "VB-10",
+  "area": "Viewer B",
+  "title": "Variant switch shows the error state image and its hotspots",
+  "expected": "Error tab -> 02-sign-in-error.png",
+  "steps": "",
+  "actual": "02-sign-in-error.png",
+  "status": "PASS",
+  "ms": 245
+ },
+ {
+  "id": "VB-11",
+  "area": "Viewer B",
+  "title": "Journey walkthrough: pulsing hotspot, clicking it advances",
+  "expected": "step 1 pulses 'Sign in'; click -> step 2 Products",
+  "steps": "",
+  "actual": "pulse=sign_in, now step 2 on Products",
+  "status": "PASS",
+  "ms": 1076
+ },
+ {
+  "id": "VB-12",
+  "area": "Viewer B",
+  "title": "Walkthrough Play auto-advances with requirement text",
+  "expected": "reaches Order status with FR-13 shown",
+  "steps": "",
+  "actual": "step 6/6, FR-13 shown",
+  "status": "PASS",
+  "ms": 7645
+ },
+ {
+  "id": "VB-13",
+  "area": "Viewer B",
+  "title": "Requirements panel: picking FR-8 lights up the Cart screen and dims the rest",
+  "expected": "Cart in-flow, others dimmed",
+  "steps": "",
+  "actual": "Cart highlighted, Order Management dimmed",
+  "status": "PASS",
+  "ms": 399
+ },
+ {
+  "id": "VB-14",
+  "area": "Viewer B",
+  "title": "Reverse lookup: requirement chip in a screen focuses that requirement",
+  "expected": "clicking FR-13 in Order status focuses FR-13",
+  "steps": "",
+  "actual": "FR-13",
+  "status": "PASS",
+  "ms": 682
+ },
+ {
+  "id": "VB-15",
+  "area": "Viewer B",
+  "title": "Coverage panel catches the planted gap and contradiction",
+  "expected": "FR-3 under 'no screen'; FR-2 contradiction",
+  "steps": "",
+  "actual": "15/16 covered; FR-3 gap; FR-2 contradiction",
+  "status": "PASS",
+  "ms": 52
+ },
+ {
+  "id": "VB-16",
+  "area": "Viewer B",
+  "title": "Actor filter Admin shows only the Admin's screens",
+  "expected": "Sign in + Order Management",
+  "steps": "",
+  "actual": "s_admin, s_signin",
+  "status": "PASS",
+  "ms": 1927
+ },
+ {
+  "id": "VB-17",
+  "area": "Viewer B",
+  "title": "Inferred transition drawn dashed with a '?' badge",
+  "expected": "e_products_status dashed + ?",
+  "steps": "",
+  "actual": "react-flow__edge-path fm-edge is-inferred in-flow, 1 '?' badges",
+  "status": "PASS",
+  "ms": 5
+ },
+ {
+  "id": "VB-18",
+  "area": "Viewer B",
+  "title": "Self-loop transitions drawn (sign-in error, card declined)",
+  "expected": "2 loop edges rendered",
+  "steps": "",
+  "actual": "2 loops",
+  "status": "PASS",
+  "ms": 2
+ },
+ {
+  "id": "VB-19",
+  "area": "Viewer B",
+  "title": "Global navigation hidden by default, toggle shows it",
+  "expected": "edge count rises when enabled",
+  "steps": "",
+  "actual": "13 -> 25 edges",
+  "status": "PASS",
+  "ms": 875
+ },
+ {
+  "id": "VB-20",
+  "area": "Viewer B",
+  "title": "Search finds a requirement",
+  "expected": "'FR-13' focuses it in the Requirements tab",
+  "steps": "",
+  "actual": "FR-13",
+  "status": "PASS",
+  "ms": 372
+ },
+ {
+  "id": "VB-21",
+  "area": "Viewer B",
+  "title": "Edit mode: draw a hotspot, link it, coverage updates live",
+  "expected": "new hotspot + edge; dead-control count drops after linking 'Forgot password?'",
+  "steps": "",
+  "actual": "hotspots 5 -> 6, linked; Sign in amber badge cleared",
+  "status": "PASS",
+  "ms": 1751
+ },
+ {
+  "id": "VB-22",
+  "area": "Viewer B",
+  "title": "Edit mode: move a hotspot by dragging; delete a hotspot removes its links",
+  "expected": "box changes; edge removed",
+  "steps": "",
+  "actual": "moved 60 px; edges 32 -> 31",
+  "status": "PASS",
+  "ms": 976
+ },
+ {
+  "id": "VB-23",
+  "area": "Viewer B",
+  "title": "Saved screens.json carries hotspot edits",
+  "expected": "new hotspot + user-evidence edge present",
+  "steps": "",
+  "actual": "edits saved; embedded images not duplicated into the JSON",
+  "status": "PASS",
+  "ms": 107
+ },
+ {
+  "id": "VB-24",
+  "area": "Viewer B",
+  "title": "Exported clickable prototype opens straight into the screens and navigates",
+  "expected": "prototype bar; hotspot click navigates; offline",
+  "steps": "",
+  "status": "FAIL",
+  "actual": "page.waitForSelector: Timeout 20000ms exceeded.",
+  "ms": 21799
+ },
+ {
+  "id": "VB-25",
+  "area": "Viewer B",
+  "title": "Flow book: coverage + every journey step with its screenshot and highlighted hotspot",
+  "expected": "img per step; hotspot boxes; FR text",
+  "steps": "",
+  "actual": "23/23 step screenshots",
+  "status": "PASS",
+  "ms": 799
+ },
+ {
+  "id": "VB-26",
+  "area": "Viewer B",
+  "title": "SVG export embeds the screenshots",
+  "expected": "<image href=data:image/webp ...> per screen",
+  "steps": "",
+  "actual": "7 images",
+  "status": "PASS",
+  "ms": 82
+ },
+ {
+  "id": "PRF-01",
+  "area": "Performance",
+  "title": "600+ node graph: first render, expand all, select flow",
+  "expected": "each under 3 s; no errors",
+  "steps": "",
+  "actual": "first 1711 ms (12 groups collapsed), expand 1307 ms, flow 1001 ms",
+  "status": "PASS",
+  "ms": 4475
+ },
+ {
+  "id": "SEC-01",
+  "area": "Security",
+  "title": "HTML in labels is shown as text, never executed",
+  "expected": "no script runs from a node label / summary",
+  "steps": "",
+  "actual": "rendered as text",
+  "status": "PASS",
+  "ms": 1596
+ },
+ {
+  "id": "SEC-02",
+  "area": "Security",
+  "title": "Screens can only use embedded images; a URL in assets is ignored",
+  "expected": "no request to the URL; card shows placeholder",
+  "steps": "",
+  "actual": "no network request",
+  "status": "PASS",
+  "ms": 1250
+ },
+ {
+  "id": "SEC-03",
+  "area": "Security",
+  "title": "Exports escape user text (SVG, Mermaid, print book)",
+  "expected": "no raw <script> / quotes break out",
+  "steps": "",
+  "actual": "SVG, Mermaid and book escaped",
+  "status": "PASS",
+  "ms": 1998
  }
 ]

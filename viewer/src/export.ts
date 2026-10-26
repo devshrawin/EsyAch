@@ -303,18 +303,21 @@ export function slug(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "flowmap";
 }
 
-/** The graph as it should be saved (view-only fields never leak into it). */
+const VIEW_ONLY = (k: string, v: unknown) => (k === "collapsedGroup" || k === "count" || k === "aggregate" ? undefined : v);
+
+/** The graph as saved to architecture.json / screens.json: no view-only fields, no embedded images
+ * (build.py re-embeds them) and no prototype flag. */
 export function toJSON(g: Graph) {
-  // assets (embedded screenshots) and view (prototype flag) are added at build/export time, never saved.
   const { assets: _a, view: _v, ...rest } = g;
   void _a; void _v;
-  return JSON.stringify(rest, (k, v) => (k === "collapsedGroup" || k === "count" || k === "aggregate" ? undefined : v), 2) + "\n";
+  return JSON.stringify(rest, VIEW_ONLY, 2) + "\n";
 }
 
 /** A new self-contained HTML with this graph embedded, or null when running from the dev server. */
 export function buildHTML(g: Graph): string | null {
   if (!TEMPLATE) return null;
-  const json = JSON.stringify(JSON.parse(toJSON(g))).replace(/<\//g, "<\\/").replace(/<!--/g, "<\\!--");
+  // An HTML export is self-contained: it keeps the embedded screenshots and the prototype flag.
+  const json = JSON.stringify(g, VIEW_ONLY).replace(/<\//g, "<\\/").replace(/<!--/g, "<\\!--");
   const re = /(<script id="flowmap-data" type="application\/json">)([\s\S]*?)(<\/script>)/;
   if (!re.test(TEMPLATE)) return null;
   return "<!doctype html>\n" + TEMPLATE.replace(re, (_m, a, _b, c) => a + json + c);

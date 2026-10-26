@@ -39,7 +39,10 @@ function useHistory(initial: Graph) {
   const [h, setH] = useState<Hist>({ past: [], present: initial, future: [] });
   const commit = useCallback((fn: (g: Graph) => void) => {
     setH((s) => {
-      const next = structuredClone(s.present);
+      // Embedded screenshots never change: share them instead of copying megabytes per edit.
+      const { assets, ...rest } = s.present;
+      const next = structuredClone(rest) as Graph;
+      if (assets) next.assets = assets;
       fn(next);
       return { past: [...s.past.slice(-199), s.present], present: next, future: [] };
     });
@@ -121,7 +124,12 @@ function Viewer({ initial }: { initial: Graph }) {
 
   // Draft autosave: unsaved edits survive a reload of the same file.
   useEffect(() => {
-    if (dirty) store(() => localStorage.setItem(draftKey, JSON.stringify({ at: new Date().toISOString(), graph })), undefined);
+    if (dirty) {
+      const { assets: _drop, ...lean } = graph;
+      void _drop;
+      const ok = store(() => { localStorage.setItem(draftKey, JSON.stringify({ at: new Date().toISOString(), graph: lean })); return true; }, false);
+      if (!ok) console.warn("flowmap: draft autosave skipped (browser storage full or blocked)");
+    }
     else store(() => localStorage.removeItem(draftKey), undefined);
   }, [graph, dirty, draftKey]);
 
@@ -650,10 +658,10 @@ function Viewer({ initial }: { initial: Graph }) {
       </aside>
 
       <main className={`fm-canvas ${zoomClass}`}>
-        {draft && JSON.stringify(draft.graph) !== JSON.stringify(graph) && (
+        {draft && JSON.stringify(draft.graph) !== JSON.stringify({ ...graph, assets: undefined }) && (
           <div className="fm-banner">
             Unsaved edits from {new Date(draft.at).toLocaleString()} were found.
-            <button className="fm-btn fm-btn-primary fm-btn-sm" onClick={() => { commit((g) => Object.assign(g, draft.graph)); setDraft(null); setEditMode(true); }}>Restore</button>
+            <button className="fm-btn fm-btn-primary fm-btn-sm" onClick={() => { commit((g) => Object.assign(g, draft.graph, { assets: g.assets })); setDraft(null); setEditMode(true); }}>Restore</button>
             <button className="fm-btn fm-btn-sm" onClick={() => { store(() => localStorage.removeItem(draftKey), undefined); setDraft(null); }}>Discard</button>
           </div>
         )}
