@@ -22,7 +22,8 @@ export function FlowEdge(props: EdgeProps) {
   const d = props.data as EdgeData;
   const e = d.g;
   const dep = e.kind === "dependency";
-  const [path, lx, ly] = getBezierPath({
+  const loop = props.source === props.target;
+  const [path, lx, ly] = loop ? selfLoop(sourceX, sourceY, targetX, targetY) : getBezierPath({
     sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition,
     curvature: dep ? 0.35 : 0.3,
   });
@@ -37,7 +38,9 @@ export function FlowEdge(props: EdgeProps) {
   if (d.cross && !d.inFlow) pill = undefined; // long cross-hub lines: label only while replaying
   // n8n puts the port label right after the output dot; with several outputs on one handle
   // we slide it ~20% along each curve so the labels don't stack.
-  const sp = sourcePosition !== Position.Right
+  const sp = loop
+    ? { x: lx, y: ly - 4, a: "translate(-50%, -100%)" }
+    : sourcePosition !== Position.Right
     ? { x: sourceX + 8, y: sourceY + 12, a: "translate(0, -100%)" }
     : d.fanOut
       ? { ...bezierPoint(sourceX, sourceY, targetX, targetY, 0.3, 0.2), a: "translate(-50%, -100%)" }
@@ -63,7 +66,7 @@ export function FlowEdge(props: EdgeProps) {
         {d.showLabels && pill && (
           <div
             className={`fm-pill nodrag nopan ${dep ? "is-dep" : ""} ${d.dim ? "is-dim" : ""} ${d.inFlow ? "in-flow" : ""} ${d.current ? "is-current" : ""}`}
-            style={{ transform: `translate(-50%, -50%) translate(${lx}px, ${ly}px)` }}
+            style={{ transform: `translate(-50%, -50%) translate(${lx}px, ${ly + (loop ? 12 : 0)}px)` }}
           >
             {pill}
             {e.inferred && <span className="fm-q" title={e.reason ?? "inferred"}>?</span>}
@@ -77,6 +80,13 @@ export function FlowEdge(props: EdgeProps) {
       </EdgeLabelRenderer>
     </>
   );
+}
+
+/** A transition back to the same screen (e.g. an error state): a loop over the top of the node. */
+export function selfLoop(sx: number, sy: number, tx: number, ty: number): [string, number, number] {
+  const h = 150;
+  const path = `M ${sx} ${sy} C ${sx + 70} ${sy - h}, ${tx - 70} ${ty - h}, ${tx} ${ty}`;
+  return [path, (sx + tx) / 2, (sy + ty) / 2 - h * 0.75];
 }
 
 // Same control points as xyflow's getBezierPath for a Right -> Left edge.

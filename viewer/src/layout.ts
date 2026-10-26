@@ -15,12 +15,19 @@ export const G = {
   subSpacing: 112,
   merge: 40,
   groupW: 96, // collapsed group card
+  screenW: 176, // Mode B screen card (160 px thumbnail + padding)
 };
 
-export type Visual = "std" | "trigger" | "hub" | "sub" | "merge" | "group";
+export function screenH(n: GNode) {
+  const [w, h] = n.image_size ?? [1280, 800];
+  return Math.round(16 + (160 * h) / Math.max(1, w));
+}
+
+export type Visual = "std" | "trigger" | "hub" | "sub" | "merge" | "group" | "screen";
 
 export function visualOf(n: GNode): Visual {
   if (n.collapsedGroup) return "group";
+  if (n.kind === "screen") return "screen";
   if (n.hub) return "sub";
   if (n.kind === "hub") return "hub";
   if (n.kind === "trigger" || n.kind === "entrypoint") return "trigger";
@@ -71,6 +78,7 @@ export async function layoutGraph(g: Graph): Promise<Map<string, Placed>> {
     }
     if (v === "merge") return { w: G.labelW, h: G.merge + G.labelH };
     if (v === "group") return { w: G.labelW, h: G.box + G.labelH + 8 };
+    if (v === "screen") return { w: G.screenW + 60, h: screenH(n) + 74 };
     return { w: G.labelW, h: G.box + G.labelH };
   };
 
@@ -115,6 +123,9 @@ export async function layoutGraph(g: Graph): Promise<Map<string, Placed>> {
       "elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
       "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
       "elk.separateConnectedComponents": "true",
+      // Screen maps are full of back links (Continue shopping, Sign out); reverse those, not the
+      // forward path, by following the order the analysis listed the nodes in.
+      ...(g.mode === "spec" ? { "elk.layered.cycleBreaking.strategy": "MODEL_ORDER" } : {}),
     },
     children: main.map((n) => ({ id: n.id, width: size(n).w, height: size(n).h })),
     edges: elkEdges,
@@ -155,6 +166,8 @@ export async function layoutGraph(g: Graph): Promise<Map<string, Placed>> {
           out.set(c2[0].id, { x: hx + c2[1] + shift - G.subD / 2, y: y + G.hubH + G.subGapY, w: G.subD, h: G.subD });
         }
       }
+    } else if (v === "screen") {
+      out.set(n.id, { x: x + (W - G.screenW) / 2, y, w: G.screenW, h: screenH(n) });
     } else if (v === "group") {
       out.set(n.id, { x: x + (W - G.groupW) / 2, y, w: G.groupW, h: G.box });
     } else {
@@ -171,6 +184,7 @@ export function boxSize(n: GNode): { w: number; h: number } {
   if (v === "sub") return { w: G.subD, h: G.subD };
   if (v === "merge") return { w: G.merge, h: G.merge };
   if (v === "group") return { w: G.groupW, h: G.box };
+  if (v === "screen") return { w: G.screenW, h: screenH(n) };
   return { w: G.box, h: G.box };
 }
 

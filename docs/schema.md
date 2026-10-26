@@ -83,3 +83,30 @@ already visited. Fan-out from a hub is fine (hub → DB, then hub → Stripe), a
 `groups` (with `node.group`) can be collapsed into one stacked card in the viewer. Graphs with more than
 60 nodes and no `groups` are grouped automatically by top-level folder (`files[0]`). Graphs with more
 than 150 nodes open with all groups collapsed. Circles always travel with their hub.
+
+## Mode B additions (`"mode": "spec"`)
+
+Top level: `requirements: [{id, text, priority, section, kind, ui}]`, `actors: [{id, label}]`,
+`findings: [{id, type, severity, req, screen, hotspot, text, srs_says, screen_shows, evidence}]`,
+`project.screens_dir` (screenshot folder relative to the JSON). `assets` (image name → `data:` URI) and
+`view: {prototype, start}` are written by `build.py` / the prototype export, never by hand.
+
+Screen node (`kind: "screen"`):
+
+```jsonc
+{ "id": "s_signin", "label": "Sign in", "kind": "screen", "image": "01-sign-in.png", "image_size": [1280, 800],
+  "entry": true, "actors": ["customer", "admin"], "state": "filled", "purpose": "…",
+  "requirements": [{ "id": "FR-1", "confidence": "high", "reason": "E-mail and password fields with a Sign in button" }],
+  "hotspots": [{ "id": "sign_in", "label": "Sign in", "kind": "button", "box": [0.355, 0.69, 0.073, 0.055] },
+               { "id": "role_admin", "label": "Admin", "kind": "tab", "box": […], "in_place": true, "note": "selects the role" }],
+  "variants": [{ "id": "error", "label": "Invalid credentials", "image": "02-sign-in-error.png", "state": "error", "hotspots": […] }],
+  "evidence": [{ "screen": "01-sign-in.png" }] }
+```
+
+Transition edge: `{kind: "main", mechanism: "navigate", hotspot, label, condition?, reqs: [], to_variant?, global?,
+inferred?, reason?}`. A self-loop is allowed only for navigate edges. Journey step extras: `variant`, `hotspot`,
+`action: true` (in-place action, no edge, same screen).
+
+Validation (`validate.py --spec spec_text.json`): every image exists, boxes are inside 0-1, hotspot,
+variant and requirement references resolve, every mapping has a reason, and every journey step maps to
+a real edge (or is an action on the same screen).

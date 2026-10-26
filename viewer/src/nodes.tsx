@@ -15,6 +15,8 @@ export interface NodeData {
   inFlow: boolean;
   current: boolean;
   selected: boolean;
+  src?: string; // Mode B: embedded screenshot
+  badges?: { sev: "red" | "amber"; text: string }[];
   [key: string]: unknown;
 }
 
@@ -174,4 +176,37 @@ export function GroupNode({ data }: NodeProps) {
   );
 }
 
-export const nodeTypes = { std: StdNode, trigger: TriggerNode, hub: HubNode, sub: SubNode, merge: MergeNode, group: GroupNode };
+export function ScreenNode({ data }: NodeProps) {
+  const d = data as NodeData;
+  const n = d.g;
+  const reqs = n.requirements ?? [];
+  const nv = n.variants?.length ?? 0;
+  const red = d.badges?.filter((b) => b.sev === "red") ?? [];
+  const amber = d.badges?.filter((b) => b.sev === "amber") ?? [];
+  return (
+    <div className={cls("fm-node fm-screen", nv > 0 && "has-variants", stateClass(d))} style={{ width: d.w, height: d.h }}>
+      {nv > 0 && <><span className="fm-screen-layer l2" /><span className="fm-screen-layer l1" /></>}
+      <Handle type="target" position={Position.Left} id="in" className="fm-handle-in" />
+      <Handle type="target" position={Position.Top} id="top" className={hidden} />
+      {d.src ? <img className="fm-thumb" src={d.src} alt={n.label} draggable={false} /> : <div className="fm-thumb fm-thumb-missing"><Icon name="image" size={28} /></div>}
+      {n.entry && <span className="fm-entry" title="Entry screen"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg></span>}
+      {nv > 0 && <span className="fm-variants" title={`${nv + 1} states: ${[n.state, ...n.variants!.map((v) => v.state ?? v.label)].join(", ")}`}>×{nv + 1}</span>}
+      <div className="fm-gap-badges">
+        {red.length > 0 && <span className="fm-gap red" title={red.map((b) => b.text).join("\n")}>{red.length}</span>}
+        {amber.length > 0 && <span className="fm-gap amber" title={amber.map((b) => b.text).join("\n")}>{amber.length}</span>}
+      </div>
+      <Handle type="source" position={Position.Right} id="out" className="fm-handle-out" />
+      <Handle type="source" position={Position.Bottom} id="bottom" className={hidden} />
+      <Reviewed d={d} />
+      <div className="fm-label-wrap fm-screen-label">
+        <div className="fm-label">{n.label}</div>
+        <div className="fm-req-chips">
+          {reqs.slice(0, 4).map((r) => <span key={r.id} className={`fm-req-chip c-${r.confidence ?? "high"}`}>{r.id}</span>)}
+          {reqs.length > 4 && <span className="fm-req-chip">+{reqs.length - 4}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export const nodeTypes = { std: StdNode, trigger: TriggerNode, hub: HubNode, sub: SubNode, merge: MergeNode, group: GroupNode, screen: ScreenNode };

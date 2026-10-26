@@ -36,6 +36,16 @@ export interface GNode {
   pos?: { x: number; y: number }; // manual position from the editor (overrides auto layout)
   edited?: boolean;
   confirmed?: boolean;
+  // Mode B screens
+  image?: string;
+  image_size?: [number, number];
+  entry?: boolean;
+  actors?: string[];
+  state?: string;
+  purpose?: string;
+  requirements?: ReqLink[];
+  hotspots?: Hotspot[];
+  variants?: Variant[];
   // view-only (never saved): a collapsed group drawn as one node
   collapsedGroup?: string;
   count?: number;
@@ -59,6 +69,23 @@ export interface GEdge {
   edited?: boolean;
   confirmed?: boolean;
   aggregate?: string[]; // view-only: original edge ids merged into this one
+  // Mode B
+  hotspot?: string; // control on the source screen that triggers this transition
+  reqs?: string[];
+  global?: boolean; // header / sign-out style navigation available everywhere
+  to_variant?: string;
+}
+
+export interface ReqLink { id: string; confidence?: Confidence; reason?: string }
+export interface Hotspot {
+  id: string; label: string; kind: string; box: [number, number, number, number];
+  in_place?: boolean; note?: string;
+}
+export interface Variant { id: string; label?: string; image: string; state?: string; hotspots?: Hotspot[] }
+export interface Requirement { id: string; text: string; priority?: string | null; section?: string; kind?: string; ui?: boolean }
+export interface Finding {
+  id: string; type: string; severity?: string; req?: string; screen?: string; hotspot?: string; text: string;
+  srs_says?: string; screen_shows?: string; evidence?: Evidence[]; confidence?: Confidence;
 }
 
 export interface FlowStep {
@@ -67,6 +94,9 @@ export interface FlowStep {
   description: string;
   payload?: string;
   evidence?: Evidence;
+  variant?: string; // Mode B: which state of the screen this step shows
+  hotspot?: string; // Mode B: the control used on this screen (pulses in the walkthrough)
+  action?: boolean; // Mode B: in-place action, no transition
 }
 
 export interface Flow {
@@ -83,7 +113,12 @@ export interface Flow {
 export interface Graph {
   schema: "flowmap/1";
   mode: "code" | "spec";
-  project: { name: string; source?: string; summary?: string; generated_at?: string };
+  project: { name: string; source?: string; summary?: string; generated_at?: string; srs?: string; screens_dir?: string };
+  requirements?: Requirement[];
+  actors?: { id: string; label: string }[];
+  findings?: Finding[];
+  assets?: Record<string, string>; // image name -> data: URI (added by build.py)
+  view?: { prototype?: boolean; start?: string };
   layers?: { id: string; label: string }[];
   groups?: { id: string; label: string; parent?: string }[];
   nodes: GNode[];

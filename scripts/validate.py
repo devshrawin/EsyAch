@@ -84,7 +84,7 @@ class EvidenceChecker:
             r.err(f"{where}: evidence needs file+line, req, screen, section or user")
 
 
-def validate(g: dict, root: Path | None = None) -> Report:
+def validate(g: dict, root: Path | None = None, screens_dir: Path | None = None, spec: dict | None = None) -> Report:
     r = Report()
     ev = EvidenceChecker(root)
     if g.get("schema") != "flowmap/1":
@@ -146,6 +146,8 @@ def validate(g: dict, root: Path | None = None) -> Report:
                 r.err(f"{where}: '{end}' references unknown node '{e.get(end)}'")
             else:
                 degree[e[end]] += 1
+        if e.get("from") == e.get("to") and not (g.get("mode") == "spec" and e.get("mechanism") == "navigate"):
+            r.err(f"{where}: self-loop (only Mode B navigate edges may return to the same screen)")
         _enum(e.get("kind"), EDGE_KINDS, where + " kind", r)
         _enum(e.get("mechanism"), MECHANISMS, where + " mechanism", r)
         _enum(e.get("sync", "sync"), SYNC, where + " sync", r)
@@ -196,7 +198,11 @@ def validate(g: dict, root: Path | None = None) -> Report:
                 continue
             if not s.get("description"):
                 r.err(f"{sw}: missing description")
-            if j > 0:
+            if j > 0 and s.get("action") and not s.get("edge"):
+                # in-place action on the same screen (Mode B): open a menu, press Refund, ...
+                if s["node"] != steps[j - 1].get("node"):
+                    r.err(f"{sw}: an action step without an edge must stay on the previous step's node")
+            elif j > 0:
                 e = edges.get(s.get("edge"))
                 if e is None:
                     r.err(f"{sw}: edge '{s.get('edge')}' does not exist")
@@ -209,6 +215,9 @@ def validate(g: dict, root: Path | None = None) -> Report:
             elif g.get("mode") == "code":
                 r.warn(f"{sw}: no file:line evidence")
             visited.add(s["node"])
+
+    if g.get("mode") == "spec":
+        validate_spec(g, nodes, edges, r, screens_dir, spec)
 
     for n in g["nodes"]:
         if "pos" in n and not (isinstance(n["pos"], dict) and all(isinstance(n["pos"].get(k), (int, float)) for k in "xy")):
@@ -224,18 +233,119 @@ def validate(g: dict, root: Path | None = None) -> Report:
     return r
 
 
+HOTSPOT_KINDS = {"button", "link", "tab", "menu", "field", "toggle", "checkbox", "image", "other"}
+STATES = {"default", "empty", "filled", "error", "success", "modal", "loading"}
+FINDING_TYPES = {"contradiction", "missing_state", "gap", "ambiguity", "note"}
+
+
+def _box_ok(b):
+    return (isinstance(b, list) and len(b) == 4 and all(isinstance(v, (int, float)) for v in b)
+            and all(0 <= v <= 1 for v in b) and b[2] > 0 and b[3] > 0 and b[0] + b[2] <= 1.001 and b[1] + b[3] <= 1.001)
+
+
+def validate_spec(g, nodes, edges, r: Report, screens_dir: Path | None, spec: dict | None):
+    """Mode B rules: images exist, hotspot boxes inside 0-1, links and requirement IDs resolve."""
+    reqs = {x.get("id"): x for x in g.get("requirements", [])}
+    if not reqs:
+        r.err("spec mode: top-level 'requirements' is empty")
+    for i, x in enumerate(g.get("requirements", [])):
+        _req(x, ["id", "text"], f"requirement[{i}]", r)
+    if spec is not None:
+        known = {x["id"] for x in spec.get("requirements", [])}
+        for rid in reqs:
+            if rid not in known:
+                r.err(f"requirement {rid}: not in the SRS extraction (spec.json)")
+    actors = {a.get("id") for a in g.get("actors", [])}
+
+    def req_ref(rid, where):
+        if rid not in reqs:
+            r.err(f"{where}: unknown requirement '{rid}'")
+
+    def image_ok(name, where):
+        if not name:
+            r.err(f"{where}: missing image")
+        elif screens_dir is not None and not (screens_dir / name).is_file():
+            r.err(f"{where}: image not found: {screens_dir / name}")
+
+    for nid, n in nodes.items():
+        if n.get("kind") != "screen":
+            continue
+        where = f"screen {nid}"
+        image_ok(n.get("image"), where)
+        _enum(n.get("state", "default"), STATES, where + " state", r)
+        for a in n.get("actors", []):
+            if actors and a not in actors:
+                r.err(f"{where}: unknown actor '{a}'")
+        for m in n.get("requirements", []):
+            req_ref(m.get("id"), where)
+            _enum(m.get("confidence"), CONFIDENCE, f"{where} requirement {m.get('id')} confidence", r)
+            if not m.get("reason"):
+                r.err(f"{where}: requirement {m.get('id')} needs a 'reason' (why this screen satisfies it)")
+        hs_sets = [("", n.get("hotspots", []))] + [(f" variant {v.get('id')}", v.get("hotspots", [])) for v in n.get("variants", [])]
+        for v in n.get("variants", []):
+            image_ok(v.get("image"), f"{where} variant {v.get('id')}")
+            _enum(v.get("state", "default"), STATES, f"{where} variant state", r)
+        for suffix, hss in hs_sets:
+            seen = set()
+            for h in hss:
+                hw = f"{where}{suffix} hotspot {h.get('id')}"
+                if h.get("id") in seen:
+                    r.err(f"{hw}: duplicate hotspot id")
+                seen.add(h.get("id"))
+                _enum(h.get("kind"), HOTSPOT_KINDS, hw + " kind", r)
+                if not _box_ok(h.get("box")):
+                    r.err(f"{hw}: box must be [x, y, w, h] in 0-1 and inside the image, got {h.get('box')}")
+    for eid, e in edges.items():
+        src = nodes.get(e.get("from"), {})
+        for rid in e.get("reqs", []):
+            req_ref(rid, f"edge {eid}")
+        if src.get("kind") == "screen" and e.get("mechanism") == "navigate":
+            if e.get("hotspot") and e["hotspot"] not in {h.get("id") for h in src.get("hotspots", [])}:
+                r.err(f"edge {eid}: hotspot '{e['hotspot']}' does not exist on screen {src.get('id')}")
+            if e.get("to_variant") and e["to_variant"] not in {v.get("id") for v in nodes.get(e.get("to"), {}).get("variants", [])}:
+                r.err(f"edge {eid}: to_variant '{e['to_variant']}' does not exist on {e.get('to')}")
+    for f in g.get("flows", []):
+        for j, s in enumerate(f.get("steps", [])):
+            sw = f"flow {f.get('id')} step {j + 1}"
+            ev = s.get("evidence") or {}
+            if ev.get("req"):
+                req_ref(ev["req"], sw)
+            n = nodes.get(s.get("node"), {})
+            if s.get("variant") and s["variant"] not in {v.get("id") for v in n.get("variants", [])}:
+                r.err(f"{sw}: variant '{s['variant']}' does not exist on {s.get('node')}")
+            if s.get("hotspot") and s["hotspot"] not in {h.get("id") for h in n.get("hotspots", [])}:
+                r.err(f"{sw}: hotspot '{s['hotspot']}' does not exist on {s.get('node')}")
+        if f.get("actor") and actors and f["actor"].lower() not in actors and f["actor"] not in {a.get("label") for a in g.get("actors", [])}:
+            r.warn(f"flow {f.get('id')}: actor '{f['actor']}' is not in actors")
+    for k, fd in enumerate(g.get("findings", [])):
+        fw = f"finding {fd.get('id', k)}"
+        _req(fd, ["id", "type", "text"], fw, r)
+        _enum(fd.get("type"), FINDING_TYPES, fw + " type", r)
+        _enum(fd.get("severity", "med"), CONFIDENCE, fw + " severity", r)
+        if fd.get("req"):
+            req_ref(fd["req"], fw)
+        if fd.get("screen") and fd["screen"] not in nodes:
+            r.err(f"{fw}: unknown screen '{fd['screen']}'")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("graph", type=Path)
     ap.add_argument("--root", type=Path, help="source root for file:line evidence checks")
     ap.add_argument("--strict", action="store_true", help="treat warnings as errors")
+    ap.add_argument("--screens", type=Path, help="Mode B: screenshot folder (default: project.screens_dir next to the JSON)")
+    ap.add_argument("--spec", type=Path, help="Mode B: spec.json / spec_text.json to check requirement IDs against")
     args = ap.parse_args()
     try:
         g = json.loads(args.graph.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         print(f"ERROR cannot read {args.graph}: {exc}")
         sys.exit(1)
-    rep = validate(g, args.root)
+    screens = args.screens
+    if screens is None and g.get("mode") == "spec" and g.get("project", {}).get("screens_dir"):
+        screens = (args.graph.parent / g["project"]["screens_dir"]).resolve()
+    spec = json.loads(args.spec.read_text(encoding="utf-8")) if args.spec else None
+    rep = validate(g, args.root, screens, spec)
     for w in rep.warnings:
         print(f"WARN  {w}")
     for e in rep.errors:

@@ -67,7 +67,44 @@ To only re-render after edits, use `/flowmap-update`, not a new analysis.
 
 ## Mode B: SRS + screenshots → screens.json
 
-Coming in Stage 3. Until then, tell the user Mode B is not available yet.
+**SRS.** `spec_extract.py` gives headings, tables and requirement IDs (FR-, NFR-, REQ-, BR-, US-, UC-,
+SR-) with priority, section and a `ui` flag (false when the text says there is no user interface). In
+`spec.json` record actors/roles, modules (with their requirement IDs), user stories, requirements,
+business rules, validations, notifications, integrations and non-functional notes. Copy IDs and text
+exactly. Never write a requirement the SRS does not contain.
+
+**Screenshots.** View every image in `grid/` (the 10 % grid lets you read coordinates). For each screen
+record `id`, `label` (title), `purpose`, `actors`, `state` (`default empty filled error success modal
+loading`), `image`, `image_size`, `entry` (where users start), and **every** visible interactive
+element as a hotspot `{id, label, kind, box: [x, y, w, h]}` with 0-1 coordinates measured on the image.
+`kind` is one of `button link tab menu field toggle checkbox image other`. Set `in_place: true` (with a
+`note`) for controls that act without leaving the screen. Use filenames and numbering as hints, but
+trust what you see. Near-duplicates from `screens_manifest.json` (same screen, other state) become one
+screen with `variants: [{id, label, image, state, hotspots}]`. Warn the user about anything that looks
+like real personal data.
+
+**Mapping.** On each screen, `requirements: [{id, confidence, reason}]`. The reason cites what is
+visible (field names, button text, headings). Transitions are `kind: "main"`, `mechanism: "navigate"`
+edges with `hotspot` (the control on the source screen), `label` ("Click Place order"), an optional
+`condition` ("role = Admin", "card declined"), `reqs` and evidence (`{req}` / `{screen}`).
+- A transition shown by the screenshots or stated in the SRS is a normal edge.
+- A transition **neither shows** gets `inferred: true`, `confidence: "low"` or `"med"`, and a
+  `reason`. It is drawn dashed with a "?".
+- A transition to another state of the same screen is a self-loop with `to_variant`.
+- Header links and sign-out on every screen get `global: true`; they are hidden on the canvas unless a
+  journey uses them.
+- A control whose destination is unknown keeps no edge. The Coverage panel lists it.
+
+**Journeys** (`flows`) per actor: happy paths, alternate paths and error paths from the SRS. Each step
+gives `node`, `edge` (except the first), `description`, the `hotspot` used to leave that screen,
+`variant` when a step shows another state, and `evidence: {req}`. An in-place action is a step with
+`action: true`, no edge, on the same screen.
+
+**Findings** (`findings`): `contradiction` (the SRS says X, the screen shows Y; fill `srs_says` and
+`screen_shows`), `missing_state` (the SRS describes a state no screenshot shows), `ambiguity`, `note`.
+Each has `severity` and evidence. Structural gaps are computed by `gaps.py` and the viewer, not written
+by hand: requirements with no screen, screens with no requirement, dead ends, unreachable screens,
+controls that lead nowhere.
 
 ## Finish
 

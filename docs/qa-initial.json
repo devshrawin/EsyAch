@@ -1,0 +1,1362 @@
+[
+ {
+  "id": "ING-01",
+  "area": "Ingest",
+  "title": "Local path resolves to itself",
+  "expected": "kind=local, root = the folder",
+  "steps": "ingest.resolve(examples/shop-demo)",
+  "status": "PASS",
+  "actual": "kind=local",
+  "ms": 0
+ },
+ {
+  "id": "ING-02",
+  "area": "Ingest",
+  "title": "Zip input: extracted, single top folder unwrapped, same inventory as the folder",
+  "expected": "same entry points / calls as the local path",
+  "steps": "",
+  "status": "PASS",
+  "actual": "14 entry points, 37 calls (identical)",
+  "ms": 59
+ },
+ {
+  "id": "ING-03",
+  "area": "Ingest",
+  "title": "GitHub URL: shallow clone then inventory",
+  "expected": "clone succeeds, inventory runs",
+  "steps": "",
+  "status": "PASS",
+  "actual": "cloned, depth=1, 1 file(s)",
+  "ms": 1102
+ },
+ {
+  "id": "ING-04",
+  "area": "Ingest",
+  "title": "owner/repo shorthand expands to a GitHub https URL",
+  "expected": "url=https://github.com/o/r.git",
+  "steps": "",
+  "status": "PASS",
+  "actual": "https://github.com/octocat/Spoon-Knife.git",
+  "ms": 1734
+ },
+ {
+  "id": "ING-05",
+  "area": "Ingest",
+  "title": "Zip with ../ path traversal is rejected",
+  "expected": "UnsafeArchive, nothing written outside",
+  "steps": "",
+  "status": "PASS",
+  "actual": "rejected: path traversal in archive: '../escape.txt'",
+  "ms": 0
+ },
+ {
+  "id": "ING-06",
+  "area": "Ingest",
+  "title": "Zip with an absolute path is rejected",
+  "expected": "UnsafeArchive",
+  "steps": "",
+  "status": "PASS",
+  "actual": "rejected: absolute path in archive: '/tmp/abs.txt'",
+  "ms": 0
+ },
+ {
+  "id": "ING-07",
+  "area": "Ingest",
+  "title": "Zip bomb (high compression ratio) is rejected",
+  "expected": "UnsafeArchive before extraction",
+  "steps": "",
+  "status": "PASS",
+  "actual": "rejected: suspicious compression ratio for 'a.txt'",
+  "ms": 279
+ },
+ {
+  "id": "ING-08",
+  "area": "Ingest",
+  "title": "Zip containing a symlink entry is rejected",
+  "expected": "UnsafeArchive",
+  "steps": "",
+  "status": "PASS",
+  "actual": "rejected: symlink in archive: 'link'",
+  "ms": 0
+ },
+ {
+  "id": "ING-09",
+  "area": "Ingest",
+  "title": "Non-https URLs (http://, file://) are refused",
+  "expected": "SystemExit, no clone",
+  "steps": "",
+  "status": "PASS",
+  "actual": "both refused",
+  "ms": 89
+ },
+ {
+  "id": "ING-10",
+  "area": "Ingest",
+  "title": "A hostile .git/config (core.fsmonitor) in the target is never executed",
+  "expected": "inventory runs, the marker file is not created",
+  "steps": "",
+  "status": "PASS",
+  "actual": "marker absent",
+  "ms": 43
+ },
+ {
+  "id": "ING-11",
+  "area": "Ingest",
+  "title": "Missing path gives a clear error",
+  "expected": "exit != 0 with a message",
+  "steps": "",
+  "status": "PASS",
+  "actual": "target not found and not a recognised git URL: /nope/does-not-exist",
+  "ms": 59
+ },
+ {
+  "id": "ING-12",
+  "area": "Ingest",
+  "title": "Zip with too many entries is rejected",
+  "expected": "UnsafeArchive",
+  "steps": "",
+  "status": "PASS",
+  "actual": "too many entries (30 > 10)",
+  "ms": 1
+ },
+ {
+  "id": "INV-01",
+  "area": "Inventory",
+  "title": "All 7 FastAPI routes found (incl. the flag-guarded one)",
+  "expected": "7 http/webhook entry points",
+  "steps": "",
+  "status": "PASS",
+  "actual": "POST /api/users, POST /api/login, GET /api/products, POST /api/orders, GET /api/orders/{order_id}, POST /api/webhooks/stripe, POST /api/orders/{order_id}/refund",
+  "ms": 13
+ },
+ {
+  "id": "INV-02",
+  "area": "Inventory",
+  "title": "Webhook route classified as webhook",
+  "expected": "POST /api/webhooks/stripe kind=webhook",
+  "steps": "",
+  "status": "PASS",
+  "actual": "/api/webhooks/stripe",
+  "ms": 0
+ },
+ {
+  "id": "INV-03",
+  "area": "Inventory",
+  "title": "Cron job read from ops/crontab",
+  "expected": "schedule 0 2 * * * with the command",
+  "steps": "",
+  "status": "PASS",
+  "actual": "0 2 * * * cd /app && python -m jobs.nightly",
+  "ms": 0
+ },
+ {
+  "id": "INV-04",
+  "area": "Inventory",
+  "title": "Feature-flagged route marked deactivated with flag evidence",
+  "expected": "status=deactivated, default False, config.py:11",
+  "steps": "",
+  "status": "PASS",
+  "actual": "ENABLE_LEGACY_REFUNDS default=False",
+  "ms": 0
+ },
+ {
+  "id": "INV-05",
+  "area": "Inventory",
+  "title": "Commented-out route reported as dead code",
+  "expected": "DELETE /api/orders/{order_id} @ main.py:62",
+  "steps": "",
+  "status": "PASS",
+  "actual": "DELETE /api/orders/{order_id}",
+  "ms": 0
+ },
+ {
+  "id": "INV-06",
+  "area": "Inventory",
+  "title": "Code reachable only from deactivated code is flagged",
+  "expected": "legacy_refund flagged",
+  "steps": "",
+  "status": "PASS",
+  "actual": "legacy_refund",
+  "ms": 0
+ },
+ {
+  "id": "INV-07",
+  "area": "Inventory",
+  "title": "Python call graph resolves across modules",
+  "expected": "checkout -> orders.create_order",
+  "steps": "",
+  "status": "PASS",
+  "actual": "37 call edges",
+  "ms": 0
+ },
+ {
+  "id": "INV-08",
+  "area": "Inventory",
+  "title": "JS/TS cross-file calls resolved",
+  "expected": "4 page -> api.ts calls",
+  "steps": "",
+  "status": "PASS",
+  "actual": "onPay->placeOrder, OrderStatus->getOrder, Products->listProducts, onSubmit->signup",
+  "ms": 0
+ },
+ {
+  "id": "INV-09",
+  "area": "Inventory",
+  "title": "fetch() calls with HTTP method",
+  "expected": "POST /users, GET /products, POST /orders, GET /orders/{id}",
+  "steps": "",
+  "status": "PASS",
+  "actual": "[('GET', '${BASE}/orders/${id}'), ('GET', '${BASE}/products'), ('POST', '${BASE}/orders'), ('POST', '${BASE}/users')]",
+  "ms": 0
+ },
+ {
+  "id": "INV-10",
+  "area": "Inventory",
+  "title": "Env vars incl. required os.environ[...]",
+  "expected": "8 vars, STRIPE_SECRET_KEY required",
+  "steps": "",
+  "status": "PASS",
+  "actual": "DATABASE_URL, REDIS_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, SMTP_HOST, ENABLE_LEGACY_REFUNDS, REPORT_DIR, VITE_API_URL",
+  "ms": 0
+ },
+ {
+  "id": "INV-11",
+  "area": "Inventory",
+  "title": "SDKs detected; SMTP send not misread as a queue",
+  "expected": "Stripe + SMTP externals; no smtp in queues",
+  "steps": "",
+  "status": "PASS",
+  "actual": "['SMTP', 'Stripe']",
+  "ms": 0
+ },
+ {
+  "id": "INV-12",
+  "area": "Inventory",
+  "title": ".gitignore, lockfiles, node_modules, binaries and >1 MB files skipped",
+  "expected": "only a.py, keep.log, .gitignore kept",
+  "steps": "",
+  "status": "PASS",
+  "actual": "kept ['.gitignore', 'a.py', 'keep.log'], skipped {'skipped_dir': 1, 'gitignored': 2, 'over_1mb': 1, 'binary': 1, 'lockfile': 1}",
+  "ms": 3
+ },
+ {
+  "id": "INV-13",
+  "area": "Inventory",
+  "title": "Symlinks are not followed (no escape from the repo)",
+  "expected": "a symlink to /etc is skipped",
+  "steps": "",
+  "status": "PASS",
+  "actual": "skipped={'symlink': 2}",
+  "ms": 0
+ },
+ {
+  "id": "INV-14",
+  "area": "Inventory",
+  "title": "A file with a syntax error does not crash the inventory",
+  "expected": "parse_error recorded, others analysed",
+  "steps": "",
+  "status": "PASS",
+  "actual": "invalid syntax (line 1)",
+  "ms": 0
+ },
+ {
+  "id": "INV-15",
+  "area": "Inventory",
+  "title": "Express routes detected in JS",
+  "expected": "GET /health and POST /api/items",
+  "steps": "",
+  "status": "FAIL",
+  "actual": "AssertionError:  (assert got == [(\"GET\", \"/health\"), (\"POST\", \"/api/items\")] and any(x[\"reason\"] == \"commented-out route\" for x in d[\"dead_code\"]))",
+  "ms": 3
+ },
+ {
+  "id": "INV-16",
+  "area": "Inventory",
+  "title": "Go and Java routes via the regex fallback",
+  "expected": "Go HandleFunc + gin GET, Spring @PostMapping",
+  "steps": "",
+  "status": "PASS",
+  "actual": "['/orders', '/ping', '/users']",
+  "ms": 0
+ },
+ {
+  "id": "INV-17",
+  "area": "Inventory",
+  "title": "Files containing NUL bytes are treated as binary",
+  "expected": "skipped as binary",
+  "steps": "",
+  "status": "PASS",
+  "actual": "{'binary': 1}",
+  "ms": 0
+ },
+ {
+  "id": "VAL-01",
+  "area": "Validate",
+  "title": "Mode A fixture validates with evidence checked against source",
+  "expected": "OK, 0 errors, 0 warnings",
+  "steps": "",
+  "status": "PASS",
+  "actual": "OK: 20 nodes, 23 edges, 11 flows",
+  "ms": 2
+ },
+ {
+  "id": "VAL-02",
+  "area": "Validate",
+  "title": "Mode B fixture validates (images, boxes, requirement IDs vs SRS)",
+  "expected": "OK, 0 errors",
+  "steps": "",
+  "status": "PASS",
+  "actual": "OK, 0 warnings",
+  "ms": 1
+ },
+ {
+  "id": "VAL-03",
+  "area": "Validate",
+  "title": "Flow step using an edge that leads elsewhere is caught",
+  "expected": "error 'goes to'",
+  "steps": "",
+  "status": "PASS",
+  "actual": "flow[0] checkout step 3: edge e_ui_signup goes to 'ep_signup', not 'hub_orders'",
+  "ms": 1
+ },
+ {
+  "id": "VAL-04",
+  "area": "Validate",
+  "title": "Evidence line beyond end of file is caught",
+  "expected": "error 'beyond end of file'",
+  "steps": "",
+  "status": "PASS",
+  "actual": "node[0] ui_storefront: evidence web/src/api.ts:9999 beyond end of file (32 lines)",
+  "ms": 1
+ },
+ {
+  "id": "VAL-05",
+  "area": "Validate",
+  "title": "Evidence pointing at a missing file is caught",
+  "expected": "error 'evidence file not found'",
+  "steps": "",
+  "status": "PASS",
+  "actual": "node[0] ui_storefront: evidence file not found: nope.py",
+  "ms": 1
+ },
+ {
+  "id": "VAL-06",
+  "area": "Validate",
+  "title": "Inferred edge with high confidence / no reason is rejected",
+  "expected": "two errors",
+  "steps": "",
+  "status": "PASS",
+  "actual": "edge[0] e_ui_signup: inferred edges cannot be high confidence",
+  "ms": 1
+ },
+ {
+  "id": "VAL-07",
+  "area": "Validate",
+  "title": "Orphan node is caught",
+  "expected": "error 'orphan'",
+  "steps": "",
+  "status": "PASS",
+  "actual": "node lonely: orphan (no edges)",
+  "ms": 1
+ },
+ {
+  "id": "VAL-08",
+  "area": "Validate",
+  "title": "Circle attached to an undeclared hub port is caught",
+  "expected": "error 'not declared on hub'",
+  "steps": "",
+  "status": "PASS",
+  "actual": "node ds_postgres: port 'Nope' not declared on hub 'hub_orders'",
+  "ms": 1
+ },
+ {
+  "id": "VAL-09",
+  "area": "Validate",
+  "title": "Hotspot box outside 0-1 is caught",
+  "expected": "error 'box must be'",
+  "steps": "",
+  "status": "PASS",
+  "actual": "screen s_signin hotspot role_customer: box must be [x, y, w, h] in 0-1 and inside the image, got [0.9, 0.5, 0.3, 0.1]",
+  "ms": 0
+ },
+ {
+  "id": "VAL-10",
+  "area": "Validate",
+  "title": "Unknown requirement reference is caught",
+  "expected": "error 'unknown requirement'",
+  "steps": "",
+  "status": "PASS",
+  "actual": "edge e_signin_products: unknown requirement 'FR-999'",
+  "ms": 0
+ },
+ {
+  "id": "VAL-11",
+  "area": "Validate",
+  "title": "Missing screenshot file is caught",
+  "expected": "error 'image not found'",
+  "steps": "",
+  "status": "PASS",
+  "actual": "screen s_signin: image not found: /home/user/EsyAch/examples/shop-spec/screens/missing.png",
+  "ms": 0
+ },
+ {
+  "id": "VAL-12",
+  "area": "Validate",
+  "title": "Journey step with an unknown variant is caught",
+  "expected": "error 'variant'",
+  "steps": "",
+  "status": "PASS",
+  "actual": "flow j_signin_fail step 2: variant 'nope' does not exist on s_signin",
+  "ms": 0
+ },
+ {
+  "id": "VAL-13",
+  "area": "Validate",
+  "title": "Self-loop edges are rejected in Mode A",
+  "expected": "error 'self-loop'",
+  "steps": "",
+  "status": "PASS",
+  "actual": "edge[23] loop: self-loop (only Mode B navigate edges may return to the same screen)",
+  "ms": 1
+ },
+ {
+  "id": "VAL-14",
+  "area": "Validate",
+  "title": "An action step that changes screen is rejected",
+  "expected": "error 'must stay'",
+  "steps": "",
+  "status": "PASS",
+  "actual": "flow[4] j_admin step 3: an action step without an edge must stay on the previous step's node",
+  "ms": 0
+ },
+ {
+  "id": "VAL-15",
+  "area": "Validate",
+  "title": "Requirement not present in the SRS extraction is caught (--spec)",
+  "expected": "error 'not in the SRS'",
+  "steps": "",
+  "status": "PASS",
+  "actual": "requirement FR-77: not in the SRS extraction (spec.json)",
+  "ms": 0
+ },
+ {
+  "id": "VAL-16",
+  "area": "Validate",
+  "title": "Duplicate node ids are caught",
+  "expected": "error 'duplicate id'",
+  "steps": "",
+  "status": "PASS",
+  "actual": "node[20] ui_storefront: duplicate id",
+  "ms": 1
+ },
+ {
+  "id": "VAL-17",
+  "area": "Validate",
+  "title": "Malformed JSON exits 1 with a message (no traceback)",
+  "expected": "ERROR cannot read",
+  "steps": "",
+  "status": "PASS",
+  "actual": "ERROR cannot read /tmp/flowmap-qa-e0wk8wpn/bad.json: Expecting property name enc",
+  "ms": 45
+ },
+ {
+  "id": "VAL-18",
+  "area": "Validate",
+  "title": "Requirement mapping without a reason is caught",
+  "expected": "error 'needs a reason'",
+  "steps": "",
+  "status": "PASS",
+  "actual": "screen s_signin: requirement FR-1 needs a 'reason' (why this screen satisfies it)",
+  "ms": 1
+ },
+ {
+  "id": "SRS-01",
+  "area": "SRS",
+  "title": "Markdown SRS: 19 requirements with IDs, priority, section",
+  "expected": "FR-1..FR-16, BR-1, NFR-1..2",
+  "steps": "",
+  "status": "PASS",
+  "actual": "FR-1, FR-2, FR-3, FR-4, FR-5, FR-6, FR-7, FR-8, BR-1, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, NFR-1, NFR-2",
+  "ms": 2
+ },
+ {
+  "id": "SRS-02",
+  "area": "SRS",
+  "title": "DOCX SRS gives the same IDs, priorities and UI flags as Markdown",
+  "expected": "identical",
+  "steps": "",
+  "status": "PASS",
+  "actual": "19/19 identical",
+  "ms": 16
+ },
+ {
+  "id": "SRS-03",
+  "area": "SRS",
+  "title": "PDF SRS gives the same IDs, priorities and UI flags as Markdown",
+  "expected": "identical",
+  "steps": "",
+  "status": "PASS",
+  "actual": "19/19 identical",
+  "ms": 136
+ },
+ {
+  "id": "SRS-04",
+  "area": "SRS",
+  "title": "Plain-text SRS (numbered headings, no Markdown)",
+  "expected": "19 requirements, sections detected",
+  "steps": "",
+  "status": "PASS",
+  "actual": "19 reqs, 7 sections",
+  "ms": 1
+ },
+ {
+  "id": "SRS-05",
+  "area": "SRS",
+  "title": "Non-UI requirements flagged",
+  "expected": "FR-12, NFR-1, NFR-2 ui=false",
+  "steps": "",
+  "status": "PASS",
+  "actual": "['FR-12', 'NFR-1', 'NFR-2']",
+  "ms": 0
+ },
+ {
+  "id": "SRS-06",
+  "area": "SRS",
+  "title": "Real-looking e-mail / phone flagged; example.com ignored",
+  "expected": "2 PII hits, masked",
+  "steps": "",
+  "status": "FAIL",
+  "actual": "AssertionError: [{'kind': 'email', 'value': 'ma\u2026p.io', 'loc': 'line 2'}] (assert kinds == [\"email\", \"phone\"] and all(\"\u2026\" in x[\"value\"] for x in d[\"pii\"]), d[\"pii\"])",
+  "ms": 0
+ },
+ {
+  "id": "SRS-07",
+  "area": "SRS",
+  "title": "Dotted IDs like REQ-3.2 and US-4 extracted",
+  "expected": "REQ-3.2, US-4",
+  "steps": "",
+  "status": "PASS",
+  "actual": "['REQ-3.2', 'US-4']",
+  "ms": 0
+ },
+ {
+  "id": "SRS-08",
+  "area": "SRS",
+  "title": "Unsupported SRS format refused",
+  "expected": "SystemExit",
+  "steps": "",
+  "status": "PASS",
+  "actual": "unsupported SRS format: .rtf (PDF, DOCX, MD or TXT)",
+  "ms": 0
+ },
+ {
+  "id": "SCR-01",
+  "area": "Screens",
+  "title": "All 8 screenshots read with size and order",
+  "expected": "8 images 1280x800, order 1..8",
+  "steps": "",
+  "status": "PASS",
+  "actual": "8 images",
+  "ms": 536
+ },
+ {
+  "id": "SCR-02",
+  "area": "Screens",
+  "title": "Near-duplicates: exactly the sign-in / sign-in-error pair",
+  "expected": "only 01<->02",
+  "steps": "",
+  "status": "PASS",
+  "actual": "01 <-> 02 only",
+  "ms": 0
+ },
+ {
+  "id": "SCR-03",
+  "area": "Screens",
+  "title": "Gridded copies written for vision",
+  "expected": "8 grid PNGs",
+  "steps": "",
+  "status": "PASS",
+  "actual": "8 grid images",
+  "ms": 0
+ },
+ {
+  "id": "SCR-04",
+  "area": "Screens",
+  "title": "Zip of screenshots: images extracted, other files ignored",
+  "expected": "8 images, readme ignored",
+  "steps": "",
+  "status": "PASS",
+  "actual": "8 images, no scripts extracted",
+  "ms": 86
+ },
+ {
+  "id": "SCR-05",
+  "area": "Screens",
+  "title": "Screenshot zip with traversal rejected",
+  "expected": "SystemExit unsafe archive",
+  "steps": "",
+  "status": "PASS",
+  "actual": "unsafe archive rejected: path traversal in archive: '../../x.png'",
+  "ms": 0
+ },
+ {
+  "id": "SCR-06",
+  "area": "Screens",
+  "title": "Corrupt image reported, not a crash",
+  "expected": "error entry for the bad file",
+  "steps": "",
+  "status": "PASS",
+  "actual": "bad.png -> error, ok.png processed",
+  "ms": 39
+ },
+ {
+  "id": "COV-01",
+  "area": "Coverage",
+  "title": "Planted gap: FR-3 (password reset) has no screen",
+  "expected": "requirements_without_screen == [FR-3]",
+  "steps": "",
+  "status": "PASS",
+  "actual": "FR-3",
+  "ms": 0
+ },
+ {
+  "id": "COV-02",
+  "area": "Coverage",
+  "title": "Planted contradiction: FR-2 (8 vs 6 characters) reported + red badge on Sign in",
+  "expected": "contradiction F1 on s_signin",
+  "steps": "",
+  "status": "PASS",
+  "actual": "Password rule: the SRS says at least 8 characters, the sign-in screen says 'Minimum 6 characters'.",
+  "ms": 0
+ },
+ {
+  "id": "COV-03",
+  "area": "Coverage",
+  "title": "'Forgot password?' detected as a control that leads nowhere",
+  "expected": "1 dead hotspot",
+  "steps": "",
+  "status": "PASS",
+  "actual": "Forgot password?",
+  "ms": 0
+ },
+ {
+  "id": "COV-04",
+  "area": "Coverage",
+  "title": "Dead-end screen detected",
+  "expected": "s_status becomes a dead end when its exits are removed",
+  "steps": "",
+  "status": "PASS",
+  "actual": "['s_status']",
+  "ms": 0
+ },
+ {
+  "id": "COV-05",
+  "area": "Coverage",
+  "title": "Unreachable screen detected",
+  "expected": "s_admin unreachable when sign-in -> admin is removed",
+  "steps": "",
+  "status": "PASS",
+  "actual": "['s_admin']",
+  "ms": 0
+ },
+ {
+  "id": "COV-06",
+  "area": "Coverage",
+  "title": "Screen with no requirement detected",
+  "expected": "s_status flagged when its mapping is removed",
+  "steps": "",
+  "status": "PASS",
+  "actual": "s_status",
+  "ms": 0
+ },
+ {
+  "id": "COV-07",
+  "area": "Coverage",
+  "title": "Non-UI requirements excluded from the coverage denominator",
+  "expected": "15/16 covered (FR-12, NFR-1/2 excluded)",
+  "steps": "",
+  "status": "PASS",
+  "actual": "15/16",
+  "ms": 0
+ },
+ {
+  "id": "COV-08",
+  "area": "Coverage",
+  "title": "gaps.py Markdown report lists the planted gap and contradiction",
+  "expected": "FR-3 and FR-2 in report",
+  "steps": "",
+  "status": "PASS",
+  "actual": "- UI requirements covered by a screen: **15/16 (94 %)**",
+  "ms": 31
+ },
+ {
+  "id": "HS-01",
+  "area": "Hotspots",
+  "title": "Every hotspot matches the true element box (IoU >= 0.9)",
+  "expected": "all hotspots, all variants",
+  "steps": "",
+  "status": "PASS",
+  "actual": "52 hotspots, worst IoU 1.000",
+  "ms": 0
+ },
+ {
+  "id": "BLD-01",
+  "area": "Build",
+  "title": "Mode A HTML has no external script/style/image/font references",
+  "expected": "0 http(s) src/href, no @import url(http",
+  "steps": "",
+  "status": "PASS",
+  "actual": "2002 KB, 0 external refs",
+  "ms": 25
+ },
+ {
+  "id": "BLD-02",
+  "area": "Build",
+  "title": "Graph text containing </script> and <!-- cannot break out of the data tag",
+  "expected": "escaped as <\\/script> <\\!--",
+  "steps": "",
+  "status": "PASS",
+  "actual": "data tag intact, JSON round-trips",
+  "ms": 13
+ },
+ {
+  "id": "BLD-03",
+  "area": "Build",
+  "title": "Mode B screenshots embedded as WebP, max 1200 px wide",
+  "expected": "8 data:image/webp assets, width <= 1200",
+  "steps": "",
+  "status": "PASS",
+  "actual": "8 images, widths [1200]",
+  "ms": 663
+ },
+ {
+  "id": "BLD-04",
+  "area": "Build",
+  "title": "Output above the size limit prints a warning",
+  "expected": "WARNING ... larger than",
+  "steps": "",
+  "status": "PASS",
+  "actual": "WARNING: output is larger than 0 MB; consider fewer/smaller screenshots",
+  "ms": 71
+ },
+ {
+  "id": "BLD-05",
+  "area": "Build",
+  "title": "Missing screenshot -> warning, build still succeeds",
+  "expected": "WARNING not found; HTML written",
+  "steps": "",
+  "status": "PASS",
+  "actual": "WARNING: 1 screenshot(s) not found in /home/user/EsyAch/examples/shop-spec/screens: ['gone",
+  "ms": 755
+ },
+ {
+  "id": "BLD-06",
+  "area": "Build",
+  "title": "Template without the data placeholder is refused",
+  "expected": "SystemExit",
+  "steps": "",
+  "status": "PASS",
+  "actual": "template /tmp/flowmap-qa-e0wk8wpn/tpl.html has no single data placeholder; rebui",
+  "ms": 0
+ },
+ {
+  "id": "BLD-07",
+  "area": "Build",
+  "title": "Mode B images cannot be read from outside the screens folder",
+  "expected": "../ path not embedded",
+  "steps": "",
+  "status": "PASS",
+  "actual": "refused",
+  "ms": 595
+ },
+ {
+  "id": "PKG-01",
+  "area": "Packaging",
+  "title": "plugin.json is valid with name/version/description",
+  "expected": "flowmap 0.x",
+  "steps": "",
+  "status": "PASS",
+  "actual": "flowmap 0.1.0",
+  "ms": 0
+ },
+ {
+  "id": "PKG-02",
+  "area": "Packaging",
+  "title": "marketplace.json lists plugin 'flowmap' in marketplace 'flowmap' (install flowmap@flowmap)",
+  "expected": "source ./",
+  "steps": "",
+  "status": "PASS",
+  "actual": "flowmap@flowmap",
+  "ms": 0
+ },
+ {
+  "id": "PKG-03",
+  "area": "Packaging",
+  "title": "Commands and skill have frontmatter",
+  "expected": "description in each; skill name=flowmap",
+  "steps": "",
+  "status": "PASS",
+  "actual": "3/3",
+  "ms": 0
+ },
+ {
+  "id": "PKG-04",
+  "area": "Packaging",
+  "title": "Every script referenced by the commands exists",
+  "expected": "all present",
+  "steps": "",
+  "status": "PASS",
+  "actual": "build.py, gaps.py, ingest.py, inventory.py, screens_prep.py, spec_extract.py, validate.py",
+  "ms": 0
+ },
+ {
+  "id": "PKG-05",
+  "area": "Packaging",
+  "title": "Prebuilt viewer is newer than every viewer source file",
+  "expected": "dist mtime >= src mtimes",
+  "steps": "",
+  "status": "PASS",
+  "actual": "up to date",
+  "ms": 0
+ },
+ {
+  "id": "PKG-06",
+  "area": "Packaging",
+  "title": "Scripts import only the stdlib (Pillow/pypdf optional, guarded)",
+  "expected": "no other third-party imports",
+  "steps": "",
+  "status": "PASS",
+  "actual": "stdlib + optional PIL/pypdf",
+  "ms": 1
+ },
+ {
+  "id": "PKG-07",
+  "area": "Packaging",
+  "title": "README documents install, both modes, editing and exports",
+  "expected": "all keywords present",
+  "steps": "",
+  "status": "PASS",
+  "actual": "ok",
+  "ms": 0
+ },
+ {
+  "id": "VA-01",
+  "area": "Viewer A",
+  "title": "Opens offline: no network requests, no console errors",
+  "expected": "0 requests, 0 errors",
+  "steps": "",
+  "actual": "20 nodes rendered",
+  "status": "PASS",
+  "ms": 3
+ },
+ {
+  "id": "VA-02",
+  "area": "Viewer A",
+  "title": "n8n look: charcoal canvas background",
+  "expected": "rgb(42, 42, 42)",
+  "steps": "",
+  "actual": "rgb(42, 42, 42)",
+  "status": "PASS",
+  "ms": 14
+ },
+ {
+  "id": "VA-03",
+  "area": "Viewer A",
+  "title": "n8n look: dot grid",
+  "expected": "background pattern of dots",
+  "steps": "",
+  "actual": "dot pattern present",
+  "status": "PASS",
+  "ms": 4
+ },
+ {
+  "id": "VA-04",
+  "area": "Viewer A",
+  "title": "n8n look: labels sit under the node box",
+  "expected": "label top >= box bottom for every square node",
+  "steps": "",
+  "actual": "12 nodes checked",
+  "status": "PASS",
+  "ms": 4
+ },
+ {
+  "id": "VA-05",
+  "area": "Viewer A",
+  "title": "n8n look: circles under hubs, joined by dashed lines",
+  "expected": "every circle below its hub; dashed dependency strokes",
+  "steps": "",
+  "actual": "5 circles under hubs, dasharray 5px, 5px",
+  "status": "PASS",
+  "ms": 102
+ },
+ {
+  "id": "VA-06",
+  "area": "Viewer A",
+  "title": "n8n look: red trigger bolts on entry points",
+  "expected": "bolt fill = accent red on every trigger",
+  "steps": "",
+  "actual": "8 bolts, rgb(255, 109, 90)",
+  "status": "PASS",
+  "ms": 10
+ },
+ {
+  "id": "VA-07",
+  "area": "Viewer A",
+  "title": "At least 3 replayable flows: select, step, play",
+  "expected": "11 flows; caption advances; play reaches the end",
+  "steps": "",
+  "actual": "11 flows, caption 2/10 -> 10/10, animated dot 1",
+  "status": "PASS",
+  "ms": 16701
+ },
+ {
+  "id": "VA-08",
+  "area": "Viewer A",
+  "title": "Node drawer shows summary, evidence, edges, flows",
+  "expected": "drawer lists file:line and flows",
+  "steps": "",
+  "status": "FAIL",
+  "actual": "assertion failed",
+  "ms": 1466
+ },
+ {
+  "id": "VA-09",
+  "area": "Viewer A",
+  "title": "Edge hover card shows payload and evidence",
+  "expected": "payload + file:line",
+  "steps": "",
+  "actual": "Storefront \u2192 Checkout http sync main high confidence Action: POST Payload: {user_id, items",
+  "status": "PASS",
+  "ms": 336
+ },
+ {
+  "id": "VA-10",
+  "area": "Viewer A",
+  "title": "Ctrl+K search finds a node by symbol name",
+  "expected": "typing 'create_order' opens Order Service",
+  "steps": "",
+  "status": "FAIL",
+  "actual": "locator.innerText: Timeout 30000ms exceeded.",
+  "ms": 31928
+ },
+ {
+  "id": "VA-11",
+  "area": "Viewer A",
+  "title": "Detail levels and kind filter change what is drawn",
+  "expected": "Overview < Detail nodes; hiding datastores removes them",
+  "steps": "",
+  "status": "FAIL",
+  "actual": "20 15 17",
+  "ms": 4758
+ },
+ {
+  "id": "VA-12",
+  "area": "Viewer A",
+  "title": "Groups collapse into a stacked card and expand on click",
+  "expected": "4 group cards; click expands one",
+  "steps": "",
+  "status": "FAIL",
+  "actual": "locator.click: Timeout 30000ms exceeded.",
+  "ms": 31256
+ },
+ {
+  "id": "VA-13",
+  "area": "Viewer A",
+  "title": "Edit a label, undo, redo",
+  "expected": "label changes; Ctrl+Z restores; Ctrl+Shift+Z re-applies",
+  "steps": "",
+  "actual": "edit / undo / redo ok",
+  "status": "PASS",
+  "ms": 986
+ },
+ {
+  "id": "VA-14",
+  "area": "Viewer A",
+  "title": "Connect two nodes by dragging handles; drag a node",
+  "expected": "edge count +1; node keeps the dragged position",
+  "steps": "",
+  "actual": "edges 23 -> 24, node moved 87 px",
+  "status": "PASS",
+  "ms": 1060
+ },
+ {
+  "id": "VA-15",
+  "area": "Viewer A",
+  "title": "Save JSON contains the edits (edited flag, reviewer evidence, pos)",
+  "expected": "label, new edge, pos saved; no view-only fields",
+  "steps": "",
+  "actual": "architecture.json",
+  "status": "PASS",
+  "ms": 161
+ },
+ {
+  "id": "VA-16",
+  "area": "Viewer A",
+  "title": "Download HTML with edits re-opens offline with the edits",
+  "expected": "edited label visible, 0 requests",
+  "steps": "",
+  "actual": "shop-demo.flowmap.html",
+  "status": "PASS",
+  "ms": 1437
+ },
+ {
+  "id": "VA-17",
+  "area": "Viewer A",
+  "title": "Exports: PNG, vector SVG, Mermaid, JSON",
+  "expected": "valid files",
+  "steps": "",
+  "actual": "PNG 887 KB, SVG 27 KB, Mermaid 68 lines",
+  "status": "PASS",
+  "ms": 834
+ },
+ {
+  "id": "VA-18",
+  "area": "Viewer A",
+  "title": "Print / PDF book: overview + one section per flow",
+  "expected": "11 flow sections with tables",
+  "steps": "",
+  "actual": "11 sections",
+  "status": "PASS",
+  "ms": 708
+ },
+ {
+  "id": "VA-19",
+  "area": "Viewer A",
+  "title": "Light theme toggle",
+  "expected": "canvas turns light",
+  "steps": "",
+  "actual": "rgb(244, 244, 246)",
+  "status": "PASS",
+  "ms": 400
+ },
+ {
+  "id": "VA-20",
+  "area": "Viewer A",
+  "title": "Unsaved edits survive a reload (draft restore)",
+  "expected": "banner offers Restore; restore brings the edit back",
+  "steps": "",
+  "actual": "restored",
+  "status": "PASS",
+  "ms": 1837
+ },
+ {
+  "id": "VA-21",
+  "area": "Viewer A",
+  "title": "Deactivated route shown dimmed with '(Deactivated)'",
+  "expected": "label suffix + reduced opacity",
+  "steps": "",
+  "actual": "opacity 0.45",
+  "status": "PASS",
+  "ms": 19
+ },
+ {
+  "id": "VA-22",
+  "area": "Viewer A",
+  "title": "Minimap and controls rendered; fit view keeps all nodes on screen",
+  "expected": "minimap present; all nodes in viewport",
+  "steps": "",
+  "actual": "all nodes visible",
+  "status": "PASS",
+  "ms": 660
+ },
+ {
+  "id": "VB-01",
+  "area": "Viewer B",
+  "title": "Mode B opens offline with no errors",
+  "expected": "0 requests, 0 errors",
+  "steps": "",
+  "actual": "7 screen cards",
+  "status": "PASS",
+  "ms": 3
+ },
+ {
+  "id": "VB-02",
+  "area": "Viewer B",
+  "title": "Screen cards show the embedded screenshot thumbnail",
+  "expected": "7 <img> with data:image/webp",
+  "steps": "",
+  "status": "FAIL",
+  "actual": "data:image/webp,data:image/webp,data:image/webp,data:image/webp,data:image/webp,data:image/webp,data:image/webp",
+  "ms": 1218
+ },
+ {
+  "id": "VB-03",
+  "area": "Viewer B",
+  "title": "Variants: stacked card with \u00d72 badge on Sign in",
+  "expected": "\u00d72 on s_signin only",
+  "steps": "",
+  "actual": "\u00d72",
+  "status": "PASS",
+  "ms": 5
+ },
+ {
+  "id": "VB-04",
+  "area": "Viewer B",
+  "title": "Gap badges: red + amber on Sign in, amber on Checkout",
+  "expected": "s_signin 1 red 1 amber; s_checkout 1 amber",
+  "steps": "",
+  "actual": "badges ok",
+  "status": "PASS",
+  "ms": 10
+ },
+ {
+  "id": "VB-05",
+  "area": "Viewer B",
+  "title": "At least 2 journeys, per actor",
+  "expected": "5 journeys; actors Customer and Admin",
+  "steps": "",
+  "actual": "5 journeys (1 for Admin)",
+  "status": "PASS",
+  "ms": 69
+ },
+ {
+  "id": "VB-06",
+  "area": "Viewer B",
+  "title": "Clicking hotspots navigates between screens; breadcrumb + Back",
+  "expected": "Cart -> Checkout -> Order confirmed; Back returns",
+  "steps": "",
+  "actual": "Cart \u203a Checkout \u203a Order confirmed, back -> Checkout (chooser shown: true)",
+  "status": "PASS",
+  "ms": 1305
+ },
+ {
+  "id": "VB-07",
+  "area": "Viewer B",
+  "title": "One control, several destinations: chooser (Sign in by role)",
+  "expected": "3 options; picking Admin opens Order Management",
+  "steps": "",
+  "actual": "3 options",
+  "status": "PASS",
+  "ms": 815
+ },
+ {
+  "id": "VB-08",
+  "area": "Viewer B",
+  "title": "Dead control explains the gap; in-place control explains itself",
+  "expected": "'leads nowhere' / 'stays on this screen'",
+  "steps": "",
+  "actual": "\"Forgot password?\" leads nowhere in these screenshots (coverage gap). / \"Admin\" stays on this screen: selects the Admin role.",
+  "status": "PASS",
+  "ms": 598
+ },
+ {
+  "id": "VB-09",
+  "area": "Viewer B",
+  "title": "Hotspot rectangles sit exactly on the screenshot controls",
+  "expected": "Sign in hotspot within 2 px of its 0-1 box",
+  "steps": "",
+  "actual": "offset 0.0 px, width error 0.0 px",
+  "status": "PASS",
+  "ms": 53
+ },
+ {
+  "id": "VB-10",
+  "area": "Viewer B",
+  "title": "Variant switch shows the error state image and its hotspots",
+  "expected": "Error tab -> 02-sign-in-error.png",
+  "steps": "",
+  "actual": "02-sign-in-error.png",
+  "status": "PASS",
+  "ms": 231
+ },
+ {
+  "id": "VB-11",
+  "area": "Viewer B",
+  "title": "Journey walkthrough: pulsing hotspot, clicking it advances",
+  "expected": "step 1 pulses 'Sign in'; click -> step 2 Products",
+  "steps": "",
+  "actual": "pulse=sign_in, now step 2 on Products",
+  "status": "PASS",
+  "ms": 1114
+ },
+ {
+  "id": "VB-12",
+  "area": "Viewer B",
+  "title": "Walkthrough Play auto-advances with requirement text",
+  "expected": "reaches Order status with FR-13 shown",
+  "steps": "",
+  "actual": "step 6/6, FR-13 shown",
+  "status": "PASS",
+  "ms": 7643
+ },
+ {
+  "id": "VB-13",
+  "area": "Viewer B",
+  "title": "Requirements panel: picking FR-8 lights up the Cart screen and dims the rest",
+  "expected": "Cart in-flow, others dimmed",
+  "steps": "",
+  "actual": "Cart highlighted, Order Management dimmed",
+  "status": "PASS",
+  "ms": 416
+ },
+ {
+  "id": "VB-14",
+  "area": "Viewer B",
+  "title": "Reverse lookup: requirement chip in a screen focuses that requirement",
+  "expected": "clicking FR-13 in Order status focuses FR-13",
+  "steps": "",
+  "actual": "FR-13",
+  "status": "PASS",
+  "ms": 663
+ },
+ {
+  "id": "VB-15",
+  "area": "Viewer B",
+  "title": "Coverage panel catches the planted gap and contradiction",
+  "expected": "FR-3 under 'no screen'; FR-2 contradiction",
+  "steps": "",
+  "actual": "15/16 covered; FR-3 gap; FR-2 contradiction",
+  "status": "PASS",
+  "ms": 50
+ },
+ {
+  "id": "VB-16",
+  "area": "Viewer B",
+  "title": "Actor filter Admin shows only the Admin's screens",
+  "expected": "Sign in + Order Management",
+  "steps": "",
+  "actual": "s_admin, s_signin",
+  "status": "PASS",
+  "ms": 1911
+ },
+ {
+  "id": "VB-17",
+  "area": "Viewer B",
+  "title": "Inferred transition drawn dashed with a '?' badge",
+  "expected": "e_products_status dashed + ?",
+  "steps": "",
+  "actual": "react-flow__edge-path fm-edge is-inferred in-flow, 1 '?' badges",
+  "status": "PASS",
+  "ms": 5
+ },
+ {
+  "id": "VB-18",
+  "area": "Viewer B",
+  "title": "Self-loop transitions drawn (sign-in error, card declined)",
+  "expected": "2 loop edges rendered",
+  "steps": "",
+  "actual": "2 loops",
+  "status": "PASS",
+  "ms": 3
+ },
+ {
+  "id": "VB-19",
+  "area": "Viewer B",
+  "title": "Global navigation hidden by default, toggle shows it",
+  "expected": "edge count rises when enabled",
+  "steps": "",
+  "actual": "13 -> 25 edges",
+  "status": "PASS",
+  "ms": 862
+ },
+ {
+  "id": "VB-20",
+  "area": "Viewer B",
+  "title": "Search finds a requirement",
+  "expected": "'FR-13' focuses it in the Requirements tab",
+  "steps": "",
+  "actual": "FR-13",
+  "status": "PASS",
+  "ms": 380
+ },
+ {
+  "id": "VB-21",
+  "area": "Viewer B",
+  "title": "Edit mode: draw a hotspot, link it, coverage updates live",
+  "expected": "new hotspot + edge; dead-control count drops after linking 'Forgot password?'",
+  "steps": "",
+  "actual": "hotspots 5 -> 6, linked; Sign in amber badge cleared",
+  "status": "PASS",
+  "ms": 1721
+ },
+ {
+  "id": "VB-22",
+  "area": "Viewer B",
+  "title": "Edit mode: move a hotspot by dragging; delete a hotspot removes its links",
+  "expected": "box changes; edge removed",
+  "steps": "",
+  "actual": "moved 60 px; edges 32 -> 31",
+  "status": "PASS",
+  "ms": 1009
+ },
+ {
+  "id": "VB-23",
+  "area": "Viewer B",
+  "title": "Saved screens.json carries hotspot edits",
+  "expected": "new hotspot + user-evidence edge present",
+  "steps": "",
+  "status": "FAIL",
+  "actual": "schema,mode,project,actors,groups,requirements,nodes,edges,flows,findings,assets",
+  "ms": 1454
+ },
+ {
+  "id": "VB-24",
+  "area": "Viewer B",
+  "title": "Exported clickable prototype opens straight into the screens and navigates",
+  "expected": "prototype bar; hotspot click navigates; offline",
+  "steps": "",
+  "status": "FAIL",
+  "actual": "locator.click: Timeout 30000ms exceeded.",
+  "ms": 31355
+ },
+ {
+  "id": "VB-25",
+  "area": "Viewer B",
+  "title": "Flow book: coverage + every journey step with its screenshot and highlighted hotspot",
+  "expected": "img per step; hotspot boxes; FR text",
+  "steps": "",
+  "actual": "23/23 step screenshots",
+  "status": "PASS",
+  "ms": 779
+ },
+ {
+  "id": "VB-26",
+  "area": "Viewer B",
+  "title": "SVG export embeds the screenshots",
+  "expected": "<image href=data:image/webp ...> per screen",
+  "steps": "",
+  "actual": "7 images",
+  "status": "PASS",
+  "ms": 67
+ },
+ {
+  "id": "PRF-01",
+  "area": "Performance",
+  "title": "600+ node graph: first render, expand all, select flow",
+  "expected": "each under 3 s; no errors",
+  "steps": "",
+  "actual": "first 1719 ms (12 groups collapsed), expand 1304 ms, flow 867 ms",
+  "status": "PASS",
+  "ms": 4143
+ },
+ {
+  "id": "SEC-01",
+  "area": "Security",
+  "title": "HTML in labels is shown as text, never executed",
+  "expected": "no script runs from a node label / summary",
+  "steps": "",
+  "actual": "rendered as text",
+  "status": "PASS",
+  "ms": 1631
+ },
+ {
+  "id": "SEC-02",
+  "area": "Security",
+  "title": "Screens can only use embedded images; a URL in assets is ignored",
+  "expected": "no request to the URL; card shows placeholder",
+  "steps": "",
+  "actual": "no network request",
+  "status": "PASS",
+  "ms": 1199
+ },
+ {
+  "id": "SEC-03",
+  "area": "Security",
+  "title": "Exports escape user text (SVG, Mermaid, print book)",
+  "expected": "no raw <script> / quotes break out",
+  "steps": "",
+  "status": "FAIL",
+  "actual": "unescaped",
+  "ms": 1977
+ }
+]

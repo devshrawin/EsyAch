@@ -1,6 +1,6 @@
 {
   "tool": "flowmap-inventory/0.1",
-  "generated_at": "2026-10-26T13:56:13+00:00",
+  "generated_at": "2026-10-26T15:14:40+00:00",
   "root": "examples/shop-demo",
   "stats": {
     "files": 29,
@@ -1266,6 +1266,38 @@
       "caller": "main",
       "callee_file": "jobs/nightly.py",
       "callee": "extract"
+    },
+    {
+      "file": "web/src/pages/Checkout.tsx",
+      "line": 9,
+      "caller": "onPay",
+      "callee_file": "web/src/api.ts",
+      "callee": "placeOrder",
+      "lang": "js"
+    },
+    {
+      "file": "web/src/pages/OrderStatus.tsx",
+      "line": 7,
+      "caller": "OrderStatus",
+      "callee_file": "web/src/api.ts",
+      "callee": "getOrder",
+      "lang": "js"
+    },
+    {
+      "file": "web/src/pages/Products.tsx",
+      "line": 7,
+      "caller": "Products",
+      "callee_file": "web/src/api.ts",
+      "callee": "listProducts",
+      "lang": "js"
+    },
+    {
+      "file": "web/src/pages/Signup.tsx",
+      "line": 7,
+      "caller": "onSubmit",
+      "callee_file": "web/src/api.ts",
+      "callee": "signup",
+      "lang": "js"
     },
     {
       "file": "worker/worker.py",

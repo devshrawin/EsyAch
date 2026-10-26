@@ -14,6 +14,10 @@ import {
 } from "./model";
 import { nodeTypes, type NodeData } from "./nodes";
 import { Badge, EdgeDrawer, evText, FlowsTab, Menu, NodeDrawer, SearchPalette, ViewTab } from "./panels";
+import { assetSrc, badges, coverage } from "./coverage";
+import { Lightbox } from "./Lightbox";
+import { CoverageTab, RequirementsTab } from "./specpanels";
+import { printSpecBook } from "./export";
 import type { Flow, GEdge, GNode, Graph } from "./types";
 
 const STEP_MS = 1700;
@@ -69,11 +73,13 @@ function Viewer({ initial }: { initial: Graph }) {
 
   const [theme, setTheme] = useState<"dark" | "light">(() => store(() => (localStorage.getItem("flowmap-theme") as "dark" | "light") || "dark", "dark"));
   const [editMode, setEditMode] = useState(false);
-  const [tab, setTab] = useState<"flows" | "view">("flows");
+  const [tab, setTab] = useState<"flows" | "view" | "reqs" | "coverage">("flows");
+  const [reqFocus, setReqFocus] = useState<string | null>(null);
+  const [lb, setLb] = useState<{ s: string; v?: string } | null>(null);
   const { groups, groupOf } = useMemo(() => groupsOf(graph), [graph]);
   const [opts, setOpts] = useState<ViewOpts>(() => ({
     level: initial.nodes.length > 80 ? "structure" : "detail",
-    hiddenKinds: new Set(), hiddenLayers: new Set(), showDeps: true, showDeactivated: true,
+    hiddenKinds: new Set(), hiddenLayers: new Set(), showDeps: true, showDeactivated: true, showGlobal: false, actor: null,
     collapsed: initial.nodes.length > AUTO_COLLAPSE_MIN ? new Set(groupsOf(initial).groups.map((g) => g.id)) : new Set(),
   }));
   const [auto, setAuto] = useState<Map<string, Placed> | null>(null);
@@ -99,7 +105,11 @@ function Viewer({ initial }: { initial: Graph }) {
 
   const byId = useMemo(() => new Map(graph.nodes.map((n) => [n.id, n])), [graph]);
   const flow: Flow | undefined = graph.flows.find((f) => f.id === flowId);
-  const view: ViewGraph = useMemo(() => buildView(graph, opts), [graph, opts]);
+  const keepEdges = useMemo(() => new Set(flow?.steps.map((s) => s.edge).filter(Boolean) as string[]), [flow]);
+  const view: ViewGraph = useMemo(() => buildView(graph, opts, keepEdges), [graph, opts, keepEdges]);
+  const isSpec = graph.mode === "spec";
+  const cov = useMemo(() => (isSpec ? coverage(graph) : null), [graph, isSpec]);
+  const badgeMap = useMemo(() => (cov ? badges(cov) : new Map<string, { sev: "red" | "amber"; text: string }[]>()), [cov]);
   const viewEdgeById = useMemo(() => new Map(view.edges.map((e) => [e.id, e])), [view]);
   const problems = useMemo(() => checkGraph(graph), [graph]);
   const stepBad = useMemo(() => (flowId ? stepProblems(graph, flowId) : new Map<number, string>()), [graph, flowId]);
@@ -117,7 +127,8 @@ function Viewer({ initial }: { initial: Graph }) {
 
   // Layout. In edit mode an added node already has a position, so we keep everything where it
   // is instead of re-running ELK (which would move nodes the user is looking at).
-  const key = useMemo(() => layoutKey({ ...graph, nodes: view.nodes, edges: view.edges }), [view, graph]);
+  // Global navigation edges (header links) never move nodes: they are left out of the layout.
+  const key = useMemo(() => layoutKey({ ...graph, nodes: view.nodes, edges: view.edges.filter((e) => !e.global) }), [view, graph]);
   const laidKey = useRef<string | null>(null);
   const viewRef = useRef(view);
   viewRef.current = view;
@@ -131,7 +142,7 @@ function Viewer({ initial }: { initial: Graph }) {
       return;
     }
     let live = true;
-    layoutGraph({ ...graph, nodes: v.nodes, edges: v.edges }).then((p) => {
+    layoutGraph({ ...graph, nodes: v.nodes, edges: v.edges.filter((e) => !e.global) }).then((p) => {
       if (!live) return;
       const first = laidKey.current === null;
       laidKey.current = key;
@@ -152,6 +163,9 @@ function Viewer({ initial }: { initial: Graph }) {
   const flowNodes = useMemo(() => new Set(flow?.steps.map((s) => view.nodeMap.get(s.node)).filter(Boolean) as string[]), [flow, view]);
   const flowEdges = useMemo(() => new Set(flow?.steps.map((s) => (s.edge ? view.edgeMap.get(s.edge) : undefined)).filter(Boolean) as string[]), [flow, view]);
   const curStep = flow?.steps[step];
+  const reqNodes = useMemo(() => new Set(reqFocus && cov ? (cov.reqScreens.get(reqFocus) ?? []).map((id) => view.nodeMap.get(id)).filter(Boolean) as string[] : []), [reqFocus, cov, view]);
+  const reqEdgeSet = useMemo(() => new Set(reqFocus && cov ? (cov.reqEdges.get(reqFocus) ?? []).map((id) => view.edgeMap.get(id)).filter(Boolean) as string[] : []), [reqFocus, cov, view]);
+  const focusOn = !flow && !!reqFocus;
   const curNode = vNode(curStep?.node);
   const curEdge = vEdge(curStep?.edge);
 
@@ -180,12 +194,13 @@ function Viewer({ initial }: { initial: Graph }) {
     li?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [step, flowId]);
 
-  const selectFlow = (id: string | null) => {
+  const selectFlow = (id: string | null, keepTab = false) => {
     setFlowId(id);
+    if (id) setReqFocus(null);
     setStep(0);
     setPlaying(false);
     setAnimKey((k) => k + 1);
-    setTab("flows");
+    if (!keepTab) setTab("flows");
     if (id) {
       const f = graph.flows.find((x) => x.id === id);
       if (!f) return;
@@ -361,7 +376,7 @@ function Viewer({ initial }: { initial: Graph }) {
     const outs = new Set(view.edges.filter((e) => e.kind === "main").map((e) => e.from));
     const nodes = view.nodes.flatMap((n) => {
       const p = pos.get(n.id);
-      return p ? [{ n, p, v: visualOf(n), dim: !!f && !fN.has(n.id), inFlow: !!f && fN.has(n.id), current: false, hasOut: outs.has(n.id) }] : [];
+      return p ? [{ n, p, v: visualOf(n), dim: !!f && !fN.has(n.id), inFlow: !!f && fN.has(n.id), current: false, hasOut: outs.has(n.id), badges: badgeMap.get(n.id) }] : [];
     });
     const vb = new Map(view.nodes.map((n) => [n.id, n]));
     const edges = view.edges.map((e) => ({
@@ -373,12 +388,23 @@ function Viewer({ initial }: { initial: Graph }) {
   const exportImage = async (kind: "svg" | "png") => {
     const st = renderState(flow);
     const title = `${graph.project.name}${flow ? ` · ${flow.name}` : ""}`;
-    const { svg, width, height } = renderSVG(st.nodes, st.edges, { payloads: opts.level === "detail", title });
+    const { svg, width, height } = renderSVG(st.nodes, st.edges, { payloads: opts.level === "detail", title, assets: graph.assets });
     const name = `${slug(graph.project.name)}${flow ? "-" + slug(flow.name) : ""}`;
     if (kind === "svg") download(`${name}.svg`, svg, "image/svg+xml");
     else download(`${name}.png`, await svgToPng(svg, width, height, 2));
   };
+  const exportPrototype = () => {
+    const start = cov?.entries[0] ?? graph.nodes.find((n) => n.kind === "screen")?.id;
+    const html = buildHTML({ ...graph, view: { prototype: true, start } });
+    if (!html) return say("Prototype export needs the built file (not the dev server).");
+    download(`${slug(graph.project.name)}.prototype.html`, html, "text/html");
+  };
   const exportPrint = () => {
+    if (isSpec && cov) {
+      const all = renderState();
+      printSpecBook(graph, cov, renderSVG(all.nodes, all.edges, { payloads: false, assets: graph.assets }).svg);
+      return;
+    }
     const all = renderState();
     const overview = renderSVG(all.nodes, all.edges, { payloads: false }).svg;
     const per = graph.flows.map((f) => {
@@ -400,6 +426,7 @@ function Viewer({ initial }: { initial: Graph }) {
         return;
       }
       if (typing) return;
+      if (lb && (ev.key === "Delete" || ev.key === "Backspace")) return;
       if (mod && ev.key.toLowerCase() === "z" && editMode) {
         ev.preventDefault();
         if (ev.shiftKey) redo();
@@ -423,7 +450,9 @@ function Viewer({ initial }: { initial: Graph }) {
         return;
       }
       if (ev.key === "Escape") {
+        if (lb) { setLb(null); return; }
         setSel(null);
+        setReqFocus(null);
         selectFlow(null);
       }
       if (!flow) return;
@@ -457,17 +486,19 @@ function Viewer({ initial }: { initial: Graph }) {
       if (!p) return [];
       const data: NodeData = {
         g: n, w: p.w, h: p.h, hasOut: hasOut.has(n.id), hasIn: hasIn.has(n.id),
-        dim: !!flow && !flowNodes.has(n.id),
-        inFlow: !!flow && flowNodes.has(n.id),
+        dim: (!!flow && !flowNodes.has(n.id)) || (focusOn && !reqNodes.has(n.id)),
+        inFlow: (!!flow && flowNodes.has(n.id)) || (focusOn && reqNodes.has(n.id)),
         current: curNode === n.id,
         selected: sel?.type === "node" && sel.id === n.id,
+        src: n.kind === "screen" ? assetSrc(graph, n) : undefined,
+        badges: badgeMap.get(n.id),
       };
       return [{
         id: n.id, type: visualOf(n), position: { x: p.x, y: p.y }, data, width: p.w, height: p.h,
         draggable: editMode, connectable: editMode && !n.collapsedGroup,
       }];
     });
-  }, [view, pos, flow, flowNodes, curNode, sel, hasOut, hasIn, editMode]);
+  }, [view, pos, flow, flowNodes, curNode, sel, hasOut, hasIn, editMode, focusOn, reqNodes, badgeMap, graph]);
 
   const vById = useMemo(() => new Map(view.nodes.map((n) => [n.id, n])), [view]);
   const edges: Edge[] = useMemo(() => {
@@ -478,9 +509,9 @@ function Viewer({ initial }: { initial: Graph }) {
       const srcIsHub = visualOf(src) === "hub";
       const sourceHandle = dep ? (e.port && srcIsHub ? `port-${e.port}` : "bottom") : "out";
       const targetHandle = dep ? "top" : "in";
-      const inFlow = !!flow && flowEdges.has(e.id);
+      const inFlow = (!!flow && flowEdges.has(e.id)) || (focusOn && reqEdgeSet.has(e.id));
       const current = curEdge === e.id;
-      const dim = !!flow && !inFlow;
+      const dim = (!!flow || focusOn) && !inFlow;
       const deact = src.status === "deactivated" || tgt.status === "deactivated";
       const color = current ? "var(--accent)" : inFlow ? "var(--edge-active)" : "var(--edge)";
       const cross = dep && !(tgt.hub === src.id);
@@ -496,7 +527,7 @@ function Viewer({ initial }: { initial: Graph }) {
         zIndex: inFlow || selected ? 5 : 0,
       }];
     });
-  }, [view, vById, flow, flowEdges, curEdge, animKey, outCount, sel, opts.level, theme]);
+  }, [view, vById, flow, flowEdges, curEdge, animKey, outCount, sel, opts.level, theme, focusOn, reqEdgeSet]);
 
   const zoom = useStore((s) => s.transform[2]);
   const zoomClass = zoom < 0.22 ? "fm-zoom-far fm-zoom-mid" : zoom < 0.45 ? "fm-zoom-mid" : "";
@@ -510,6 +541,26 @@ function Viewer({ initial }: { initial: Graph }) {
   const selNode = sel?.type === "node" ? byId.get(sel.id) : undefined;
   const selEdge = sel?.type === "edge" ? graph.edges.find((e) => e.id === sel.id) ?? viewEdgeById.get(sel.id) : undefined;
   const big = view.nodes.length > 200;
+
+  if (graph.view?.prototype && cov) {
+    const start = graph.view.start ?? cov.entries[0];
+    return (
+      <div className="fm-proto">
+        <div className="fm-proto-bar">
+          <span className="fm-logo"><Icon name="bolt" size={14} stroke={2.4} /></span>
+          <strong>{graph.project.name}</strong>
+          <span className="fm-chip">Clickable prototype</span>
+          <select className="fm-input fm-proto-journey" value={flowId ?? ""} onChange={(e) => selectFlow(e.target.value || null, true)}>
+            <option value="">Explore freely</option>
+            {graph.flows.map((f) => <option key={f.id} value={f.id}>Journey: {f.name}</option>)}
+          </select>
+        </div>
+        {start && <Lightbox graph={graph} cov={cov} start={{ s: start }} editMode={false} edit={edit} prototype
+          flow={flow} step={step} goTo={goTo} playing={playing} setPlaying={setPlaying} onClose={() => undefined}
+          onReq={() => undefined} onShowOnCanvas={() => undefined} />}
+      </div>
+    );
+  }
 
   return (
     <div className={`fm-app ${editMode ? "is-editing" : ""}`}>
@@ -559,8 +610,11 @@ function Viewer({ initial }: { initial: Graph }) {
             { label: "Mermaid", hint: "paste into Markdown / GitHub", onClick: () => download(`${slug(graph.project.name)}.mmd`, toMermaid(graph, flow), "text/plain") },
             { label: "JSON", hint: "graph data", onClick: () => download(`${fileBase}.json`, toJSON(graph), "application/json") },
             { label: "Interactive HTML", hint: "share this explorer", onClick: saveHTML },
-            "sep",
-            { label: "Print / PDF", hint: "overview + one page per flow", onClick: exportPrint },
+            ...(isSpec ? [
+              { label: "Clickable prototype (HTML)", hint: "screens + hotspots only", onClick: exportPrototype },
+            ] : []),
+            "sep" as const,
+            { label: isSpec ? "Print / PDF flow book" : "Print / PDF", hint: isSpec ? "coverage + every journey with screenshots" : "overview + one page per flow", onClick: exportPrint },
           ]} />
           <button className="fm-btn" onClick={() => rf.fitView({ padding: 0.15, duration: 400 })} title="Fit to view"><Icon name="fit" size={16} /></button>
           <button className="fm-btn" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} title="Toggle theme">
@@ -572,14 +626,26 @@ function Viewer({ initial }: { initial: Graph }) {
       <aside className="fm-left">
         <div className="fm-tabs">
           <button className={tab === "flows" ? "is-on" : ""} onClick={() => setTab("flows")}>{graph.mode === "code" ? "Flows" : "Journeys"}</button>
-          <button className={tab === "view" ? "is-on" : ""} onClick={() => setTab("view")} data-testid="view-tab">View &amp; filters</button>
+          {isSpec && <button className={tab === "reqs" ? "is-on" : ""} onClick={() => setTab("reqs")} data-testid="reqs-tab">Reqs</button>}
+          {isSpec && cov && (
+            <button className={tab === "coverage" ? "is-on" : ""} onClick={() => setTab("coverage")} data-testid="coverage-tab">
+              Coverage{(cov.withoutScreen.length + cov.findings.length + cov.unreachable.length) > 0 && <span className="fm-tab-badge">{cov.withoutScreen.length + cov.findings.length + cov.unreachable.length + cov.deadEnds.length}</span>}
+            </button>
+          )}
+          <button className={tab === "view" ? "is-on" : ""} onClick={() => setTab("view")} data-testid="view-tab">{isSpec ? "View" : "View & filters"}</button>
         </div>
-        {tab === "flows" ? (
+        {tab === "reqs" && cov ? (
+          <RequirementsTab graph={graph} cov={cov} reqFocus={reqFocus} setReqFocus={(id) => { setReqFocus(id); if (id) selectFlow(null, true); }} openScreen={(id) => setLb({ s: id })} />
+        ) : tab === "coverage" && cov ? (
+          <CoverageTab graph={graph} cov={cov} openScreen={(id) => setLb({ s: id })} setReqFocus={(id) => { setReqFocus(id); setTab("reqs"); }}
+            selectFlow={selectFlow} showEdge={(id) => { setSel({ type: "edge", id }); setOpts((o) => ({ ...o, showGlobal: o.showGlobal || !!graph.edges.find((e) => e.id === id)?.global })); }} />
+        ) : tab === "flows" ? (
           <FlowsTab graph={graph} flowId={flowId} step={step} playing={playing} editMode={editMode} edit={edit}
             stepProblems={stepBad} recording={recording} actor={actor} setActor={setActor} onSelect={selectFlow}
-            goTo={goTo} setPlaying={setPlaying} setRecording={setRecording} onNewFlow={newFlow} listRef={stepListRef} />
+            goTo={goTo} setPlaying={setPlaying} setRecording={setRecording} onNewFlow={newFlow} listRef={stepListRef}
+            onWalk={isSpec && flow ? () => setLb({ s: flow.steps[step].node, v: flow.steps[step].variant }) : undefined} />
         ) : (
-          <ViewTab graph={graph} opts={opts} setOpts={setOpts} groups={groups} groupCounts={groupCounts} />
+          <ViewTab graph={graph} opts={opts} setOpts={setOpts} groups={groups} groupCounts={groupCounts} isSpec={isSpec} />
         )}
       </aside>
 
@@ -622,6 +688,10 @@ function Viewer({ initial }: { initial: Graph }) {
                 c.delete(g.collapsedGroup!);
                 return { ...o, collapsed: c };
               });
+              return;
+            }
+            if (g.kind === "screen") {
+              setLb(flow && flow.steps[step]?.node === n.id ? { s: n.id, v: flow.steps[step].variant } : { s: n.id });
               return;
             }
             setSel({ type: "node", id: n.id });
@@ -684,11 +754,23 @@ function Viewer({ initial }: { initial: Graph }) {
           onPick={reveal} onDelete={() => deleteEdge(selEdge.id)} />
       )}
       {hover && <EdgeTip h={hover} byId={byId} />}
+      {lb && cov && (
+        <Lightbox graph={graph} cov={cov} start={lb} editMode={editMode} edit={edit} flow={flow} step={step} goTo={goTo}
+          playing={playing} setPlaying={setPlaying} onClose={() => setLb(null)}
+          onReq={(id) => { setReqFocus(id); setTab("reqs"); selectFlow(null, true); setLb(null); }}
+          onShowOnCanvas={(id) => { setLb(null); setFocusId(id); }} />
+      )}
       {searchOpen && (
         <SearchPalette graph={graph} groups={groups} onClose={() => setSearchOpen(false)} onPick={(h) => {
           setSearchOpen(false);
-          if (h.type === "node") reveal(h.id);
-          else if (h.type === "flow") selectFlow(h.id);
+          if (h.type === "node") {
+            reveal(h.id);
+            if (byId.get(h.id)?.kind === "screen") setLb({ s: h.id });
+          } else if (h.type === "req") {
+            setReqFocus(h.id);
+            setTab("reqs");
+            selectFlow(null, true);
+          } else if (h.type === "flow") selectFlow(h.id);
           else setOpts((o) => {
             const c = new Set(o.collapsed);
             c.delete(h.id);

@@ -342,6 +342,7 @@ export function FlowsTab(props: {
   setActor: (a: string | null) => void; onSelect: (id: string | null) => void; goTo: (i: number) => void;
   setPlaying: (p: boolean) => void; setRecording: (r: boolean) => void; onNewFlow: () => void;
   listRef: React.RefObject<HTMLOListElement>;
+  onWalk?: () => void;
 }) {
   const { graph, flowId, step, playing, editMode, edit, actor } = props;
   const byId = useMemo(() => new Map(graph.nodes.map((n) => [n.id, n])), [graph]);
@@ -400,6 +401,9 @@ export function FlowsTab(props: {
             <button className="fm-btn" onClick={() => props.goTo(step + 1)} title="Next step (→)"><Icon name="next" size={15} /></button>
             <span className="fm-step-count">{step + 1} / {flow.steps.length}</span>
           </div>
+          {props.onWalk && (
+            <button className="fm-btn fm-btn-text fm-walk-btn" onClick={props.onWalk} data-testid="walk">▶ Walk through the screens</button>
+          )}
           {editMode ? (
             <div className="fm-form">
               <Field label="Name"><TextField value={flow.name} onCommit={(v) => updFlow((f) => { f.name = v || f.name; })} /></Field>
@@ -473,8 +477,8 @@ export function FlowsTab(props: {
 
 // ------------------------------------------------------------------ view tab
 
-export function ViewTab({ graph, opts, setOpts, groups, groupCounts }: {
-  graph: Graph; opts: ViewOpts; setOpts: (fn: (o: ViewOpts) => ViewOpts) => void; groups: Group[]; groupCounts: Map<string, number>;
+export function ViewTab({ graph, opts, setOpts, groups, groupCounts, isSpec }: {
+  graph: Graph; opts: ViewOpts; setOpts: (fn: (o: ViewOpts) => ViewOpts) => void; groups: Group[]; groupCounts: Map<string, number>; isSpec?: boolean;
 }) {
   const kinds = new Map<string, number>();
   for (const n of graph.nodes) kinds.set(n.kind, (kinds.get(n.kind) ?? 0) + 1);
@@ -498,6 +502,18 @@ export function ViewTab({ graph, opts, setOpts, groups, groupCounts }: {
           <button key={id} title={hint} className={opts.level === id ? "is-on" : ""} onClick={() => setOpts((o) => ({ ...o, level: id }))}>{label}</button>
         ))}
       </div>
+      {isSpec && (
+        <>
+          <div className="fm-section-title">Actor</div>
+          <div className="fm-chips" data-testid="actor-filter">
+            <button className={`fm-chip-btn ${!opts.actor ? "is-on" : ""}`} onClick={() => setOpts((o) => ({ ...o, actor: null }))}>All</button>
+            {(graph.actors ?? []).map((a) => (
+              <button key={a.id} className={`fm-chip-btn ${opts.actor === a.id ? "is-on" : ""}`} onClick={() => setOpts((o) => ({ ...o, actor: a.id }))}>{a.label}</button>
+            ))}
+          </div>
+          <label className="fm-check"><input type="checkbox" checked={!!opts.showGlobal} onChange={(e) => setOpts((o) => ({ ...o, showGlobal: e.target.checked }))} /> Global navigation (header links, sign out)</label>
+        </>
+      )}
       <label className="fm-check"><input type="checkbox" checked={opts.showDeps} onChange={(e) => setOpts((o) => ({ ...o, showDeps: e.target.checked }))} /> Dependency edges (dashed)</label>
       <label className="fm-check"><input type="checkbox" checked={opts.showDeactivated} onChange={(e) => setOpts((o) => ({ ...o, showDeactivated: e.target.checked }))} /> Deactivated / dead code</label>
 
@@ -547,7 +563,7 @@ export function ViewTab({ graph, opts, setOpts, groups, groupCounts }: {
 
 // ------------------------------------------------------------------ search palette
 
-interface Hit { type: "node" | "flow" | "group"; id: string; title: string; sub: string; score: number }
+interface Hit { type: "node" | "flow" | "group" | "req"; id: string; title: string; sub: string; score: number }
 
 export function SearchPalette({ graph, groups, onPick, onClose }: {
   graph: Graph; groups: Group[]; onPick: (h: { type: Hit["type"]; id: string }) => void; onClose: () => void;
@@ -578,6 +594,10 @@ export function SearchPalette({ graph, groups, onPick, onClose }: {
       const s = score([f.name, f.actor ?? "", f.description ?? ""]);
       if (s > 0) out.push({ type: "flow", id: f.id, title: f.name, sub: `flow · ${f.steps.length} steps${f.actor ? " · " + f.actor : ""}`, score: s + 8 });
     }
+    for (const r of graph.requirements ?? []) {
+      const s = score([r.id, r.text, r.section ?? ""]);
+      if (s > 0) out.push({ type: "req", id: r.id, title: r.id, sub: r.text, score: s + 6 });
+    }
     for (const g of groups) {
       const s = score([g.label, g.id]);
       if (s > 0) out.push({ type: "group", id: g.id, title: g.label, sub: "group", score: s });
@@ -586,6 +606,7 @@ export function SearchPalette({ graph, groups, onPick, onClose }: {
   }, [q, graph, groups]);
   useEffect(() => setI(0), [q]);
   const pick = (h?: Hit) => h && onPick({ type: h.type, id: h.id });
+  const cur = Math.min(i, hits.length - 1); // a stale hover index can point past a shorter result list
   return (
     <div className="fm-modal-back" onMouseDown={onClose}>
       <div className="fm-palette" onMouseDown={(e) => e.stopPropagation()} data-testid="search">
@@ -595,14 +616,14 @@ export function SearchPalette({ graph, groups, onPick, onClose }: {
             onKeyDown={(e) => {
               if (e.key === "ArrowDown") { e.preventDefault(); setI((x) => Math.min(hits.length - 1, x + 1)); }
               else if (e.key === "ArrowUp") { e.preventDefault(); setI((x) => Math.max(0, x - 1)); }
-              else if (e.key === "Enter") pick(hits[i]);
+              else if (e.key === "Enter") pick(hits[cur]);
               else if (e.key === "Escape") onClose();
             }} />
           <kbd>esc</kbd>
         </div>
         <ul>
           {hits.map((h, k) => (
-            <li key={h.type + h.id} className={k === i ? "is-active" : ""} onMouseEnter={() => setI(k)} onClick={() => pick(h)}>
+            <li key={h.type + h.id} className={k === cur ? "is-active" : ""} onMouseEnter={() => setI(k)} onClick={() => pick(h)}>
               <span className={`fm-hit-type t-${h.type}`}>{h.type}</span>
               <span className="fm-hit-title">{h.title}</span>
               <span className="fm-hit-sub">{h.sub}</span>

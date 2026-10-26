@@ -511,10 +511,12 @@ class Inventory:
         for m in self.JS_FUNC.finditer(text):
             name = m.group(1) or m.group(2) or m.group(3)
             self.symbols[rel].append({"name": name, "kind": "class" if m.group(3) else "function", "line": line_of(m.start())})
+        self.js_calls(rel, text, line_of)
         for m in self.JS_ROUTE.finditer(text):
             method, path = m.group(1).upper(), m.group(2)
-            if method == "USE":
-                continue
+            line_start = text.rfind("\n", 0, m.start()) + 1
+            if method == "USE" or re.match(r"\s*(//|\*|/\*)", text[line_start:m.start()]):
+                continue  # commented-out routes are reported as dead code instead
             kind = "webhook" if re.search(r"web-?hook|/hooks?/|callback", path, re.I) else "http_route"
             self.entrypoints.append(self.ev(rel, line_of(m.start()), kind=kind, method=method, path=path))
         for m in self.JS_FETCH.finditer(text):
@@ -547,6 +549,49 @@ class Inventory:
             m = COMMENTED_ROUTE_JS.match(l)
             if m:
                 self.dead_code.append(self.ev(rel, i, symbol=f"{m.group(1).upper()} {m.group(2)}", reason="commented-out route"))
+
+    JS_NAMED = re.compile(r"""import\s+(?:(\w+)\s*,?\s*)?(?:\{([^}]*)\}|\*\s+as\s+(\w+))?\s*from\s*['"]([^'"]+)['"]""")
+    JS_REQUIRE = re.compile(r"""(?:const|let|var)\s+(?:\{([^}]*)\}|(\w+))\s*=\s*require\(\s*['"]([^'"]+)['"]\s*\)""")
+
+    def js_calls(self, rel, text, line_of):
+        """Call edges to functions imported from other files in the repo (regex level)."""
+        local: dict[str, tuple[str, str | None]] = {}  # name -> (file, symbol or None for namespace)
+        for m in self.JS_NAMED.finditer(text):
+            target = self._resolve_js(rel, m.group(4))
+            if not target:
+                continue
+            if m.group(1):
+                local[m.group(1)] = (target, "default")
+            for part in (m.group(2) or "").split(","):
+                bits = part.strip().split(" as ")
+                if bits[0].strip() and bits[0].strip() != "type":
+                    local[bits[-1].strip()] = (target, bits[0].strip())
+            if m.group(3):
+                local[m.group(3)] = (target, None)
+        for m in self.JS_REQUIRE.finditer(text):
+            target = self._resolve_js(rel, m.group(3))
+            if not target:
+                continue
+            if m.group(2):
+                local[m.group(2)] = (target, None)
+            for part in (m.group(1) or "").split(","):
+                bits = [b.strip() for b in part.split(":")]
+                if bits[0]:
+                    local[bits[-1]] = (target, bits[0])
+        if not local:
+            return
+        names = "|".join(re.escape(k) for k in sorted(local, key=len, reverse=True))
+        seen = set()
+        for m in re.finditer(rf"(?<![\w.])({names})(?:\.(\w+))?\s*\(", text):
+            ln = line_of(m.start())
+            file, sym = local[m.group(1)]
+            callee = sym if sym and sym != "default" else (m.group(2) or m.group(1))
+            caller = self._enclosing(rel, ln) or "<module>"
+            key = (caller, file, callee, ln)
+            if key in seen:
+                continue
+            seen.add(key)
+            self.calls.append({"file": rel, "line": ln, "caller": caller, "callee_file": file, "callee": callee, "lang": "js"})
 
     def _enclosing(self, rel, line):
         best = None

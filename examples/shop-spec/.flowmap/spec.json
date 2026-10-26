@@ -1,0 +1,265 @@
+{
+  "schema": "flowmap-spec/1",
+  "source": "srs.md",
+  "title": "ShopDemo Web Store: Software Requirements Specification",
+  "version": "1.2",
+  "actors": [
+    {
+      "id": "customer",
+      "label": "Customer",
+      "description": "A registered shopper who buys products."
+    },
+    {
+      "id": "admin",
+      "label": "Admin",
+      "description": "Store staff who manage orders and issue refunds."
+    }
+  ],
+  "modules": [
+    {
+      "id": "auth",
+      "label": "Authentication",
+      "requirements": [
+        "FR-1",
+        "FR-2",
+        "FR-3",
+        "FR-4",
+        "FR-5"
+      ]
+    },
+    {
+      "id": "catalog",
+      "label": "Catalog",
+      "requirements": [
+        "FR-6",
+        "FR-7"
+      ]
+    },
+    {
+      "id": "cart",
+      "label": "Cart and checkout",
+      "requirements": [
+        "FR-8",
+        "BR-1",
+        "FR-9",
+        "FR-10",
+        "FR-11",
+        "FR-12"
+      ]
+    },
+    {
+      "id": "orders",
+      "label": "Orders",
+      "requirements": [
+        "FR-13",
+        "FR-14",
+        "FR-15",
+        "FR-16"
+      ]
+    }
+  ],
+  "user_stories": [],
+  "requirements": [
+    {
+      "id": "FR-1",
+      "text": "A user shall sign in with an e-mail address and a password on the Sign-in screen.",
+      "priority": "High",
+      "section": "2. Authentication",
+      "loc": "line 19",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "FR-2",
+      "text": "Passwords shall be at least 8 characters long. The sign-in form shall state this rule under the password field.",
+      "priority": "High",
+      "section": "2. Authentication",
+      "loc": "line 20",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "FR-3",
+      "text": "A user who forgot the password shall request a reset link from a \"Forgot password?\" link and set a new password on a Reset Password screen.",
+      "priority": "Medium",
+      "section": "2. Authentication",
+      "loc": "line 21",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "FR-4",
+      "text": "On invalid credentials the system shall show \"Invalid email or password\", keep the e-mail filled in and clear the password.",
+      "priority": "High",
+      "section": "2. Authentication",
+      "loc": "line 22",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "FR-5",
+      "text": "The user shall choose a role (Customer or Admin) when signing in. Customers land on the product list; admins land on Order Management.",
+      "priority": "High",
+      "section": "2. Authentication",
+      "loc": "line 23",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "FR-6",
+      "text": "The product list shall show each product's name, price and an \"Add to cart\" button.",
+      "priority": "High",
+      "section": "3. Catalog",
+      "loc": "line 27",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "FR-7",
+      "text": "Customers shall search products by name from a search field above the list.",
+      "priority": "Medium",
+      "section": "3. Catalog",
+      "loc": "line 28",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "FR-8",
+      "text": "The cart shall list items with quantity controls, a remove action and the subtotal.",
+      "priority": "High",
+      "section": "4. Cart and checkout",
+      "loc": "line 32",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "BR-1",
+      "text": "Orders over $50 ship for free; the cart shall say so.",
+      "priority": "Medium",
+      "section": "4. Cart and checkout",
+      "loc": "line 33",
+      "ui": true,
+      "kind": "business_rule"
+    },
+    {
+      "id": "FR-9",
+      "text": "A \"Checkout\" button on the cart shall open the checkout screen.",
+      "priority": "High",
+      "section": "4. Cart and checkout",
+      "loc": "line 34",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "FR-10",
+      "text": "Checkout shall collect a shipping address and card details.",
+      "priority": "High",
+      "section": "4. Cart and checkout",
+      "loc": "line 35",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "FR-11",
+      "text": "\"Place order\" shall charge the card. On success the system shows an order confirmation with the order number. If the card is declined the system shows an error on the checkout screen and keeps the entered data.",
+      "priority": "High",
+      "section": "4. Cart and checkout",
+      "loc": "line 36",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "FR-12",
+      "text": "The system shall e-mail an order confirmation to the customer. (No user interface.)",
+      "priority": "Medium",
+      "section": "4. Cart and checkout",
+      "loc": "line 37",
+      "ui": false,
+      "kind": "functional"
+    },
+    {
+      "id": "FR-13",
+      "text": "Customers shall see the status of an order as a timeline (Paid, Packed, Shipped, Delivered).",
+      "priority": "High",
+      "section": "5. Orders",
+      "loc": "line 41",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "FR-14",
+      "text": "Admins shall see all orders in a table and change an order's status.",
+      "priority": "High",
+      "section": "5. Orders",
+      "loc": "line 42",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "FR-15",
+      "text": "Admins shall issue a refund for a paid order from Order Management.",
+      "priority": "Medium",
+      "section": "5. Orders",
+      "loc": "line 43",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "FR-16",
+      "text": "Every signed-in screen shall offer a way to sign out.",
+      "priority": "Low",
+      "section": "5. Orders",
+      "loc": "line 44",
+      "ui": true,
+      "kind": "functional"
+    },
+    {
+      "id": "NFR-1",
+      "text": "Pages shall load in under 2 seconds on a 4G connection. (No user interface.)",
+      "priority": "Medium",
+      "section": "6. Non-functional requirements",
+      "loc": "line 48",
+      "ui": false,
+      "kind": "nonfunctional"
+    },
+    {
+      "id": "NFR-2",
+      "text": "Screens shall meet WCAG 2.1 AA contrast. (No user interface.)",
+      "priority": "Medium",
+      "section": "6. Non-functional requirements",
+      "loc": "line 49",
+      "ui": false,
+      "kind": "nonfunctional"
+    }
+  ],
+  "business_rules": [
+    "BR-1"
+  ],
+  "validations": [
+    {
+      "req": "FR-2",
+      "rule": "password length >= 8"
+    },
+    {
+      "req": "FR-4",
+      "rule": "invalid credentials message"
+    }
+  ],
+  "notifications": [
+    {
+      "req": "FR-12",
+      "channel": "email",
+      "event": "order confirmed"
+    }
+  ],
+  "integrations": [
+    {
+      "req": "FR-11",
+      "system": "card payment provider"
+    }
+  ],
+  "nonfunctional": [
+    "NFR-1",
+    "NFR-2"
+  ]
+}

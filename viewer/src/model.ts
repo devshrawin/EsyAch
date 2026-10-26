@@ -12,6 +12,8 @@ export interface ViewOpts {
   showDeps: boolean;
   showDeactivated: boolean;
   collapsed: Set<string>;
+  showGlobal?: boolean; // Mode B: header links / sign-out available on every screen
+  actor?: string | null; // Mode B: only screens this actor sees
 }
 
 export interface ViewGraph {
@@ -55,11 +57,12 @@ export function groupsOf(g: Graph): { groups: Group[]; groupOf: Map<string, stri
   return { groups, groupOf };
 }
 
-export function buildView(g: Graph, o: ViewOpts): ViewGraph {
+export function buildView(g: Graph, o: ViewOpts, keepEdges: Set<string> = new Set()): ViewGraph {
   const byId = new Map(g.nodes.map((n) => [n.id, n]));
   const { groups, groupOf } = groupsOf(g);
   const nodeMap = new Map<string, string>();
   const visible = (n: GNode) =>
+    !(o.actor && n.kind === "screen" && n.actors?.length && !n.actors.includes(o.actor)) &&
     !o.hiddenKinds.has(n.kind) && !(n.layer && o.hiddenLayers.has(n.layer)) &&
     (o.showDeactivated || n.status !== "deactivated");
 
@@ -100,8 +103,10 @@ export function buildView(g: Graph, o: ViewOpts): ViewGraph {
   const showDeps = o.showDeps && o.level !== "overview";
   for (const e of g.edges) {
     if (e.kind === "dependency" && !showDeps) continue;
+    if (e.global && !o.showGlobal && !keepEdges.has(e.id)) continue;
     const s = nodeMap.get(e.from), t = nodeMap.get(e.to);
-    if (!s || !t || s === t) continue;
+    if (!s || !t) continue;
+    if (s === t && (e.from !== e.to || s !== e.from)) continue; // folded into one node: drop; a real self-loop stays
     const remapped = s !== e.from || t !== e.to;
     const key = `${s}>${t}:${e.kind}`;
     const prev = merged.get(key);
@@ -160,7 +165,9 @@ export function checkGraph(g: Graph): Problem[] {
     if (f.steps[0]?.node !== f.trigger) p.push({ msg: `Flow "${f.name}": step 1 must be the trigger`, flow: f.id });
     const seen = new Set<string>();
     f.steps.forEach((s, i) => {
-      if (i > 0) {
+      if (i > 0 && s.action && !s.edge) {
+        if (s.node !== f.steps[i - 1].node) p.push({ msg: `Flow "${f.name}" step ${i + 1}: an action must stay on the same screen`, flow: f.id });
+      } else if (i > 0) {
         const e = s.edge ? edges.get(s.edge) : undefined;
         if (!e) p.push({ msg: `Flow "${f.name}" step ${i + 1}: no edge`, flow: f.id });
         else if (e.to !== s.node) p.push({ msg: `Flow "${f.name}" step ${i + 1}: edge does not lead to this node`, flow: f.id });
@@ -180,7 +187,9 @@ export function stepProblems(g: Graph, flowId: string): Map<number, string> {
   const seen = new Set<string>();
   f.steps.forEach((s, i) => {
     if (i === 0 && s.node !== f.trigger) out.set(i, "must be the trigger");
-    if (i > 0) {
+    if (i > 0 && s.action && !s.edge) {
+      if (s.node !== f.steps[i - 1].node) out.set(i, "an action must stay on the same screen");
+    } else if (i > 0) {
       const e = s.edge ? edges.get(s.edge) : undefined;
       if (!e) out.set(i, "no edge");
       else if (e.to !== s.node) out.set(i, "edge does not lead here");

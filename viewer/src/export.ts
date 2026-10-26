@@ -3,14 +3,16 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { getBezierPath, Position } from "@xyflow/react";
-import { bezierPoint } from "./edges";
+import { bezierPoint, selfLoop } from "./edges";
 import { Icon, iconFor } from "./icons";
 import { portX, type Placed, type Visual } from "./layout";
+import type { Coverage } from "./coverage";
 import type { Flow, GEdge, GNode, Graph } from "./types";
 import { TEMPLATE } from "./template";
 
 export interface RNode {
   n: GNode; p: Placed; v: Visual; dim: boolean; inFlow: boolean; current: boolean; hasOut: boolean;
+  badges?: { sev: "red" | "amber"; text: string }[];
 }
 export interface REdge {
   e: GEdge; dim: boolean; inFlow: boolean; current: boolean; cross: boolean; fanOut: boolean;
@@ -51,7 +53,7 @@ function handlePoint(p: Placed, n: GNode, h: string): [number, number] {
   return [p.x + p.w / 2, p.y + p.h];
 }
 
-export function renderSVG(nodes: RNode[], edges: REdge[], opt: { payloads: boolean; title?: string }) {
+export function renderSVG(nodes: RNode[], edges: REdge[], opt: { payloads: boolean; title?: string; assets?: Record<string, string> }) {
   const t = themeVars();
   const byId = new Map(nodes.map((r) => [r.n.id, r]));
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -86,7 +88,8 @@ export function renderSVG(nodes: RNode[], edges: REdge[], opt: { payloads: boole
     const th = dep ? "top" : "in";
     const [sx, sy] = handlePoint(s.p, s.n, sh);
     const [tx, ty] = handlePoint(d.p, d.n, th);
-    const [path, lx, ly] = getBezierPath({
+    const loop = e.from === e.to;
+    const [path, lx, ly] = loop ? selfLoop(sx, sy, tx, ty) : getBezierPath({
       sourceX: sx, sourceY: sy, targetX: tx, targetY: ty,
       sourcePosition: dep ? Position.Bottom : Position.Right, targetPosition: dep ? Position.Top : Position.Left,
       curvature: dep ? 0.35 : 0.3,
@@ -122,6 +125,34 @@ export function renderSVG(nodes: RNode[], edges: REdge[], opt: { payloads: boole
     const sw = r.current ? 2.5 : 1.5;
     const dash = n.status === "deactivated" || n.confidence === "low" ? ` stroke-dasharray="5 4"` : "";
     parts.push(`<g opacity="${op}">`);
+    if (v === "screen") {
+      const nv = n.variants?.length ?? 0;
+      for (let k = Math.min(nv, 2); k > 0; k--) {
+        parts.push(`<rect x="${x + 5 * k}" y="${y - 5 * k}" width="${w}" height="${h}" rx="10" fill="${t.node}" stroke="${t.border}" stroke-width="1.5" opacity="${0.8 - 0.25 * k}"/>`);
+      }
+      parts.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="${t.node}" stroke="${stroke}" stroke-width="${sw}"/>`);
+      const src = n.image ? opt.assets?.[n.image] : undefined;
+      if (src && src.startsWith("data:image/")) {
+        parts.push(`<clipPath id="clip-${esc(n.id)}"><rect x="${x + 8}" y="${y + 8}" width="${w - 16}" height="${h - 16}" rx="5"/></clipPath>`);
+        parts.push(`<image href="${esc(src)}" x="${x + 8}" y="${y + 8}" width="${w - 16}" height="${h - 16}" preserveAspectRatio="xMidYMid slice" clip-path="url(#clip-${esc(n.id)})"/>`);
+      }
+      parts.push(`<rect x="${x - 2.5}" y="${y + h / 2 - 7}" width="5" height="14" rx="1" fill="${t.handle}"/><circle cx="${x + w}" cy="${y + h / 2}" r="5.5" fill="${t.handle}"/>`);
+      parts.push(`<text x="${x + w / 2}" y="${y + h + 20}" font-size="13" font-weight="600" text-anchor="middle" fill="${t.text}">${esc(clip(n.label, 26))}</text>`);
+      const chips = (n.requirements ?? []).slice(0, 4).map((q) => q.id).join("  ");
+      if (chips) parts.push(`<text x="${x + w / 2}" y="${y + h + 36}" font-size="10" text-anchor="middle" fill="#8fb8ff">${esc(chips)}</text>`);
+      if (nv) parts.push(`<circle cx="${x + w - 6}" cy="${y + 6}" r="10" fill="#5b6070"/><text x="${x + w - 6}" y="${y + 10}" font-size="10" font-weight="700" text-anchor="middle" fill="#fff">×${nv + 1}</text>`);
+      if (n.entry) parts.push(`<path transform="translate(${x - 26},${y + 4}) scale(0.6667)" d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" fill="${t.accent}"/>`);
+      const bd = r.badges ?? [];
+      const red = bd.filter((b) => b.sev === "red").length, amber = bd.filter((b) => b.sev === "amber").length;
+      let bx = x + 8;
+      for (const [cnt, col] of [[red, "#ef5b5b"], [amber, "#f0a33f"]] as [number, string][]) {
+        if (!cnt) continue;
+        parts.push(`<circle cx="${bx + 8}" cy="${y - 2}" r="9" fill="${col}"/><text x="${bx + 8}" y="${y + 2}" font-size="10" font-weight="700" text-anchor="middle" fill="#1b1b1b">${cnt}</text>`);
+        bx += 22;
+      }
+      parts.push(`</g>`);
+      continue;
+    }
     if (v === "group") {
       parts.push(`<rect x="${x + 10}" y="${y - 10}" width="${w}" height="${h}" rx="10" fill="${t.node}" stroke="${t.border}" stroke-width="1.5" opacity="0.45"/>`);
       parts.push(`<rect x="${x + 5}" y="${y - 5}" width="${w}" height="${h}" rx="10" fill="${t.node}" stroke="${t.border}" stroke-width="1.5" opacity="0.7"/>`);
@@ -199,7 +230,9 @@ export async function svgToPng(svg: string, w: number, h: number, scale = 2): Pr
 // ------------------------------------------------------------------ Mermaid
 
 const mid = (id: string) => id.replace(/[^\w]/g, "_");
-const mlabel = (s: string) => s.replace(/"/g, "#quot;").replace(/[<>]/g, "");
+const mlabel = (s: string) => s.replace(/"/g, "#quot;").replace(/[<>]/g, "").replace(/[\r\n]+/g, " ");
+// Comment lines must not end the comment (newline) or form a directive (%%{ ... }%%).
+const mcomment = (s: string) => mlabel(s).replace(/[{}%]/g, "");
 
 export function toMermaid(g: Graph, flow?: Flow) {
   const lines = ["flowchart LR"];
@@ -242,12 +275,12 @@ export function toMermaid(g: Graph, flow?: Flow) {
     lines.push(`  class ${deact.join(",")} deactivated`);
   }
   if (flow) {
-    lines.push(`  %% Highlighted flow: ${flow.name}`);
+    lines.push(`  %% Highlighted flow: ${mcomment(flow.name)}`);
     if (hi.length) lines.push(`  linkStyle ${hi.join(",")} stroke:#ff6d5a,stroke-width:3px`);
   }
   lines.push("");
   for (const f of g.flows) {
-    lines.push(`%% Flow "${f.name}" (${f.kind ?? "happy"}): ${f.steps.map((s) => g.nodes.find((n) => n.id === s.node)?.label ?? s.node).join(" -> ")}`);
+    lines.push(`%% Flow "${mcomment(f.name)}" (${f.kind ?? "happy"}): ${f.steps.map((s) => mcomment(g.nodes.find((n) => n.id === s.node)?.label ?? s.node)).join(" -> ")}`);
   }
   return lines.join("\n") + "\n";
 }
@@ -272,7 +305,10 @@ export function slug(s: string) {
 
 /** The graph as it should be saved (view-only fields never leak into it). */
 export function toJSON(g: Graph) {
-  return JSON.stringify(g, (k, v) => (k === "collapsedGroup" || k === "count" || k === "aggregate" ? undefined : v), 2) + "\n";
+  // assets (embedded screenshots) and view (prototype flag) are added at build/export time, never saved.
+  const { assets: _a, view: _v, ...rest } = g;
+  void _a; void _v;
+  return JSON.stringify(rest, (k, v) => (k === "collapsedGroup" || k === "count" || k === "aggregate" ? undefined : v), 2) + "\n";
 }
 
 /** A new self-contained HTML with this graph embedded, or null when running from the dev server. */
@@ -285,6 +321,74 @@ export function buildHTML(g: Graph): string | null {
 }
 
 // ------------------------------------------------------------------ print / PDF book
+
+function printHTML(html: string) {
+  const iframe = document.createElement("iframe");
+  iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0";
+  iframe.setAttribute("data-flowmap-print", "");
+  document.body.appendChild(iframe);
+  iframe.onload = () => {
+    iframe.contentWindow?.focus();
+    iframe.contentWindow?.print();
+    setTimeout(() => iframe.remove(), 60_000);
+  };
+  iframe.srcdoc = html;
+}
+
+const BOOK_CSS = `body{font:12px/1.45 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1f2024;margin:24px}
+    h1{font-size:22px;margin:0 0 4px} h2{font-size:16px;margin:0 0 6px} h2 small{font-weight:400;color:#666;font-size:12px}
+    .map svg{width:100%;height:auto;border-radius:8px} section{page-break-before:always}
+    table{border-collapse:collapse;width:100%;margin-top:10px} th,td{border-bottom:1px solid #ddd;text-align:left;padding:4px 6px;vertical-align:top}
+    code{font:11px ui-monospace,Menlo,Consolas,monospace} @page{size:A4 landscape;margin:12mm}
+    .step{display:grid;grid-template-columns:62% 1fr;gap:16px;margin:12px 0;page-break-inside:avoid}
+    .shot{position:relative;border:1px solid #ccd;border-radius:6px;overflow:hidden} .shot img{display:block;width:100%}
+    .hs{position:absolute;border:3px solid #ff6d5a;border-radius:4px;box-shadow:0 0 0 3px rgba(255,109,90,.25)}
+    .req{background:#eef2ff;border-radius:6px;padding:6px 8px;margin-top:6px} .bad{color:#b42318} .warn{color:#9a6100}
+    ul{margin:4px 0 8px 18px;padding:0}`;
+
+/** Mode B flow book: coverage report, then every journey step with its screenshot and hotspot. */
+export function printSpecBook(g: Graph, cov: Coverage, overview: string) {
+  const node = new Map(g.nodes.map((n) => [n.id, n]));
+  const req = new Map((g.requirements ?? []).map((r) => [r.id, r]));
+  const label = (id: string) => node.get(id)?.label ?? id;
+  const img = (n: GNode, v?: string) => {
+    const name = v ? n.variants?.find((x) => x.id === v)?.image : n.image;
+    const src = name ? g.assets?.[name] : undefined;
+    return src && src.startsWith("data:image/") ? src : "";
+  };
+  const li = (xs: string[]) => (xs.length ? `<ul>${xs.map((x) => `<li>${x}</li>`).join("")}</ul>` : "<p>None</p>");
+  const covHtml = `
+    <section style="page-break-before:auto"><h2>Coverage</h2>
+    <p><b>${cov.covered.length}/${cov.total}</b> UI requirements have a screen. Non-UI: ${esc(cov.nonUi.join(", ") || "none")}.</p>
+    <h3 class="bad">Contradictions</h3>${li(cov.findings.filter((f) => f.type === "contradiction").map((f) => `<b>${esc(f.req ?? "")}</b> · ${esc(label(f.screen ?? ""))}: ${esc(f.text)}`))}
+    <h3 class="bad">Requirements with no screen</h3>${li(cov.withoutScreen.map((r) => `<b>${esc(r)}</b> ${esc(req.get(r)?.text ?? "")}`))}
+    <h3 class="warn">Controls that lead nowhere</h3>${li(cov.deadHotspots.map((h) => `${esc(label(h.screen))}: "${esc(h.label)}"`))}
+    <h3 class="warn">Other findings</h3>${li(cov.findings.filter((f) => f.type !== "contradiction").map((f) => `${esc(f.type)} ${esc(f.req ?? "")}: ${esc(f.text)}`))}
+    <h3 class="warn">Dead ends / unreachable / no requirement</h3>${li([...cov.deadEnds.map((s) => `dead end: ${esc(label(s))}`), ...cov.unreachable.map((s) => `unreachable: ${esc(label(s))}`), ...cov.screensWithoutReq.map((s) => `no requirement: ${esc(label(s))}`)])}
+    <h3 class="warn">Inferred transitions</h3>${li(cov.inferred.map((id) => { const e = g.edges.find((x) => x.id === id)!; return `${esc(label(e.from))} → ${esc(label(e.to))} (${esc(e.label ?? "")}): ${esc(e.reason ?? "")}`; }))}
+    </section>`;
+  const journeys = g.flows.map((f) => `
+    <section class="flow"><h2>${esc(f.name)} <small>${esc(f.kind ?? "happy")}${f.actor ? " · " + esc(f.actor) : ""}</small></h2>
+    ${f.description ? `<p>${esc(f.description)}</p>` : ""}
+    ${f.steps.map((s, i) => {
+      const n = node.get(s.node);
+      if (!n) return "";
+      const hsList = (s.variant ? n.variants?.find((v) => v.id === s.variant)?.hotspots : undefined) ?? n.hotspots ?? [];
+      const h = hsList.find((x) => x.id === s.hotspot);
+      const r = s.evidence?.req ? req.get(s.evidence.req) : undefined;
+      const e = s.edge ? g.edges.find((x) => x.id === s.edge) : undefined;
+      return `<div class="step"><div class="shot">${img(n, s.variant) ? `<img src="${esc(img(n, s.variant))}">` : ""}
+        ${h ? `<div class="hs" style="left:${h.box[0] * 100}%;top:${h.box[1] * 100}%;width:${h.box[2] * 100}%;height:${h.box[3] * 100}%"></div>` : ""}</div>
+        <div><b>Step ${i + 1}: ${esc(n.label)}${s.variant ? ` (${esc(s.variant)})` : ""}</b>
+        ${e ? `<div>${esc(e.label ?? "")}${e.condition ? ` · if ${esc(e.condition)}` : ""}${e.inferred ? ` · <span class="warn">inferred: ${esc(e.reason ?? "")}</span>` : ""}</div>` : ""}
+        <p>${esc(s.description)}</p>${h ? `<div>Next: use <b>${esc(h.label)}</b> (highlighted)</div>` : ""}
+        ${r ? `<div class="req"><b>${esc(r.id)}</b> ${esc(r.text)}</div>` : ""}</div></div>`;
+    }).join("")}</section>`).join("");
+  printHTML(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(g.project.name)} · flow book</title><style>${BOOK_CSS}</style></head><body>
+    <h1>${esc(g.project.name)}</h1><p>${esc(g.project.summary ?? "")}</p>
+    <p>${g.nodes.length} screens · ${g.edges.length} transitions · ${g.flows.length} journeys · ${(g.requirements ?? []).length} requirements</p>
+    <div class="map">${overview}</div>${covHtml}${journeys}</body></html>`);
+}
 
 export function printBook(g: Graph, overview: string, perFlow: { flow: Flow; svg: string }[]) {
   const label = (id: string) => g.nodes.find((n) => n.id === id)?.label ?? id;
@@ -308,15 +412,6 @@ export function printBook(g: Graph, overview: string, perFlow: { flow: Flow; svg
     <h1>${esc(g.project.name)}</h1><p>${esc(g.project.summary ?? "")}</p>
     <p>${g.nodes.length} nodes · ${g.edges.length} edges · ${g.flows.length} flows</p>
     <div class="map">${overview}</div>${sections}</body></html>`;
-  const iframe = document.createElement("iframe");
-  iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0";
-  iframe.setAttribute("data-flowmap-print", "");
-  document.body.appendChild(iframe);
-  iframe.onload = () => {
-    iframe.contentWindow?.focus();
-    iframe.contentWindow?.print();
-    setTimeout(() => iframe.remove(), 60_000);
-  };
-  iframe.srcdoc = html;
+  printHTML(html);
 }
 

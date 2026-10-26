@@ -1,0 +1,558 @@
+{
+ "01-sign-in.png": [
+  {
+   "label": "Role",
+   "kind": "tab",
+   "box": [
+    0.355,
+    0.381,
+    0.156,
+    0.05
+   ]
+  },
+  {
+   "label": "Role: Customer",
+   "kind": "tab",
+   "box": [
+    0.356,
+    0.383,
+    0.087,
+    0.047
+   ]
+  },
+  {
+   "label": "Role: Admin",
+   "kind": "tab",
+   "box": [
+    0.443,
+    0.383,
+    0.068,
+    0.047
+   ]
+  },
+  {
+   "label": "Email",
+   "kind": "field",
+   "box": [
+    0.355,
+    0.485,
+    0.289,
+    0.053
+   ]
+  },
+  {
+   "label": "Password",
+   "kind": "field",
+   "box": [
+    0.355,
+    0.588,
+    0.289,
+    0.053
+   ]
+  },
+  {
+   "label": "Sign in",
+   "kind": "button",
+   "box": [
+    0.355,
+    0.69,
+    0.073,
+    0.055
+   ]
+  },
+  {
+   "label": "Forgot password?",
+   "kind": "link",
+   "box": [
+    0.543,
+    0.703,
+    0.102,
+    0.027
+   ]
+  }
+ ],
+ "02-sign-in-error.png": [
+  {
+   "label": "Role",
+   "kind": "tab",
+   "box": [
+    0.355,
+    0.419,
+    0.156,
+    0.05
+   ]
+  },
+  {
+   "label": "Role: Customer",
+   "kind": "tab",
+   "box": [
+    0.356,
+    0.42,
+    0.087,
+    0.047
+   ]
+  },
+  {
+   "label": "Role: Admin",
+   "kind": "tab",
+   "box": [
+    0.443,
+    0.42,
+    0.068,
+    0.047
+   ]
+  },
+  {
+   "label": "Email",
+   "kind": "field",
+   "box": [
+    0.355,
+    0.522,
+    0.289,
+    0.053
+   ]
+  },
+  {
+   "label": "Password",
+   "kind": "field",
+   "box": [
+    0.355,
+    0.626,
+    0.289,
+    0.053
+   ]
+  },
+  {
+   "label": "Sign in",
+   "kind": "button",
+   "box": [
+    0.355,
+    0.727,
+    0.073,
+    0.055
+   ]
+  },
+  {
+   "label": "Forgot password?",
+   "kind": "link",
+   "box": [
+    0.543,
+    0.741,
+    0.102,
+    0.027
+   ]
+  }
+ ],
+ "03-products.png": [
+  {
+   "label": "Products",
+   "kind": "link",
+   "box": [
+    0.15,
+    0.026,
+    0.051,
+    0.027
+   ]
+  },
+  {
+   "label": "Cart",
+   "kind": "link",
+   "box": [
+    0.218,
+    0.026,
+    0.043,
+    0.027
+   ]
+  },
+  {
+   "label": "Orders",
+   "kind": "link",
+   "box": [
+    0.279,
+    0.026,
+    0.039,
+    0.027
+   ]
+  },
+  {
+   "label": "Sign out",
+   "kind": "link",
+   "box": [
+    0.928,
+    0.026,
+    0.047,
+    0.027
+   ]
+  },
+  {
+   "label": "Search products",
+   "kind": "field",
+   "box": [
+    0.713,
+    0.12,
+    0.25,
+    0.053
+   ]
+  },
+  {
+   "label": "Add to cart",
+   "kind": "button",
+   "box": [
+    0.239,
+    0.428,
+    0.077,
+    0.041
+   ]
+  }
+ ],
+ "04-cart.png": [
+  {
+   "label": "Products",
+   "kind": "link",
+   "box": [
+    0.15,
+    0.026,
+    0.051,
+    0.027
+   ]
+  },
+  {
+   "label": "Cart",
+   "kind": "link",
+   "box": [
+    0.218,
+    0.026,
+    0.043,
+    0.027
+   ]
+  },
+  {
+   "label": "Orders",
+   "kind": "link",
+   "box": [
+    0.279,
+    0.026,
+    0.039,
+    0.027
+   ]
+  },
+  {
+   "label": "Sign out",
+   "kind": "link",
+   "box": [
+    0.928,
+    0.026,
+    0.047,
+    0.027
+   ]
+  },
+  {
+   "label": "Quantity",
+   "kind": "field",
+   "box": [
+    0.25,
+    0.259,
+    0.044,
+    0.045
+   ]
+  },
+  {
+   "label": "Remove",
+   "kind": "link",
+   "box": [
+    0.536,
+    0.269,
+    0.045,
+    0.024
+   ]
+  },
+  {
+   "label": "Continue shopping",
+   "kind": "link",
+   "box": [
+    0.038,
+    0.417,
+    0.121,
+    0.024
+   ]
+  },
+  {
+   "label": "Checkout",
+   "kind": "button",
+   "box": [
+    0.716,
+    0.288,
+    0.227,
+    0.055
+   ]
+  }
+ ],
+ "05-checkout.png": [
+  {
+   "label": "Products",
+   "kind": "link",
+   "box": [
+    0.15,
+    0.026,
+    0.051,
+    0.027
+   ]
+  },
+  {
+   "label": "Cart",
+   "kind": "link",
+   "box": [
+    0.218,
+    0.026,
+    0.043,
+    0.027
+   ]
+  },
+  {
+   "label": "Orders",
+   "kind": "link",
+   "box": [
+    0.279,
+    0.026,
+    0.039,
+    0.027
+   ]
+  },
+  {
+   "label": "Sign out",
+   "kind": "link",
+   "box": [
+    0.928,
+    0.026,
+    0.047,
+    0.027
+   ]
+  },
+  {
+   "label": "Full name",
+   "kind": "field",
+   "box": [
+    0.057,
+    0.296,
+    0.598,
+    0.053
+   ]
+  },
+  {
+   "label": "Address",
+   "kind": "field",
+   "box": [
+    0.057,
+    0.399,
+    0.598,
+    0.053
+   ]
+  },
+  {
+   "label": "Card number",
+   "kind": "field",
+   "box": [
+    0.057,
+    0.549,
+    0.29,
+    0.053
+   ]
+  },
+  {
+   "label": "Expiry",
+   "kind": "field",
+   "box": [
+    0.356,
+    0.549,
+    0.145,
+    0.053
+   ]
+  },
+  {
+   "label": "CVC",
+   "kind": "field",
+   "box": [
+    0.511,
+    0.549,
+    0.145,
+    0.053
+   ]
+  },
+  {
+   "label": "Place order",
+   "kind": "button",
+   "box": [
+    0.716,
+    0.201,
+    0.227,
+    0.055
+   ]
+  },
+  {
+   "label": "Back to cart",
+   "kind": "link",
+   "box": [
+    0.716,
+    0.274,
+    0.082,
+    0.024
+   ]
+  }
+ ],
+ "06-order-confirmed.png": [
+  {
+   "label": "Products",
+   "kind": "link",
+   "box": [
+    0.15,
+    0.026,
+    0.051,
+    0.027
+   ]
+  },
+  {
+   "label": "Cart",
+   "kind": "link",
+   "box": [
+    0.218,
+    0.026,
+    0.044,
+    0.027
+   ]
+  },
+  {
+   "label": "Orders",
+   "kind": "link",
+   "box": [
+    0.279,
+    0.026,
+    0.039,
+    0.027
+   ]
+  },
+  {
+   "label": "Sign out",
+   "kind": "link",
+   "box": [
+    0.928,
+    0.026,
+    0.047,
+    0.027
+   ]
+  },
+  {
+   "label": "View order status",
+   "kind": "button",
+   "box": [
+    0.432,
+    0.477,
+    0.135,
+    0.055
+   ]
+  },
+  {
+   "label": "Continue shopping",
+   "kind": "link",
+   "box": [
+    0.446,
+    0.556,
+    0.107,
+    0.024
+   ]
+  }
+ ],
+ "07-order-status.png": [
+  {
+   "label": "Products",
+   "kind": "link",
+   "box": [
+    0.15,
+    0.026,
+    0.051,
+    0.027
+   ]
+  },
+  {
+   "label": "Cart",
+   "kind": "link",
+   "box": [
+    0.218,
+    0.026,
+    0.044,
+    0.027
+   ]
+  },
+  {
+   "label": "Orders",
+   "kind": "link",
+   "box": [
+    0.279,
+    0.026,
+    0.039,
+    0.027
+   ]
+  },
+  {
+   "label": "Sign out",
+   "kind": "link",
+   "box": [
+    0.928,
+    0.026,
+    0.047,
+    0.027
+   ]
+  },
+  {
+   "label": "Back to products",
+   "kind": "link",
+   "box": [
+    0.038,
+    0.447,
+    0.11,
+    0.024
+   ]
+  }
+ ],
+ "08-admin-orders.png": [
+  {
+   "label": "Order Management",
+   "kind": "link",
+   "box": [
+    0.188,
+    0.026,
+    0.11,
+    0.027
+   ]
+  },
+  {
+   "label": "Sign out",
+   "kind": "link",
+   "box": [
+    0.928,
+    0.026,
+    0.047,
+    0.027
+   ]
+  },
+  {
+   "label": "Change status",
+   "kind": "menu",
+   "box": [
+    0.54,
+    0.259,
+    0.067,
+    0.045
+   ]
+  },
+  {
+   "label": "Refund",
+   "kind": "button",
+   "box": [
+    0.773,
+    0.259,
+    0.059,
+    0.044
+   ]
+  }
+ ]
+}
