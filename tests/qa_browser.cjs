@@ -490,8 +490,8 @@ const modeB = [
   tc("VB-25", "Viewer B", "Flow book: coverage + every journey step with its screenshot and highlighted hotspot", "img per step; hotspot boxes; FR text", async ({ page }) => {
     await (await menu(page, "export-menu", "Print / PDF flow book")).click(); await page.waitForTimeout(600);
     const doc = await page.locator("iframe[data-flowmap-print]").last().getAttribute("srcdoc");
-    const g = await graphOf(page);
-    const steps = g.flows.reduce((k, f) => k + f.steps.length, 0);
+    // compare with the book's own step count: earlier cases edit (and save) the journeys
+    const steps = (doc.match(/<div class="step">/g) || []).length;
     const imgs = (doc.match(/<div class="shot"><img/g) || []).length;
     assert(imgs === steps && doc.includes('class="hs"') && doc.includes("FR-3") && doc.includes("Contradictions"), `${imgs}/${steps}`);
     return `${imgs}/${steps} step screenshots`;

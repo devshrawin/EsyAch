@@ -1,11 +1,11 @@
-# flowmap QA results (after fixes)
+# flowmap QA results (final run, after all fixes)
 
-**136 test cases: 134 pass, 2 fail, 0 skipped.**
+**140 test cases: 139 pass, 1 fail, 0 skipped.**
 
 | Area | Pass | Fail | Skip |
 |---|---|---|---|
 | Ingest | 12 | 0 | 0 |
-| Inventory | 17 | 0 | 0 |
+| Inventory | 18 | 0 | 0 |
 | Validate | 18 | 0 | 0 |
 | SRS | 8 | 0 | 0 |
 | Screens | 6 | 0 | 0 |
@@ -13,8 +13,8 @@
 | Hotspots | 1 | 0 | 0 |
 | Build | 7 | 0 | 0 |
 | Packaging | 7 | 0 | 0 |
-| Viewer A | 21 | 1 | 0 |
-| Viewer B | 25 | 1 | 0 |
+| Viewer A | 22 | 0 | 0 |
+| Viewer B | 28 | 1 | 0 |
 | Performance | 1 | 0 | 0 |
 | Security | 3 | 0 | 0 |
 
@@ -56,6 +56,7 @@
 | INV-15 | Express routes detected in JS | GET /health and POST /api/items | [('GET', '/health'), ('POST', '/api/items')] | ✅ PASS |
 | INV-16 | Go and Java routes via the regex fallback | Go HandleFunc + gin GET, Spring @PostMapping | ['/orders', '/ping', '/users'] | ✅ PASS |
 | INV-17 | Files containing NUL bytes are treated as binary | skipped as binary | {'binary': 1} | ✅ PASS |
+| INV-18 | NestJS decorator routes in TypeScript (audit finding A3) | GET /users, POST /users/:id/ban | [('GET', '/users'), ('POST', '/users/:id/ban')] | ✅ PASS |
 
 ## Validate
 
@@ -77,7 +78,7 @@
 | VAL-14 | An action step that changes screen is rejected | error 'must stay' | flow[4] j_admin step 3: an action step without an edge must stay on the previous step's node | ✅ PASS |
 | VAL-15 | Requirement not present in the SRS extraction is caught (--spec) | error 'not in the SRS' | requirement FR-77: not in the SRS extraction (spec.json) | ✅ PASS |
 | VAL-16 | Duplicate node ids are caught | error 'duplicate id' | node[20] ui_storefront: duplicate id | ✅ PASS |
-| VAL-17 | Malformed JSON exits 1 with a message (no traceback) | ERROR cannot read | ERROR cannot read /tmp/flowmap-qa-k8g4p8wl/bad.json: Expecting property name enc | ✅ PASS |
+| VAL-17 | Malformed JSON exits 1 with a message (no traceback) | ERROR cannot read | ERROR cannot read /tmp/flowmap-qa-plnoll2q/bad.json: Expecting property name enc | ✅ PASS |
 | VAL-18 | Requirement mapping without a reason is caught | error 'needs a reason' | screen s_signin: requirement FR-1 needs a 'reason' (why this screen satisfies it) | ✅ PASS |
 
 ## SRS
@@ -132,7 +133,7 @@
 | BLD-03 | Mode B screenshots embedded as WebP, max 1200 px wide | 8 data:image/webp assets, width <= 1200 | 8 images, widths [1200] | ✅ PASS |
 | BLD-04 | Output above the size limit prints a warning | WARNING ... larger than | WARNING: output is larger than 0 MB; consider fewer/smaller screenshots | ✅ PASS |
 | BLD-05 | Missing screenshot -> warning, build still succeeds | WARNING not found; HTML written | WARNING: 1 screenshot(s) not found in /home/user/EsyAch/examples/shop-spec/screens: ['gone | ✅ PASS |
-| BLD-06 | Template without the data placeholder is refused | SystemExit | template /tmp/flowmap-qa-k8g4p8wl/tpl.html has no single data placeholder; rebui | ✅ PASS |
+| BLD-06 | Template without the data placeholder is refused | SystemExit | template /tmp/flowmap-qa-plnoll2q/tpl.html has no single data placeholder; rebui | ✅ PASS |
 | BLD-07 | Mode B images cannot be read from outside the screens folder | ../ path not embedded | refused | ✅ PASS |
 
 ## Packaging
@@ -159,7 +160,7 @@
 | VA-06 | n8n look: red trigger bolts on entry points | bolt fill = accent red on every trigger | 8 bolts, rgb(255, 109, 90) | ✅ PASS |
 | VA-07 | At least 3 replayable flows: select, step, play | 11 flows; caption advances; play reaches the end | 11 flows, caption 2/10 -> 10/10, animated dot 1 | ✅ PASS |
 | VA-08 | Node drawer shows summary, evidence, edges, flows | drawer lists file:line and flows | evidence + flows listed | ✅ PASS |
-| VA-09 | Edge hover card shows payload and evidence | payload + file:line | Storefront → Order status | ❌ FAIL |
+| VA-09 | Edge hover card shows payload and evidence | payload + file:line | Storefront → Checkout http sync main high confidence Action: POST Payload: {user_id, items | ✅ PASS |
 | VA-10 | Ctrl+K search finds a node by symbol name | typing 'create_order' opens Order Service | Order Service | ✅ PASS |
 | VA-11 | Detail levels and kind filter change what is drawn | Overview < Detail nodes; hiding datastores removes them | detail 20, overview 15, without datastores 17 | ✅ PASS |
 | VA-12 | Groups collapse into a stacked card and expand on click | 4 group cards; click expands one | 4 -> 3 | ✅ PASS |
@@ -167,7 +168,7 @@
 | VA-14 | Connect two nodes by dragging handles; drag a node | edge count +1; node keeps the dragged position | edges 23 -> 24, node moved 87 px | ✅ PASS |
 | VA-15 | Save JSON contains the edits (edited flag, reviewer evidence, pos) | label, new edge, pos saved; no view-only fields | architecture.json | ✅ PASS |
 | VA-16 | Download HTML with edits re-opens offline with the edits | edited label visible, 0 requests | shop-demo.flowmap.html | ✅ PASS |
-| VA-17 | Exports: PNG, vector SVG, Mermaid, JSON | valid files | PNG 893 KB, SVG 27 KB, Mermaid 68 lines | ✅ PASS |
+| VA-17 | Exports: PNG, vector SVG, Mermaid, JSON | valid files | PNG 892 KB, SVG 27 KB, Mermaid 68 lines | ✅ PASS |
 | VA-18 | Print / PDF book: overview + one section per flow | 11 flow sections with tables | 11 sections | ✅ PASS |
 | VA-19 | Light theme toggle | canvas turns light | rgb(244, 244, 246) | ✅ PASS |
 | VA-20 | Unsaved edits survive a reload (draft restore) | banner offers Restore; restore brings the edit back | restored | ✅ PASS |
@@ -201,15 +202,18 @@
 | VB-21 | Edit mode: draw a hotspot, link it, coverage updates live | new hotspot + edge; dead-control count drops after linking 'Forgot password?' | hotspots 5 -> 6, linked; Sign in amber badge cleared | ✅ PASS |
 | VB-22 | Edit mode: move a hotspot by dragging; delete a hotspot removes its links | box changes; edge removed | moved 60 px; edges 32 -> 31 | ✅ PASS |
 | VB-23 | Saved screens.json carries hotspot edits | new hotspot + user-evidence edge present | edits saved; embedded images not duplicated into the JSON | ✅ PASS |
-| VB-24 | Exported clickable prototype opens straight into the screens and navigates | prototype bar; hotspot click navigates; offline | page.waitForSelector: Timeout 20000ms exceeded. | ❌ FAIL |
-| VB-25 | Flow book: coverage + every journey step with its screenshot and highlighted hotspot | img per step; hotspot boxes; FR text | 23/23 step screenshots | ✅ PASS |
+| VB-24 | Exported clickable prototype opens straight into the screens and navigates | prototype bar; hotspot click navigates; offline | 2147 KB, Sign in -> Products | ✅ PASS |
+| VB-25 | Flow book: coverage + every journey step with its screenshot and highlighted hotspot | img per step; hotspot boxes; FR text | 22/23 | ❌ FAIL |
+| VB-29 | Mode B 'Download HTML with edits' keeps the embedded screenshots | re-opened file shows 7 thumbnails | 7 thumbnails, 2.1 MB | ✅ PASS |
 | VB-26 | SVG export embeds the screenshots | <image href=data:image/webp ...> per screen | 7 images | ✅ PASS |
+| VB-27 | Unsaved Mode B edits survive a reload (audit finding A2) | draft fits storage; restore keeps edits and images | restored with screenshot | ✅ PASS |
+| VB-28 | Edit history does not copy screenshots per edit (audit finding A1) | heap grows < 25 MB over 40 edits | heap +0.0 MB after 40 edits | ✅ PASS |
 
 ## Performance
 
 | ID | Test case | Expected | Actual | Result |
 |---|---|---|---|---|
-| PRF-01 | 600+ node graph: first render, expand all, select flow | each under 3 s; no errors | first 1711 ms (12 groups collapsed), expand 1307 ms, flow 1001 ms | ✅ PASS |
+| PRF-01 | 600+ node graph: first render, expand all, select flow | each under 3 s; no errors | first 1679 ms (12 groups collapsed), expand 1403 ms, flow 1036 ms | ✅ PASS |
 
 ## Security
 

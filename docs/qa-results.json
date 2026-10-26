@@ -17,7 +17,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "14 entry points, 37 calls (identical)",
-  "ms": 37
+  "ms": 36
  },
  {
   "id": "ING-03",
@@ -27,7 +27,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "cloned, depth=1, 1 file(s)",
-  "ms": 907
+  "ms": 855
  },
  {
   "id": "ING-04",
@@ -37,7 +37,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "https://github.com/octocat/Spoon-Knife.git",
-  "ms": 738
+  "ms": 680
  },
  {
   "id": "ING-05",
@@ -67,7 +67,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "rejected: suspicious compression ratio for 'a.txt'",
-  "ms": 281
+  "ms": 303
  },
  {
   "id": "ING-08",
@@ -87,7 +87,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "both refused",
-  "ms": 113
+  "ms": 116
  },
  {
   "id": "ING-10",
@@ -97,7 +97,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "marker absent",
-  "ms": 45
+  "ms": 56
  },
  {
   "id": "ING-11",
@@ -107,7 +107,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "target not found and not a recognised git URL: /nope/does-not-exist",
-  "ms": 64
+  "ms": 45
  },
  {
   "id": "ING-12",
@@ -127,7 +127,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "POST /api/users, POST /api/login, GET /api/products, POST /api/orders, GET /api/orders/{order_id}, POST /api/webhooks/stripe, POST /api/orders/{order_id}/refund",
-  "ms": 14
+  "ms": 22
  },
  {
   "id": "INV-02",
@@ -290,6 +290,16 @@
   "ms": 0
  },
  {
+  "id": "INV-18",
+  "area": "Inventory",
+  "title": "NestJS decorator routes in TypeScript (audit finding A3)",
+  "expected": "GET /users, POST /users/:id/ban",
+  "steps": "",
+  "status": "PASS",
+  "actual": "[('GET', '/users'), ('POST', '/users/:id/ban')]",
+  "ms": 0
+ },
+ {
   "id": "VAL-01",
   "area": "Validate",
   "title": "Mode A fixture validates with evidence checked against source",
@@ -297,7 +307,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "OK: 20 nodes, 23 edges, 11 flows",
-  "ms": 2
+  "ms": 3
  },
  {
   "id": "VAL-02",
@@ -317,7 +327,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "flow[0] checkout step 3: edge e_ui_signup goes to 'ep_signup', not 'hub_orders'",
-  "ms": 1
+  "ms": 2
  },
  {
   "id": "VAL-04",
@@ -327,7 +337,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "node[0] ui_storefront: evidence web/src/api.ts:9999 beyond end of file (32 lines)",
-  "ms": 5
+  "ms": 2
  },
  {
   "id": "VAL-05",
@@ -337,7 +347,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "node[0] ui_storefront: evidence file not found: nope.py",
-  "ms": 1
+  "ms": 2
  },
  {
   "id": "VAL-06",
@@ -357,7 +367,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "node lonely: orphan (no edges)",
-  "ms": 1
+  "ms": 2
  },
  {
   "id": "VAL-08",
@@ -367,7 +377,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "node ds_postgres: port 'Nope' not declared on hub 'hub_orders'",
-  "ms": 1
+  "ms": 2
  },
  {
   "id": "VAL-09",
@@ -377,7 +387,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "screen s_signin hotspot role_customer: box must be [x, y, w, h] in 0-1 and inside the image, got [0.9, 0.5, 0.3, 0.1]",
-  "ms": 0
+  "ms": 1
  },
  {
   "id": "VAL-10",
@@ -397,7 +407,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "screen s_signin: image not found: /home/user/EsyAch/examples/shop-spec/screens/missing.png",
-  "ms": 0
+  "ms": 1
  },
  {
   "id": "VAL-12",
@@ -407,7 +417,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "flow j_signin_fail step 2: variant 'nope' does not exist on s_signin",
-  "ms": 0
+  "ms": 1
  },
  {
   "id": "VAL-13",
@@ -417,7 +427,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "edge[23] loop: self-loop (only Mode B navigate edges may return to the same screen)",
-  "ms": 1
+  "ms": 2
  },
  {
   "id": "VAL-14",
@@ -427,7 +437,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "flow[4] j_admin step 3: an action step without an edge must stay on the previous step's node",
-  "ms": 0
+  "ms": 1
  },
  {
   "id": "VAL-15",
@@ -437,7 +447,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "requirement FR-77: not in the SRS extraction (spec.json)",
-  "ms": 0
+  "ms": 1
  },
  {
   "id": "VAL-16",
@@ -447,7 +457,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "node[20] ui_storefront: duplicate id",
-  "ms": 1
+  "ms": 2
  },
  {
   "id": "VAL-17",
@@ -456,8 +466,8 @@
   "expected": "ERROR cannot read",
   "steps": "",
   "status": "PASS",
-  "actual": "ERROR cannot read /tmp/flowmap-qa-k8g4p8wl/bad.json: Expecting property name enc",
-  "ms": 53
+  "actual": "ERROR cannot read /tmp/flowmap-qa-plnoll2q/bad.json: Expecting property name enc",
+  "ms": 51
  },
  {
   "id": "VAL-18",
@@ -477,7 +487,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "FR-1, FR-2, FR-3, FR-4, FR-5, FR-6, FR-7, FR-8, BR-1, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, NFR-1, NFR-2",
-  "ms": 1
+  "ms": 2
  },
  {
   "id": "SRS-02",
@@ -487,7 +497,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "19/19 identical",
-  "ms": 6
+  "ms": 8
  },
  {
   "id": "SRS-03",
@@ -497,7 +507,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "19/19 identical",
-  "ms": 107
+  "ms": 149
  },
  {
   "id": "SRS-04",
@@ -557,7 +567,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "8 images",
-  "ms": 387
+  "ms": 420
  },
  {
   "id": "SCR-02",
@@ -587,7 +597,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "8 images, no scripts extracted",
-  "ms": 112
+  "ms": 87
  },
  {
   "id": "SCR-05",
@@ -597,7 +607,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "unsafe archive rejected: path traversal in archive: '../../x.png'",
-  "ms": 1
+  "ms": 0
  },
  {
   "id": "SCR-06",
@@ -607,7 +617,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "bad.png -> error, ok.png processed",
-  "ms": 52
+  "ms": 37
  },
  {
   "id": "COV-01",
@@ -687,7 +697,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "- UI requirements covered by a screen: **15/16 (94 %)**",
-  "ms": 37
+  "ms": 43
  },
  {
   "id": "HS-01",
@@ -707,7 +717,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "2002 KB, 0 external refs",
-  "ms": 35
+  "ms": 31
  },
  {
   "id": "BLD-02",
@@ -717,7 +727,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "data tag intact, JSON round-trips",
-  "ms": 17
+  "ms": 14
  },
  {
   "id": "BLD-03",
@@ -727,7 +737,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "8 images, widths [1200]",
-  "ms": 711
+  "ms": 721
  },
  {
   "id": "BLD-04",
@@ -737,7 +747,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "WARNING: output is larger than 0 MB; consider fewer/smaller screenshots",
-  "ms": 61
+  "ms": 72
  },
  {
   "id": "BLD-05",
@@ -747,7 +757,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "WARNING: 1 screenshot(s) not found in /home/user/EsyAch/examples/shop-spec/screens: ['gone",
-  "ms": 821
+  "ms": 698
  },
  {
   "id": "BLD-06",
@@ -756,8 +766,8 @@
   "expected": "SystemExit",
   "steps": "",
   "status": "PASS",
-  "actual": "template /tmp/flowmap-qa-k8g4p8wl/tpl.html has no single data placeholder; rebui",
-  "ms": 2
+  "actual": "template /tmp/flowmap-qa-plnoll2q/tpl.html has no single data placeholder; rebui",
+  "ms": 0
  },
  {
   "id": "BLD-07",
@@ -767,7 +777,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "refused",
-  "ms": 680
+  "ms": 601
  },
  {
   "id": "PKG-01",
@@ -827,7 +837,7 @@
   "steps": "",
   "status": "PASS",
   "actual": "stdlib + optional PIL/pypdf",
-  "ms": 2
+  "ms": 1
  },
  {
   "id": "PKG-07",
@@ -847,7 +857,7 @@
   "steps": "",
   "actual": "20 nodes rendered",
   "status": "PASS",
-  "ms": 6
+  "ms": 4
  },
  {
   "id": "VA-02",
@@ -857,7 +867,7 @@
   "steps": "",
   "actual": "rgb(42, 42, 42)",
   "status": "PASS",
-  "ms": 12
+  "ms": 10
  },
  {
   "id": "VA-03",
@@ -877,7 +887,7 @@
   "steps": "",
   "actual": "12 nodes checked",
   "status": "PASS",
-  "ms": 5
+  "ms": 4
  },
  {
   "id": "VA-05",
@@ -887,7 +897,7 @@
   "steps": "",
   "actual": "5 circles under hubs, dasharray 5px, 5px",
   "status": "PASS",
-  "ms": 121
+  "ms": 98
  },
  {
   "id": "VA-06",
@@ -897,7 +907,7 @@
   "steps": "",
   "actual": "8 bolts, rgb(255, 109, 90)",
   "status": "PASS",
-  "ms": 12
+  "ms": 8
  },
  {
   "id": "VA-07",
@@ -907,7 +917,7 @@
   "steps": "",
   "actual": "11 flows, caption 2/10 -> 10/10, animated dot 1",
   "status": "PASS",
-  "ms": 16674
+  "ms": 16700
  },
  {
   "id": "VA-08",
@@ -925,9 +935,9 @@
   "title": "Edge hover card shows payload and evidence",
   "expected": "payload + file:line",
   "steps": "",
-  "status": "FAIL",
-  "actual": "Storefront \u2192 Order status",
-  "ms": 1728
+  "actual": "Storefront \u2192 Checkout http sync main high confidence Action: POST Payload: {user_id, items",
+  "status": "PASS",
+  "ms": 332
  },
  {
   "id": "VA-10",
@@ -937,7 +947,7 @@
   "steps": "",
   "actual": "Order Service",
   "status": "PASS",
-  "ms": 595
+  "ms": 574
  },
  {
   "id": "VA-11",
@@ -947,7 +957,7 @@
   "steps": "",
   "actual": "detail 20, overview 15, without datastores 17",
   "status": "PASS",
-  "ms": 3471
+  "ms": 3420
  },
  {
   "id": "VA-12",
@@ -957,7 +967,7 @@
   "steps": "",
   "actual": "4 -> 3",
   "status": "PASS",
-  "ms": 2827
+  "ms": 2845
  },
  {
   "id": "VA-13",
@@ -967,7 +977,7 @@
   "steps": "",
   "actual": "edit / undo / redo ok",
   "status": "PASS",
-  "ms": 987
+  "ms": 1013
  },
  {
   "id": "VA-14",
@@ -977,7 +987,7 @@
   "steps": "",
   "actual": "edges 23 -> 24, node moved 87 px",
   "status": "PASS",
-  "ms": 1101
+  "ms": 1125
  },
  {
   "id": "VA-15",
@@ -987,7 +997,7 @@
   "steps": "",
   "actual": "architecture.json",
   "status": "PASS",
-  "ms": 115
+  "ms": 148
  },
  {
   "id": "VA-16",
@@ -997,7 +1007,7 @@
   "steps": "",
   "actual": "shop-demo.flowmap.html",
   "status": "PASS",
-  "ms": 1448
+  "ms": 1426
  },
  {
   "id": "VA-17",
@@ -1005,9 +1015,9 @@
   "title": "Exports: PNG, vector SVG, Mermaid, JSON",
   "expected": "valid files",
   "steps": "",
-  "actual": "PNG 893 KB, SVG 27 KB, Mermaid 68 lines",
+  "actual": "PNG 892 KB, SVG 27 KB, Mermaid 68 lines",
   "status": "PASS",
-  "ms": 604
+  "ms": 609
  },
  {
   "id": "VA-18",
@@ -1017,7 +1027,7 @@
   "steps": "",
   "actual": "11 sections",
   "status": "PASS",
-  "ms": 701
+  "ms": 687
  },
  {
   "id": "VA-19",
@@ -1027,7 +1037,7 @@
   "steps": "",
   "actual": "rgb(244, 244, 246)",
   "status": "PASS",
-  "ms": 345
+  "ms": 360
  },
  {
   "id": "VA-20",
@@ -1037,7 +1047,7 @@
   "steps": "",
   "actual": "restored",
   "status": "PASS",
-  "ms": 1879
+  "ms": 1900
  },
  {
   "id": "VA-21",
@@ -1047,7 +1057,7 @@
   "steps": "",
   "actual": "opacity 0.45",
   "status": "PASS",
-  "ms": 18
+  "ms": 19
  },
  {
   "id": "VA-22",
@@ -1057,7 +1067,7 @@
   "steps": "",
   "actual": "all nodes visible",
   "status": "PASS",
-  "ms": 673
+  "ms": 663
  },
  {
   "id": "VB-01",
@@ -1077,7 +1087,7 @@
   "steps": "",
   "actual": "7 thumbnails decoded",
   "status": "PASS",
-  "ms": 8
+  "ms": 13
  },
  {
   "id": "VB-03",
@@ -1087,7 +1097,7 @@
   "steps": "",
   "actual": "\u00d72",
   "status": "PASS",
-  "ms": 8
+  "ms": 7
  },
  {
   "id": "VB-04",
@@ -1097,7 +1107,7 @@
   "steps": "",
   "actual": "badges ok",
   "status": "PASS",
-  "ms": 6
+  "ms": 9
  },
  {
   "id": "VB-05",
@@ -1107,7 +1117,7 @@
   "steps": "",
   "actual": "5 journeys (1 for Admin)",
   "status": "PASS",
-  "ms": 81
+  "ms": 79
  },
  {
   "id": "VB-06",
@@ -1117,7 +1127,7 @@
   "steps": "",
   "actual": "Cart \u203a Checkout \u203a Order confirmed, back -> Checkout (chooser shown: true)",
   "status": "PASS",
-  "ms": 1272
+  "ms": 1316
  },
  {
   "id": "VB-07",
@@ -1127,7 +1137,7 @@
   "steps": "",
   "actual": "3 options",
   "status": "PASS",
-  "ms": 815
+  "ms": 820
  },
  {
   "id": "VB-08",
@@ -1137,7 +1147,7 @@
   "steps": "",
   "actual": "\"Forgot password?\" leads nowhere in these screenshots (coverage gap). / \"Admin\" stays on this screen: selects the Admin role.",
   "status": "PASS",
-  "ms": 598
+  "ms": 596
  },
  {
   "id": "VB-09",
@@ -1147,7 +1157,7 @@
   "steps": "",
   "actual": "offset 0.0 px, width error 0.0 px",
   "status": "PASS",
-  "ms": 41
+  "ms": 51
  },
  {
   "id": "VB-10",
@@ -1157,7 +1167,7 @@
   "steps": "",
   "actual": "02-sign-in-error.png",
   "status": "PASS",
-  "ms": 245
+  "ms": 231
  },
  {
   "id": "VB-11",
@@ -1167,7 +1177,7 @@
   "steps": "",
   "actual": "pulse=sign_in, now step 2 on Products",
   "status": "PASS",
-  "ms": 1076
+  "ms": 1127
  },
  {
   "id": "VB-12",
@@ -1177,7 +1187,7 @@
   "steps": "",
   "actual": "step 6/6, FR-13 shown",
   "status": "PASS",
-  "ms": 7645
+  "ms": 7652
  },
  {
   "id": "VB-13",
@@ -1187,7 +1197,7 @@
   "steps": "",
   "actual": "Cart highlighted, Order Management dimmed",
   "status": "PASS",
-  "ms": 399
+  "ms": 414
  },
  {
   "id": "VB-14",
@@ -1197,7 +1207,7 @@
   "steps": "",
   "actual": "FR-13",
   "status": "PASS",
-  "ms": 682
+  "ms": 681
  },
  {
   "id": "VB-15",
@@ -1207,7 +1217,7 @@
   "steps": "",
   "actual": "15/16 covered; FR-3 gap; FR-2 contradiction",
   "status": "PASS",
-  "ms": 52
+  "ms": 50
  },
  {
   "id": "VB-16",
@@ -1217,7 +1227,7 @@
   "steps": "",
   "actual": "s_admin, s_signin",
   "status": "PASS",
-  "ms": 1927
+  "ms": 1925
  },
  {
   "id": "VB-17",
@@ -1237,7 +1247,7 @@
   "steps": "",
   "actual": "2 loops",
   "status": "PASS",
-  "ms": 2
+  "ms": 3
  },
  {
   "id": "VB-19",
@@ -1247,7 +1257,7 @@
   "steps": "",
   "actual": "13 -> 25 edges",
   "status": "PASS",
-  "ms": 875
+  "ms": 859
  },
  {
   "id": "VB-20",
@@ -1257,7 +1267,7 @@
   "steps": "",
   "actual": "FR-13",
   "status": "PASS",
-  "ms": 372
+  "ms": 381
  },
  {
   "id": "VB-21",
@@ -1267,7 +1277,7 @@
   "steps": "",
   "actual": "hotspots 5 -> 6, linked; Sign in amber badge cleared",
   "status": "PASS",
-  "ms": 1751
+  "ms": 1737
  },
  {
   "id": "VB-22",
@@ -1277,7 +1287,7 @@
   "steps": "",
   "actual": "moved 60 px; edges 32 -> 31",
   "status": "PASS",
-  "ms": 976
+  "ms": 965
  },
  {
   "id": "VB-23",
@@ -1287,7 +1297,7 @@
   "steps": "",
   "actual": "edits saved; embedded images not duplicated into the JSON",
   "status": "PASS",
-  "ms": 107
+  "ms": 90
  },
  {
   "id": "VB-24",
@@ -1295,9 +1305,9 @@
   "title": "Exported clickable prototype opens straight into the screens and navigates",
   "expected": "prototype bar; hotspot click navigates; offline",
   "steps": "",
-  "status": "FAIL",
-  "actual": "page.waitForSelector: Timeout 20000ms exceeded.",
-  "ms": 21799
+  "actual": "2147 KB, Sign in -> Products",
+  "status": "PASS",
+  "ms": 1745
  },
  {
   "id": "VB-25",
@@ -1305,9 +1315,19 @@
   "title": "Flow book: coverage + every journey step with its screenshot and highlighted hotspot",
   "expected": "img per step; hotspot boxes; FR text",
   "steps": "",
-  "actual": "23/23 step screenshots",
+  "status": "FAIL",
+  "actual": "22/23",
+  "ms": 2122
+ },
+ {
+  "id": "VB-29",
+  "area": "Viewer B",
+  "title": "Mode B 'Download HTML with edits' keeps the embedded screenshots",
+  "expected": "re-opened file shows 7 thumbnails",
+  "steps": "",
+  "actual": "7 thumbnails, 2.1 MB",
   "status": "PASS",
-  "ms": 799
+  "ms": 1408
  },
  {
   "id": "VB-26",
@@ -1317,7 +1337,27 @@
   "steps": "",
   "actual": "7 images",
   "status": "PASS",
-  "ms": 82
+  "ms": 77
+ },
+ {
+  "id": "VB-27",
+  "area": "Viewer B",
+  "title": "Unsaved Mode B edits survive a reload (audit finding A2)",
+  "expected": "draft fits storage; restore keeps edits and images",
+  "steps": "",
+  "actual": "restored with screenshot",
+  "status": "PASS",
+  "ms": 2260
+ },
+ {
+  "id": "VB-28",
+  "area": "Viewer B",
+  "title": "Edit history does not copy screenshots per edit (audit finding A1)",
+  "expected": "heap grows < 25 MB over 40 edits",
+  "steps": "",
+  "actual": "heap +0.0 MB after 40 edits",
+  "status": "PASS",
+  "ms": 2211
  },
  {
   "id": "PRF-01",
@@ -1325,9 +1365,9 @@
   "title": "600+ node graph: first render, expand all, select flow",
   "expected": "each under 3 s; no errors",
   "steps": "",
-  "actual": "first 1711 ms (12 groups collapsed), expand 1307 ms, flow 1001 ms",
+  "actual": "first 1679 ms (12 groups collapsed), expand 1403 ms, flow 1036 ms",
   "status": "PASS",
-  "ms": 4475
+  "ms": 4340
  },
  {
   "id": "SEC-01",
@@ -1337,7 +1377,7 @@
   "steps": "",
   "actual": "rendered as text",
   "status": "PASS",
-  "ms": 1596
+  "ms": 1656
  },
  {
   "id": "SEC-02",
@@ -1347,7 +1387,7 @@
   "steps": "",
   "actual": "no network request",
   "status": "PASS",
-  "ms": 1250
+  "ms": 1185
  },
  {
   "id": "SEC-03",
@@ -1357,6 +1397,6 @@
   "steps": "",
   "actual": "SVG, Mermaid and book escaped",
   "status": "PASS",
-  "ms": 1998
+  "ms": 1914
  }
 ]
