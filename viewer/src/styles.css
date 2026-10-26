@@ -1,23 +1,25 @@
 /* n8n-like canvas. Dark by default; [data-theme="light"] overrides tokens. */
 :root,
 :root[data-theme="dark"] {
-  --bg: #1e1f21;
-  --dot: #3a3c40;
-  --panel: #252629;
-  --panel-2: #2c2d31;
-  --border: #393b40;
+  --bg: #2a2a2a;
+  --dot: #4a4a4c;
+  --panel: #232324;
+  --panel-2: #303032;
+  --border: #3d3e42;
   --text: #ececec;
   --muted: #9b9ea4;
-  --node-bg: #2b2c2f;
-  --node-border: #8d9096;
-  --node-border-hover: #c8cacf;
-  --edge: #8a8d93;
-  --edge-active: #e8e8e8;
+  --node-bg: #404143;
+  --sub-bg: #2f3036;
+  --node-border: #c9cacf;
+  --node-border-hover: #ffffff;
+  --handle: #c9cacf;
+  --edge: #b9babd;
+  --edge-active: #ffffff;
   --accent: #ff6d5a;
   --ok: #4cc38a;
   --warn: #f0a33f;
   --bad: #ef5b5b;
-  --pill-bg: #2f3034;
+  --pill-bg: #2a2a2a;
   --minimap-mask: rgba(20, 21, 23, 0.65);
   --shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
   color-scheme: dark;
@@ -31,11 +33,13 @@
   --text: #1f2024;
   --muted: #6b6e76;
   --node-bg: #ffffff;
+  --sub-bg: #ffffff;
+  --handle: #8d9096;
   --node-border: #8d9096;
   --node-border-hover: #3c3e44;
   --edge: #8f9299;
   --edge-active: #2a2b30;
-  --pill-bg: #ffffff;
+  --pill-bg: #f4f4f6;
   --minimap-mask: rgba(240, 240, 244, 0.7);
   --shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
   color-scheme: light;
@@ -152,16 +156,17 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
 .fm-node { position: relative; display: grid; place-items: center; color: var(--text); transition: opacity 0.25s; }
 .fm-std {
   background: var(--node-bg);
-  border: 2px solid var(--node-border);
+  border: 1.5px solid var(--node-border);
   border-radius: 10px;
   cursor: pointer;
 }
 .fm-std:hover, .fm-hub:hover, .fm-sub:hover { border-color: var(--node-border-hover); }
-.fm-trigger { border-radius: 32px 10px 10px 32px; }
+.fm-trigger { border-radius: 30px 8px 8px 30px; }
 .fm-bolt {
-  position: absolute; left: -22px; top: 4px; color: var(--accent); fill: var(--accent); line-height: 0;
+  position: absolute; left: -24px; top: 50%; transform: translateY(-50%); color: var(--accent); fill: var(--accent); line-height: 0;
 }
 .fm-bolt svg { fill: var(--accent); }
+.fm-trigger.has-in .fm-bolt { top: 6px; transform: none; } /* keep clear of the incoming edge */
 
 .fm-label-wrap {
   position: absolute; top: calc(100% + 7px); left: 50%; transform: translateX(-50%);
@@ -176,7 +181,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
 
 .fm-hub {
   background: var(--node-bg);
-  border: 2px solid var(--node-border);
+  border: 1.5px solid var(--node-border);
   border-radius: 10px;
   cursor: pointer;
   place-items: center start;
@@ -188,7 +193,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
 .fm-hub-sub { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fm-hub .fm-port {
   width: 9px !important; height: 9px !important; min-width: 0; min-height: 0; border-radius: 1px;
-  background: var(--node-border) !important; border: none !important;
+  background: var(--handle) !important; border: none !important;
   transform: translate(-50%, 50%) rotate(45deg) !important;
 }
 .fm-port-label {
@@ -198,22 +203,30 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
 
 .fm-sub {
   border-radius: 50%;
-  background: var(--node-bg);
-  border: 2px solid var(--node-border);
+  background: var(--sub-bg);
+  border: 1.5px solid var(--node-border);
   cursor: pointer;
 }
 .fm-sub .fm-label { font-size: 12px; }
+.fm-sub-port {
+  position: absolute; bottom: calc(100% + 9px); left: 50%; transform: translateX(-50%);
+  font-size: 10px; color: var(--muted); white-space: nowrap; pointer-events: none;
+}
+.react-flow__handle.fm-sub-top {
+  width: 8px; height: 8px; min-width: 0; min-height: 0; border: none; border-radius: 1px;
+  background: var(--handle); transform: translate(-50%, -50%) rotate(45deg);
+}
 .fm-sub .fm-label-wrap { width: 106px; }
 .fm-sub .fm-subtitle { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
-.fm-merge { background: var(--node-bg); border: 2px solid var(--node-border); border-radius: 8px; cursor: pointer; }
+.fm-merge { background: var(--node-bg); border: 1.5px solid var(--node-border); border-radius: 8px; cursor: pointer; }
 
 /* handles: n8n shows a round output dot and a small bar input */
 .react-flow__handle.fm-handle-out {
-  width: 10px; height: 10px; background: var(--node-border); border: 2px solid var(--bg); border-radius: 50%;
+  width: 11px; height: 11px; background: var(--handle); border: none; border-radius: 50%;
 }
 .react-flow__handle.fm-handle-in {
-  width: 6px; height: 14px; background: var(--node-border); border: none; border-radius: 2px;
+  width: 5px; height: 14px; background: var(--handle); border: none; border-radius: 1px;
 }
 .react-flow__handle.fm-handle-hidden { opacity: 0; width: 1px; height: 1px; min-width: 0; min-height: 0; border: none; }
 .fm-trigger .react-flow__handle.fm-handle-in { opacity: 0; }
@@ -222,7 +235,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
   position: absolute; left: calc(100% + 5px); top: 50%; transform: translateY(-50%);
   display: flex; align-items: center; pointer-events: none;
 }
-.fm-stub-line { width: 34px; height: 2px; background: var(--node-border); }
+.fm-stub-line { width: 34px; height: 1.5px; background: var(--edge); }
 .fm-stub-plus {
   display: grid; place-items: center; width: 18px; height: 18px; border: 1.5px solid var(--node-border);
   border-radius: 4px; font-size: 13px; line-height: 1; color: var(--muted);
@@ -246,7 +259,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
 .fm-node.is-low.fm-std, .fm-node.is-low.fm-hub, .fm-node.is-low.fm-sub { border-style: dashed; }
 
 /* ------------------------------------------------------------------ edges */
-.react-flow__edge-path.fm-edge { stroke: var(--edge); stroke-width: 1.6; fill: none; transition: opacity 0.25s; }
+.react-flow__edge-path.fm-edge { stroke: var(--edge); stroke-width: 1.5; fill: none; transition: opacity 0.25s; }
 .react-flow__edge-path.fm-edge.is-dep { stroke-dasharray: 5 5; stroke-width: 1.4; }
 .react-flow__edge-path.fm-edge.is-cross { opacity: 0.55; }
 .react-flow__edge-path.fm-edge.is-inferred { stroke-dasharray: 3 6; }
@@ -257,21 +270,21 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
 .fm-edge-dot { fill: var(--accent); filter: drop-shadow(0 0 6px var(--accent)); }
 
 .fm-pill {
-  position: absolute; pointer-events: none; padding: 1px 8px; border-radius: 10px;
-  background: var(--pill-bg); border: 1px solid var(--border); color: var(--muted);
+  position: absolute; pointer-events: none; padding: 0 5px; border-radius: 8px;
+  background: var(--pill-bg); border: 1px solid transparent; color: var(--muted);
   font-size: 10.5px; white-space: nowrap; max-width: 190px; overflow: hidden; text-overflow: ellipsis;
   transition: opacity 0.25s;
 }
 .fm-pill.is-dep { font-size: 10px; padding: 0 6px; }
 .fm-pill.is-dim { opacity: 0.15; }
-.fm-pill.in-flow { color: var(--text); border-color: var(--edge-active); }
+.fm-pill.in-flow { color: var(--text); border-color: var(--border); }
 .fm-pill.is-current { color: #fff; background: var(--accent); border-color: var(--accent); }
 .fm-q {
   display: inline-grid; place-items: center; width: 14px; height: 14px; margin-left: 4px; border-radius: 50%;
   background: var(--warn); color: #222; font-weight: 700; font-size: 10px;
 }
 .fm-src-label {
-  position: absolute; pointer-events: none; font-size: 10.5px; font-weight: 600; color: var(--muted); white-space: nowrap;
+  position: absolute; pointer-events: none; font-size: 10px; font-weight: 500; color: var(--muted); white-space: nowrap;
   transition: opacity 0.25s;
 }
 .fm-src-label.is-dim { opacity: 0.15; }
@@ -298,7 +311,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
 .fm-drawer-head { display: flex; gap: 10px; align-items: flex-start; padding: 0 10px; }
 .fm-drawer-icon {
   display: grid; place-items: center; width: 40px; height: 40px; border-radius: 9px; flex: none;
-  background: var(--node-bg); border: 2px solid var(--node-border);
+  background: var(--node-bg); border: 1.5px solid var(--node-border);
 }
 .fm-drawer-title { font-size: 15px; font-weight: 700; }
 .fm-drawer-sub { color: var(--muted); font-size: 12px; }

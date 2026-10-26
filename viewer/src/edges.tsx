@@ -8,7 +8,8 @@ export interface EdgeData {
   dim: boolean;
   inFlow: boolean;
   current: boolean;
-  cross: boolean; // dependency edge to a circle owned by another hub (or a non-hub source)
+  cross: boolean;
+  fanOut: boolean; // source has several main outputs: spread port labels along the curves // dependency edge to a circle owned by another hub (or a non-hub source)
   animKey: number;
   showLabels: boolean;
   [key: string]: unknown;
@@ -28,12 +29,17 @@ export function FlowEdge(props: EdgeProps) {
   // Main edges: action label near the source port, payload/condition in the mid pill.
   // Dependency edges leave a named hub port already, so their short label goes in the pill.
   const portLabel = dep ? undefined : e.label;
-  let pill = dep ? e.label : e.condition ? `if ${e.condition}` : e.payload;
+  // Hub -> own circle lines are already named by the port, as in n8n; their label lives in the hover card.
+  let pill = dep ? (d.cross ? e.label : undefined) : e.condition ? `if ${e.condition}` : e.payload;
+  if (dep && !d.cross && d.current) pill = e.label;
   if (d.cross && !d.inFlow) pill = undefined; // long cross-hub lines: label only while replaying
-  // Port label sits on the curve ~20% from the source, so fanned-out edges don't stack labels.
-  const sp = sourcePosition === Position.Right
-    ? bezierPoint(sourceX, sourceY, targetX, targetY, 0.3, 0.2)
-    : { x: sourceX + 8, y: sourceY + 12 };
+  // n8n puts the port label right after the output dot; with several outputs on one handle
+  // we slide it ~20% along each curve so the labels don't stack.
+  const sp = sourcePosition !== Position.Right
+    ? { x: sourceX + 8, y: sourceY + 12, a: "translate(0, -100%)" }
+    : d.fanOut
+      ? { ...bezierPoint(sourceX, sourceY, targetX, targetY, 0.3, 0.2), a: "translate(-50%, -100%)" }
+      : { x: sourceX + 9, y: sourceY, a: "translate(0, -100%)" };
 
   return (
     <>
@@ -47,7 +53,7 @@ export function FlowEdge(props: EdgeProps) {
         {d.showLabels && portLabel && (
           <div
             className={`fm-src-label ${d.dim ? "is-dim" : ""}`}
-            style={{ transform: `translate(-50%, -100%) translate(${sp.x}px, ${sp.y - 3}px)` }}
+            style={{ transform: `translate(${sp.x}px, ${sp.y - 2}px) ${sp.a}` }}
           >
             {portLabel}
           </div>

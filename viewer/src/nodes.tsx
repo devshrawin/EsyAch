@@ -10,6 +10,7 @@ export interface NodeData {
   w: number;
   h: number;
   hasOut: boolean;
+  hasIn: boolean;
   dim: boolean;
   inFlow: boolean;
   current: boolean;
@@ -69,7 +70,7 @@ export function TriggerNode({ data }: NodeProps) {
   const d = data as NodeData;
   const { icon, color } = iconFor(d.g);
   return (
-    <div className={cls("fm-node fm-std fm-trigger", stateClass(d))} style={{ width: d.w, height: d.h }}>
+    <div className={cls("fm-node fm-std fm-trigger", d.hasIn && "has-in", stateClass(d))} style={{ width: d.w, height: d.h }}>
       <span className="fm-bolt" title="Trigger / entry point">
         <svg width="16" height="16" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
       </span>
@@ -123,7 +124,8 @@ export function SubNode({ data }: NodeProps) {
   const { icon, color } = iconFor(d.g);
   return (
     <div className={cls("fm-node fm-sub", stateClass(d))} style={{ width: G.subD, height: G.subD }}>
-      <Handle type="target" position={Position.Top} id="top" className={hidden} />
+      <Handle type="target" position={Position.Top} id="top" className="fm-sub-top" />
+      {d.g.port && <div className="fm-sub-port">{d.g.port}</div>}
       <Handle type="target" position={Position.Left} id="in" className={hidden} />
       <Icon name={icon} size={24} style={{ color }} />
       <Handle type="source" position={Position.Right} id="out" className={d.hasOut ? "fm-handle-out" : hidden} />

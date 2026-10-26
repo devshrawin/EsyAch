@@ -125,10 +125,15 @@ function Viewer({ graph }: { graph: Graph }) {
   const flowEdges = useMemo(() => new Set(flow?.steps.map((s) => s.edge).filter(Boolean) as string[]), [flow]);
   const curStep = flow?.steps[step];
 
-  const hasOut = useMemo(() => {
-    const s = new Set<string>();
-    for (const e of graph.edges) if (e.kind === "main") s.add(e.from);
-    return s;
+  const [hasOut, hasIn, outCount] = useMemo(() => {
+    const o = new Set<string>(), i = new Set<string>(), n = new Map<string, number>();
+    for (const e of graph.edges) {
+      if (e.kind !== "main") continue;
+      o.add(e.from);
+      i.add(e.to);
+      n.set(e.from, (n.get(e.from) ?? 0) + 1);
+    }
+    return [o, i, n] as const;
   }, [graph]);
 
   const nodes: Node[] = useMemo(() => {
@@ -137,7 +142,7 @@ function Viewer({ graph }: { graph: Graph }) {
       const p = pos.get(n.id);
       if (!p) return [];
       const data: NodeData = {
-        g: n, w: p.w, h: p.h, hasOut: hasOut.has(n.id),
+        g: n, w: p.w, h: p.h, hasOut: hasOut.has(n.id), hasIn: hasIn.has(n.id),
         dim: !!flow && !flowNodes.has(n.id),
         inFlow: !!flow && flowNodes.has(n.id),
         current: curStep?.node === n.id,
@@ -145,7 +150,7 @@ function Viewer({ graph }: { graph: Graph }) {
       };
       return [{ id: n.id, type: visualOf(n), position: { x: p.x, y: p.y }, data, width: p.w, height: p.h }];
     });
-  }, [graph, pos, flow, flowNodes, curStep, selected, hasOut]);
+  }, [graph, pos, flow, flowNodes, curStep, selected, hasOut, hasIn]);
 
   const edges: Edge[] = useMemo(() => {
     return graph.edges.map((e) => {
@@ -160,14 +165,15 @@ function Viewer({ graph }: { graph: Graph }) {
       const deact = src.status === "deactivated" || tgt.status === "deactivated";
       const color = current ? "var(--accent)" : inFlow ? "var(--edge-active)" : "var(--edge)";
       const cross = dep && !(tgt.hub === src.id);
-      const data: EdgeData = { g: e, dim: dim || deact, inFlow, current, cross, animKey, showLabels: true };
+      const fanOut = (outCount.get(e.from) ?? 0) > 1;
+      const data: EdgeData = { g: e, dim: dim || deact, inFlow, current, cross, fanOut, animKey, showLabels: true };
       return {
         id: e.id, source: e.from, target: e.to, sourceHandle, targetHandle, type: "flow", data,
         markerEnd: dep ? undefined : { type: MarkerType.ArrowClosed, width: 16, height: 16, color: cssColor(color) },
         zIndex: inFlow ? 5 : 0,
       };
     });
-  }, [graph, byId, flow, flowEdges, curStep, animKey]);
+  }, [graph, byId, flow, flowEdges, curStep, animKey, outCount]);
 
   const sel = selected ? byId.get(selected) : undefined;
 
