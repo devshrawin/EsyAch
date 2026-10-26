@@ -1,0 +1,18 @@
+services:
+  api:
+    build: .
+    ports: ["8000:8000"]
+    env_file: .env
+    depends_on: [db, redis]
+  worker:
+    build: .
+    command: python -m worker.worker
+    env_file: .env
+    depends_on: [db, redis]
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD: shop
+  redis:
+    image: redis:7

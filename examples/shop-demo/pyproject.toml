@@ -1,0 +1,4 @@
+[project]
+name = "shop-api"
+version = "0.1.0"
+dependencies = ["fastapi", "sqlalchemy", "psycopg2-binary", "redis", "stripe"]

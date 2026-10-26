@@ -1,0 +1,1788 @@
+{
+  "tool": "flowmap-inventory/0.1",
+  "generated_at": "2026-10-26T13:56:13+00:00",
+  "root": "examples/shop-demo",
+  "stats": {
+    "files": 29,
+    "lines": 526,
+    "languages": {
+      "python": {
+        "files": 15,
+        "lines": 367
+      },
+      "typescript": {
+        "files": 5,
+        "lines": 89
+      },
+      "yaml": {
+        "files": 2,
+        "lines": 28
+      },
+      "other": {
+        "files": 2,
+        "lines": 12
+      },
+      "markdown": {
+        "files": 1,
+        "lines": 8
+      },
+      "json": {
+        "files": 1,
+        "lines": 8
+      },
+      "dockerfile": {
+        "files": 1,
+        "lines": 6
+      },
+      "toml": {
+        "files": 1,
+        "lines": 5
+      },
+      "crontab": {
+        "files": 1,
+        "lines": 3
+      }
+    },
+    "skipped": {
+      "skipped_dir": 1
+    }
+  },
+  "tree": [
+    {
+      "path": ".env.example",
+      "lang": "other",
+      "lines": 7
+    },
+    {
+      "path": ".gitignore",
+      "lang": "other",
+      "lines": 5
+    },
+    {
+      "path": "Dockerfile",
+      "lang": "dockerfile",
+      "lines": 6
+    },
+    {
+      "path": "README.md",
+      "lang": "markdown",
+      "lines": 8
+    },
+    {
+      "path": "docker-compose.yml",
+      "lang": "yaml",
+      "lines": 19
+    },
+    {
+      "path": "pyproject.toml",
+      "lang": "toml",
+      "lines": 5
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "lang": "yaml",
+      "lines": 9
+    },
+    {
+      "path": "api/__init__.py",
+      "lang": "python",
+      "lines": 1
+    },
+    {
+      "path": "api/cache.py",
+      "lang": "python",
+      "lines": 18
+    },
+    {
+      "path": "api/config.py",
+      "lang": "python",
+      "lines": 12
+    },
+    {
+      "path": "api/db.py",
+      "lang": "python",
+      "lines": 39
+    },
+    {
+      "path": "api/main.py",
+      "lang": "python",
+      "lines": 65
+    },
+    {
+      "path": "api/payments.py",
+      "lang": "python",
+      "lines": 32
+    },
+    {
+      "path": "api/queue.py",
+      "lang": "python",
+      "lines": 19
+    },
+    {
+      "path": "api/services/__init__.py",
+      "lang": "python",
+      "lines": 1
+    },
+    {
+      "path": "api/services/catalog.py",
+      "lang": "python",
+      "lines": 15
+    },
+    {
+      "path": "api/services/orders.py",
+      "lang": "python",
+      "lines": 58
+    },
+    {
+      "path": "api/services/users.py",
+      "lang": "python",
+      "lines": 31
+    },
+    {
+      "path": "jobs/__init__.py",
+      "lang": "python",
+      "lines": 1
+    },
+    {
+      "path": "jobs/nightly.py",
+      "lang": "python",
+      "lines": 37
+    },
+    {
+      "path": "ops/crontab",
+      "lang": "crontab",
+      "lines": 3
+    },
+    {
+      "path": "web/package.json",
+      "lang": "json",
+      "lines": 8
+    },
+    {
+      "path": "web/src/api.ts",
+      "lang": "typescript",
+      "lines": 32
+    },
+    {
+      "path": "web/src/pages/Checkout.tsx",
+      "lang": "typescript",
+      "lines": 18
+    },
+    {
+      "path": "web/src/pages/OrderStatus.tsx",
+      "lang": "typescript",
+      "lines": 11
+    },
+    {
+      "path": "web/src/pages/Products.tsx",
+      "lang": "typescript",
+      "lines": 11
+    },
+    {
+      "path": "web/src/pages/Signup.tsx",
+      "lang": "typescript",
+      "lines": 17
+    },
+    {
+      "path": "worker/__init__.py",
+      "lang": "python",
+      "lines": 1
+    },
+    {
+      "path": "worker/worker.py",
+      "lang": "python",
+      "lines": 37
+    }
+  ],
+  "manifests": [
+    {
+      "file": "Dockerfile",
+      "type": "docker",
+      "from": [
+        "python:3.12-slim"
+      ],
+      "cmd": [
+        "[\"uvicorn\", \"api.main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]"
+      ],
+      "line": 5
+    },
+    {
+      "file": "docker-compose.yml",
+      "type": "compose",
+      "services": {
+        "api": {
+          "line": 2,
+          "build": ".",
+          "ports": "[\"8000:8000\"]",
+          "depends_on": "[db, redis]"
+        },
+        "worker": {
+          "line": 7,
+          "build": ".",
+          "command": "python -m worker.worker",
+          "depends_on": "[db, redis]"
+        },
+        "db": {
+          "line": 12,
+          "image": "postgres:16"
+        },
+        "redis": {
+          "line": 17,
+          "image": "redis:7"
+        }
+      }
+    },
+    {
+      "file": "pyproject.toml",
+      "type": "python",
+      "dependencies": [
+        "0.1.0",
+        "fastapi",
+        "psycopg2-binary",
+        "redis",
+        "shop-api",
+        "sqlalchemy",
+        "stripe"
+      ]
+    },
+    {
+      "file": ".github/workflows/ci.yml",
+      "type": "ci"
+    },
+    {
+      "file": "web/package.json",
+      "type": "npm",
+      "name": "shop-web",
+      "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+      },
+      "bin": null,
+      "main": null,
+      "dependencies": [
+        "react",
+        "react-dom",
+        "typescript",
+        "vite"
+      ]
+    }
+  ],
+  "entrypoints": [
+    {
+      "file": "ops/crontab",
+      "line": 2,
+      "kind": "cron",
+      "schedule": "0 2 * * *",
+      "command": "cd /app && python -m jobs.nightly"
+    },
+    {
+      "file": "api/main.py",
+      "line": 12,
+      "kind": "http_route",
+      "method": "POST",
+      "path": "/api/users",
+      "symbol": "signup",
+      "router": "app"
+    },
+    {
+      "file": "api/main.py",
+      "line": 20,
+      "kind": "http_route",
+      "method": "POST",
+      "path": "/api/login",
+      "symbol": "login",
+      "router": "app"
+    },
+    {
+      "file": "api/main.py",
+      "line": 28,
+      "kind": "http_route",
+      "method": "GET",
+      "path": "/api/products",
+      "symbol": "products",
+      "router": "app"
+    },
+    {
+      "file": "api/main.py",
+      "line": 33,
+      "kind": "http_route",
+      "method": "POST",
+      "path": "/api/orders",
+      "symbol": "checkout",
+      "router": "app"
+    },
+    {
+      "file": "api/main.py",
+      "line": 41,
+      "kind": "http_route",
+      "method": "GET",
+      "path": "/api/orders/{order_id}",
+      "symbol": "order_status",
+      "router": "app"
+    },
+    {
+      "file": "api/main.py",
+      "line": 49,
+      "kind": "webhook",
+      "method": "POST",
+      "path": "/api/webhooks/stripe",
+      "symbol": "stripe_webhook",
+      "router": "app"
+    },
+    {
+      "file": "api/main.py",
+      "line": 57,
+      "kind": "http_route",
+      "method": "POST",
+      "path": "/api/orders/{order_id}/refund",
+      "symbol": "refund",
+      "router": "app",
+      "guarded_by": "ENABLE_LEGACY_REFUNDS",
+      "guard_default": false,
+      "guard_evidence": {
+        "file": "api/config.py",
+        "line": 11
+      },
+      "status": "deactivated"
+    },
+    {
+      "file": "jobs/nightly.py",
+      "line": 35,
+      "kind": "main",
+      "detail": "if __name__ == \"__main__\""
+    },
+    {
+      "file": "web/src/pages/Checkout.tsx",
+      "line": 1,
+      "kind": "ui_page",
+      "symbol": "Checkout"
+    },
+    {
+      "file": "web/src/pages/OrderStatus.tsx",
+      "line": 1,
+      "kind": "ui_page",
+      "symbol": "OrderStatus"
+    },
+    {
+      "file": "web/src/pages/Products.tsx",
+      "line": 1,
+      "kind": "ui_page",
+      "symbol": "Products"
+    },
+    {
+      "file": "web/src/pages/Signup.tsx",
+      "line": 1,
+      "kind": "ui_page",
+      "symbol": "Signup"
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 35,
+      "kind": "main",
+      "detail": "if __name__ == \"__main__\""
+    }
+  ],
+  "symbols": {
+    "api/cache.py": [
+      {
+        "name": "cached_get",
+        "kind": "function",
+        "line": 11,
+        "end_line": 13
+      },
+      {
+        "name": "cached_set",
+        "kind": "function",
+        "line": 16,
+        "end_line": 17
+      }
+    ],
+    "api/db.py": [
+      {
+        "name": "User",
+        "kind": "class",
+        "line": 12,
+        "end_line": 16
+      },
+      {
+        "name": "Product",
+        "kind": "class",
+        "line": 19,
+        "end_line": 24
+      },
+      {
+        "name": "Order",
+        "kind": "class",
+        "line": 27,
+        "end_line": 34
+      },
+      {
+        "name": "get_session",
+        "kind": "function",
+        "line": 37,
+        "end_line": 38
+      }
+    ],
+    "api/main.py": [
+      {
+        "name": "signup",
+        "kind": "function",
+        "line": 12,
+        "end_line": 16,
+        "decorators": [
+          "app.post('/api/users', status_code=201)"
+        ]
+      },
+      {
+        "name": "login",
+        "kind": "function",
+        "line": 20,
+        "end_line": 24,
+        "decorators": [
+          "app.post('/api/login')"
+        ]
+      },
+      {
+        "name": "products",
+        "kind": "function",
+        "line": 28,
+        "end_line": 29,
+        "decorators": [
+          "app.get('/api/products')"
+        ]
+      },
+      {
+        "name": "checkout",
+        "kind": "function",
+        "line": 33,
+        "end_line": 37,
+        "decorators": [
+          "app.post('/api/orders', status_code=201)"
+        ]
+      },
+      {
+        "name": "order_status",
+        "kind": "function",
+        "line": 41,
+        "end_line": 45,
+        "decorators": [
+          "app.get('/api/orders/{order_id}')"
+        ]
+      },
+      {
+        "name": "stripe_webhook",
+        "kind": "function",
+        "line": 49,
+        "end_line": 52,
+        "decorators": [
+          "app.post('/api/webhooks/stripe')"
+        ]
+      },
+      {
+        "name": "refund",
+        "kind": "function",
+        "line": 57,
+        "end_line": 59,
+        "decorators": [
+          "app.post('/api/orders/{order_id}/refund')"
+        ]
+      }
+    ],
+    "api/payments.py": [
+      {
+        "name": "PaymentDeclined",
+        "kind": "class",
+        "line": 9,
+        "end_line": 10
+      },
+      {
+        "name": "charge",
+        "kind": "function",
+        "line": 13,
+        "end_line": 23
+      },
+      {
+        "name": "parse_webhook",
+        "kind": "function",
+        "line": 26,
+        "end_line": 27
+      },
+      {
+        "name": "refund",
+        "kind": "function",
+        "line": 30,
+        "end_line": 31
+      }
+    ],
+    "api/queue.py": [
+      {
+        "name": "enqueue",
+        "kind": "function",
+        "line": 12,
+        "end_line": 13
+      },
+      {
+        "name": "dequeue",
+        "kind": "function",
+        "line": 16,
+        "end_line": 18
+      }
+    ],
+    "api/services/catalog.py": [
+      {
+        "name": "list_products",
+        "kind": "function",
+        "line": 6,
+        "end_line": 14
+      }
+    ],
+    "api/services/orders.py": [
+      {
+        "name": "create_order",
+        "kind": "function",
+        "line": 7,
+        "end_line": 29
+      },
+      {
+        "name": "get_order",
+        "kind": "function",
+        "line": 32,
+        "end_line": 37
+      },
+      {
+        "name": "reconcile_payment",
+        "kind": "function",
+        "line": 40,
+        "end_line": 49
+      },
+      {
+        "name": "legacy_refund",
+        "kind": "function",
+        "line": 52,
+        "end_line": 57
+      }
+    ],
+    "api/services/users.py": [
+      {
+        "name": "EmailTaken",
+        "kind": "class",
+        "line": 7,
+        "end_line": 8
+      },
+      {
+        "name": "_hash",
+        "kind": "function",
+        "line": 11,
+        "end_line": 12
+      },
+      {
+        "name": "register_user",
+        "kind": "function",
+        "line": 15,
+        "end_line": 22
+      },
+      {
+        "name": "authenticate",
+        "kind": "function",
+        "line": 25,
+        "end_line": 30
+      }
+    ],
+    "jobs/nightly.py": [
+      {
+        "name": "extract",
+        "kind": "function",
+        "line": 13,
+        "end_line": 18
+      },
+      {
+        "name": "load",
+        "kind": "function",
+        "line": 21,
+        "end_line": 27
+      },
+      {
+        "name": "main",
+        "kind": "function",
+        "line": 30,
+        "end_line": 32
+      }
+    ],
+    "web/src/api.ts": [
+      {
+        "name": "signup",
+        "kind": "function",
+        "line": 2
+      },
+      {
+        "name": "listProducts",
+        "kind": "function",
+        "line": 12
+      },
+      {
+        "name": "placeOrder",
+        "kind": "function",
+        "line": 17
+      },
+      {
+        "name": "getOrder",
+        "kind": "function",
+        "line": 27
+      }
+    ],
+    "web/src/pages/Checkout.tsx": [
+      {
+        "name": "Checkout",
+        "kind": "function",
+        "line": 3
+      },
+      {
+        "name": "onPay",
+        "kind": "function",
+        "line": 6
+      }
+    ],
+    "web/src/pages/OrderStatus.tsx": [
+      {
+        "name": "OrderStatus",
+        "kind": "function",
+        "line": 3
+      }
+    ],
+    "web/src/pages/Products.tsx": [
+      {
+        "name": "Products",
+        "kind": "function",
+        "line": 3
+      }
+    ],
+    "web/src/pages/Signup.tsx": [
+      {
+        "name": "Signup",
+        "kind": "function",
+        "line": 2
+      },
+      {
+        "name": "onSubmit",
+        "kind": "function",
+        "line": 4
+      }
+    ],
+    "worker/worker.py": [
+      {
+        "name": "send_confirmation",
+        "kind": "function",
+        "line": 10,
+        "end_line": 17
+      },
+      {
+        "name": "handle",
+        "kind": "function",
+        "line": 20,
+        "end_line": 25
+      },
+      {
+        "name": "main",
+        "kind": "function",
+        "line": 28,
+        "end_line": 32
+      }
+    ]
+  },
+  "imports": [
+    {
+      "file": "api/cache.py",
+      "line": 2,
+      "module": "json",
+      "resolved": null
+    },
+    {
+      "file": "api/cache.py",
+      "line": 4,
+      "module": "redis",
+      "resolved": null
+    },
+    {
+      "file": "api/cache.py",
+      "line": 6,
+      "module": "api.config.REDIS_URL",
+      "resolved": "api/config.py"
+    },
+    {
+      "file": "api/config.py",
+      "line": 2,
+      "module": "os",
+      "resolved": null
+    },
+    {
+      "file": "api/db.py",
+      "line": 2,
+      "module": "sqlalchemy.Column",
+      "resolved": null
+    },
+    {
+      "file": "api/db.py",
+      "line": 2,
+      "module": "sqlalchemy.Integer",
+      "resolved": null
+    },
+    {
+      "file": "api/db.py",
+      "line": 2,
+      "module": "sqlalchemy.String",
+      "resolved": null
+    },
+    {
+      "file": "api/db.py",
+      "line": 2,
+      "module": "sqlalchemy.Numeric",
+      "resolved": null
+    },
+    {
+      "file": "api/db.py",
+      "line": 2,
+      "module": "sqlalchemy.ForeignKey",
+      "resolved": null
+    },
+    {
+      "file": "api/db.py",
+      "line": 2,
+      "module": "sqlalchemy.DateTime",
+      "resolved": null
+    },
+    {
+      "file": "api/db.py",
+      "line": 2,
+      "module": "sqlalchemy.create_engine",
+      "resolved": null
+    },
+    {
+      "file": "api/db.py",
+      "line": 2,
+      "module": "sqlalchemy.func",
+      "resolved": null
+    },
+    {
+      "file": "api/db.py",
+      "line": 3,
+      "module": "sqlalchemy.orm.declarative_base",
+      "resolved": null
+    },
+    {
+      "file": "api/db.py",
+      "line": 3,
+      "module": "sqlalchemy.orm.sessionmaker",
+      "resolved": null
+    },
+    {
+      "file": "api/db.py",
+      "line": 5,
+      "module": "api.config.DATABASE_URL",
+      "resolved": "api/config.py"
+    },
+    {
+      "file": "api/main.py",
+      "line": 2,
+      "module": "fastapi.FastAPI",
+      "resolved": null
+    },
+    {
+      "file": "api/main.py",
+      "line": 2,
+      "module": "fastapi.HTTPException",
+      "resolved": null
+    },
+    {
+      "file": "api/main.py",
+      "line": 2,
+      "module": "fastapi.Request",
+      "resolved": null
+    },
+    {
+      "file": "api/main.py",
+      "line": 4,
+      "module": "api.payments",
+      "resolved": "api/payments.py"
+    },
+    {
+      "file": "api/main.py",
+      "line": 5,
+      "module": "api.config.ENABLE_LEGACY_REFUNDS",
+      "resolved": "api/config.py"
+    },
+    {
+      "file": "api/main.py",
+      "line": 6,
+      "module": "api.services.catalog",
+      "resolved": "api/services/catalog.py"
+    },
+    {
+      "file": "api/main.py",
+      "line": 6,
+      "module": "api.services.orders",
+      "resolved": "api/services/orders.py"
+    },
+    {
+      "file": "api/main.py",
+      "line": 6,
+      "module": "api.services.users",
+      "resolved": "api/services/users.py"
+    },
+    {
+      "file": "api/payments.py",
+      "line": 2,
+      "module": "stripe",
+      "resolved": null
+    },
+    {
+      "file": "api/payments.py",
+      "line": 4,
+      "module": "api.config.STRIPE_SECRET_KEY",
+      "resolved": "api/config.py"
+    },
+    {
+      "file": "api/payments.py",
+      "line": 4,
+      "module": "api.config.STRIPE_WEBHOOK_SECRET",
+      "resolved": "api/config.py"
+    },
+    {
+      "file": "api/queue.py",
+      "line": 2,
+      "module": "json",
+      "resolved": null
+    },
+    {
+      "file": "api/queue.py",
+      "line": 4,
+      "module": "redis",
+      "resolved": null
+    },
+    {
+      "file": "api/queue.py",
+      "line": 6,
+      "module": "api.config.REDIS_URL",
+      "resolved": "api/config.py"
+    },
+    {
+      "file": "api/services/catalog.py",
+      "line": 2,
+      "module": "api.cache.cached_get",
+      "resolved": "api/cache.py"
+    },
+    {
+      "file": "api/services/catalog.py",
+      "line": 2,
+      "module": "api.cache.cached_set",
+      "resolved": "api/cache.py"
+    },
+    {
+      "file": "api/services/catalog.py",
+      "line": 3,
+      "module": "api.db.Product",
+      "resolved": "api/db.py"
+    },
+    {
+      "file": "api/services/catalog.py",
+      "line": 3,
+      "module": "api.db.get_session",
+      "resolved": "api/db.py"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 2,
+      "module": "api.payments",
+      "resolved": "api/payments.py"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 3,
+      "module": "api.db.Order",
+      "resolved": "api/db.py"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 3,
+      "module": "api.db.Product",
+      "resolved": "api/db.py"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 3,
+      "module": "api.db.User",
+      "resolved": "api/db.py"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 3,
+      "module": "api.db.get_session",
+      "resolved": "api/db.py"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 4,
+      "module": "api.queue.ORDERS_QUEUE",
+      "resolved": "api/queue.py"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 4,
+      "module": "api.queue.enqueue",
+      "resolved": "api/queue.py"
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 2,
+      "module": "hashlib",
+      "resolved": null
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 4,
+      "module": "api.db.User",
+      "resolved": "api/db.py"
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 4,
+      "module": "api.db.get_session",
+      "resolved": "api/db.py"
+    },
+    {
+      "file": "jobs/nightly.py",
+      "line": 2,
+      "module": "csv",
+      "resolved": null
+    },
+    {
+      "file": "jobs/nightly.py",
+      "line": 3,
+      "module": "datetime",
+      "resolved": null
+    },
+    {
+      "file": "jobs/nightly.py",
+      "line": 4,
+      "module": "os",
+      "resolved": null
+    },
+    {
+      "file": "jobs/nightly.py",
+      "line": 6,
+      "module": "sqlalchemy.text",
+      "resolved": null
+    },
+    {
+      "file": "jobs/nightly.py",
+      "line": 8,
+      "module": "api.db.engine",
+      "resolved": "api/db.py"
+    },
+    {
+      "file": "web/src/pages/Checkout.tsx",
+      "line": 1,
+      "module": "react",
+      "resolved": null
+    },
+    {
+      "file": "web/src/pages/Checkout.tsx",
+      "line": 2,
+      "module": "../api",
+      "resolved": "web/src/api.ts"
+    },
+    {
+      "file": "web/src/pages/OrderStatus.tsx",
+      "line": 1,
+      "module": "react",
+      "resolved": null
+    },
+    {
+      "file": "web/src/pages/OrderStatus.tsx",
+      "line": 2,
+      "module": "../api",
+      "resolved": "web/src/api.ts"
+    },
+    {
+      "file": "web/src/pages/Products.tsx",
+      "line": 1,
+      "module": "react",
+      "resolved": null
+    },
+    {
+      "file": "web/src/pages/Products.tsx",
+      "line": 2,
+      "module": "../api",
+      "resolved": "web/src/api.ts"
+    },
+    {
+      "file": "web/src/pages/Signup.tsx",
+      "line": 1,
+      "module": "../api",
+      "resolved": "web/src/api.ts"
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 2,
+      "module": "smtplib",
+      "resolved": null
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 3,
+      "module": "email.message.EmailMessage",
+      "resolved": null
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 5,
+      "module": "api.config.SMTP_HOST",
+      "resolved": "api/config.py"
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 6,
+      "module": "api.db.Order",
+      "resolved": "api/db.py"
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 6,
+      "module": "api.db.get_session",
+      "resolved": "api/db.py"
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 7,
+      "module": "api.queue.ORDERS_QUEUE",
+      "resolved": "api/queue.py"
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 7,
+      "module": "api.queue.dequeue",
+      "resolved": "api/queue.py"
+    }
+  ],
+  "calls": [
+    {
+      "file": "api/main.py",
+      "line": 14,
+      "caller": "signup",
+      "callee_file": "api/services/users.py",
+      "callee": "register_user"
+    },
+    {
+      "file": "api/main.py",
+      "line": 21,
+      "caller": "login",
+      "callee_file": "api/services/users.py",
+      "callee": "authenticate"
+    },
+    {
+      "file": "api/main.py",
+      "line": 29,
+      "caller": "products",
+      "callee_file": "api/services/catalog.py",
+      "callee": "list_products"
+    },
+    {
+      "file": "api/main.py",
+      "line": 35,
+      "caller": "checkout",
+      "callee_file": "api/services/orders.py",
+      "callee": "create_order"
+    },
+    {
+      "file": "api/main.py",
+      "line": 42,
+      "caller": "order_status",
+      "callee_file": "api/services/orders.py",
+      "callee": "get_order"
+    },
+    {
+      "file": "api/main.py",
+      "line": 50,
+      "caller": "stripe_webhook",
+      "callee_file": "api/payments.py",
+      "callee": "parse_webhook"
+    },
+    {
+      "file": "api/main.py",
+      "line": 51,
+      "caller": "stripe_webhook",
+      "callee_file": "api/services/orders.py",
+      "callee": "reconcile_payment"
+    },
+    {
+      "file": "api/main.py",
+      "line": 58,
+      "caller": "refund",
+      "callee_file": "api/services/orders.py",
+      "callee": "legacy_refund"
+    },
+    {
+      "file": "api/payments.py",
+      "line": 22,
+      "caller": "charge",
+      "callee_file": "api/payments.py",
+      "callee": "PaymentDeclined"
+    },
+    {
+      "file": "api/services/catalog.py",
+      "line": 7,
+      "caller": "list_products",
+      "callee_file": "api/cache.py",
+      "callee": "cached_get"
+    },
+    {
+      "file": "api/services/catalog.py",
+      "line": 10,
+      "caller": "list_products",
+      "callee_file": "api/db.py",
+      "callee": "get_session"
+    },
+    {
+      "file": "api/services/catalog.py",
+      "line": 13,
+      "caller": "list_products",
+      "callee_file": "api/cache.py",
+      "callee": "cached_set"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 8,
+      "caller": "create_order",
+      "callee_file": "api/db.py",
+      "callee": "get_session"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 13,
+      "caller": "create_order",
+      "callee_file": "api/db.py",
+      "callee": "Order"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 28,
+      "caller": "create_order",
+      "callee_file": "api/queue.py",
+      "callee": "enqueue"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 18,
+      "caller": "create_order",
+      "callee_file": "api/payments.py",
+      "callee": "charge"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 33,
+      "caller": "get_order",
+      "callee_file": "api/db.py",
+      "callee": "get_session"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 43,
+      "caller": "reconcile_payment",
+      "callee_file": "api/db.py",
+      "callee": "get_session"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 53,
+      "caller": "legacy_refund",
+      "callee_file": "api/db.py",
+      "callee": "get_session"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 55,
+      "caller": "legacy_refund",
+      "callee_file": "api/payments.py",
+      "callee": "refund"
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 16,
+      "caller": "register_user",
+      "callee_file": "api/db.py",
+      "callee": "get_session"
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 19,
+      "caller": "register_user",
+      "callee_file": "api/db.py",
+      "callee": "User"
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 18,
+      "caller": "register_user",
+      "callee_file": "api/services/users.py",
+      "callee": "EmailTaken"
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 19,
+      "caller": "register_user",
+      "callee_file": "api/services/users.py",
+      "callee": "_hash"
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 26,
+      "caller": "authenticate",
+      "callee_file": "api/db.py",
+      "callee": "get_session"
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 28,
+      "caller": "authenticate",
+      "callee_file": "api/services/users.py",
+      "callee": "_hash"
+    },
+    {
+      "file": "jobs/nightly.py",
+      "line": 14,
+      "caller": "extract",
+      "callee_file": "api/db.py",
+      "callee": "engine.connect"
+    },
+    {
+      "file": "jobs/nightly.py",
+      "line": 32,
+      "caller": "main",
+      "callee_file": "jobs/nightly.py",
+      "callee": "load"
+    },
+    {
+      "file": "jobs/nightly.py",
+      "line": 32,
+      "caller": "main",
+      "callee_file": "jobs/nightly.py",
+      "callee": "extract"
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 21,
+      "caller": "handle",
+      "callee_file": "worker/worker.py",
+      "callee": "send_confirmation"
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 22,
+      "caller": "handle",
+      "callee_file": "api/db.py",
+      "callee": "get_session"
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 30,
+      "caller": "main",
+      "callee_file": "api/queue.py",
+      "callee": "dequeue"
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 32,
+      "caller": "main",
+      "callee_file": "worker/worker.py",
+      "callee": "handle"
+    }
+  ],
+  "datastores": [
+    {
+      "file": "api/db.py",
+      "line": 2,
+      "module": "sqlalchemy",
+      "sdk": "SQLAlchemy",
+      "category": "datastore",
+      "kind": "client"
+    },
+    {
+      "file": "api/db.py",
+      "line": 3,
+      "module": "sqlalchemy.orm",
+      "sdk": "SQLAlchemy",
+      "category": "datastore",
+      "kind": "client"
+    },
+    {
+      "file": "api/db.py",
+      "line": 12,
+      "kind": "model",
+      "name": "User",
+      "table": "users",
+      "columns": [
+        "id",
+        "email",
+        "password_hash"
+      ],
+      "bases": [
+        "Base"
+      ]
+    },
+    {
+      "file": "api/db.py",
+      "line": 19,
+      "kind": "model",
+      "name": "Product",
+      "table": "products",
+      "columns": [
+        "id",
+        "name",
+        "price",
+        "stock"
+      ],
+      "bases": [
+        "Base"
+      ]
+    },
+    {
+      "file": "api/db.py",
+      "line": 27,
+      "kind": "model",
+      "name": "Order",
+      "table": "orders",
+      "columns": [
+        "id",
+        "user_id",
+        "total",
+        "status",
+        "payment_intent",
+        "created_at"
+      ],
+      "bases": [
+        "Base"
+      ]
+    },
+    {
+      "file": "api/services/catalog.py",
+      "line": 11,
+      "kind": "query",
+      "call": "session.query",
+      "detail": "session.query(Product)"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 9,
+      "kind": "query",
+      "call": "session.get",
+      "detail": "session.get(User, user_id)"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 14,
+      "kind": "query",
+      "call": "session.add",
+      "detail": "session.add(order)"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 15,
+      "kind": "query",
+      "call": "session.commit",
+      "detail": "session.commit()"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 26,
+      "kind": "query",
+      "call": "session.commit",
+      "detail": "session.commit()"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 34,
+      "kind": "query",
+      "call": "session.get",
+      "detail": "session.get(Order, order_id)"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 54,
+      "kind": "query",
+      "call": "session.get",
+      "detail": "session.get(Order, order_id)"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 57,
+      "kind": "query",
+      "call": "session.commit",
+      "detail": "session.commit()"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 48,
+      "kind": "query",
+      "call": "session.commit",
+      "detail": "session.commit()"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 21,
+      "kind": "query",
+      "call": "session.commit",
+      "detail": "session.commit()"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 45,
+      "kind": "query",
+      "call": "session.query(Order).filter_by",
+      "detail": "session.query(Order).filter_by(payment_intent=intent_id)"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 10,
+      "kind": "query",
+      "call": "session.query",
+      "detail": "session.query(Product)"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 45,
+      "kind": "query",
+      "call": "session.query",
+      "detail": "session.query(Order)"
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 20,
+      "kind": "query",
+      "call": "session.add",
+      "detail": "session.add(user)"
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 21,
+      "kind": "query",
+      "call": "session.commit",
+      "detail": "session.commit()"
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 17,
+      "kind": "query",
+      "call": "session.query(User).filter_by",
+      "detail": "session.query(User).filter_by(email=email)"
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 27,
+      "kind": "query",
+      "call": "session.query(User).filter_by",
+      "detail": "session.query(User).filter_by(email=email)"
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 17,
+      "kind": "query",
+      "call": "session.query",
+      "detail": "session.query(User)"
+    },
+    {
+      "file": "api/services/users.py",
+      "line": 27,
+      "kind": "query",
+      "call": "session.query",
+      "detail": "session.query(User)"
+    },
+    {
+      "file": "jobs/nightly.py",
+      "line": 6,
+      "module": "sqlalchemy",
+      "sdk": "SQLAlchemy",
+      "category": "datastore",
+      "kind": "client"
+    },
+    {
+      "file": "jobs/nightly.py",
+      "line": 15,
+      "kind": "query",
+      "call": "conn.execute(text('SELECT status, COUNT(*), SUM(total) FROM orders WHERE created_at::date = :day GROUP BY status'), {'day': day}).fetchall",
+      "detail": "conn.execute(text('SELECT status, COUNT(*), SUM(total) FROM orders WHERE created_at::date = :day GROUP BY status'), {'day': day}).fetchall()"
+    },
+    {
+      "file": "jobs/nightly.py",
+      "line": 15,
+      "kind": "query",
+      "call": "conn.execute",
+      "detail": "conn.execute(text('SELECT status, COUNT(*), SUM(total) FROM orders WHERE created_at::date = :day GROUP BY status'), {'day': day})"
+    },
+    {
+      "file": "jobs/nightly.py",
+      "line": 16,
+      "kind": "sql",
+      "detail": "text(\"SELECT status, COUNT(*), SUM(total) FROM orders WHERE created_at::date = :day GROUP BY status\"),"
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 23,
+      "kind": "query",
+      "call": "session.get",
+      "detail": "session.get(Order, job['order_id'])"
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 25,
+      "kind": "query",
+      "call": "session.commit",
+      "detail": "session.commit()"
+    }
+  ],
+  "file_io": [
+    {
+      "file": "jobs/nightly.py",
+      "line": 23,
+      "op": "write",
+      "target": "path"
+    }
+  ],
+  "env_vars": {
+    "DATABASE_URL": [
+      {
+        "file": ".env.example",
+        "line": 1,
+        "declared": true
+      },
+      {
+        "file": "api/config.py",
+        "line": 4,
+        "default": "postgresql://shop:shop@localhost:5432/shop"
+      }
+    ],
+    "REDIS_URL": [
+      {
+        "file": ".env.example",
+        "line": 2,
+        "declared": true
+      },
+      {
+        "file": "api/config.py",
+        "line": 5,
+        "default": "redis://localhost:6379/0"
+      }
+    ],
+    "STRIPE_SECRET_KEY": [
+      {
+        "file": ".env.example",
+        "line": 3,
+        "declared": true
+      },
+      {
+        "file": "api/config.py",
+        "line": 6,
+        "required": true
+      }
+    ],
+    "STRIPE_WEBHOOK_SECRET": [
+      {
+        "file": ".env.example",
+        "line": 4,
+        "declared": true
+      },
+      {
+        "file": "api/config.py",
+        "line": 7,
+        "default": ""
+      }
+    ],
+    "SMTP_HOST": [
+      {
+        "file": ".env.example",
+        "line": 5,
+        "declared": true
+      },
+      {
+        "file": "api/config.py",
+        "line": 8,
+        "default": "localhost"
+      }
+    ],
+    "ENABLE_LEGACY_REFUNDS": [
+      {
+        "file": ".env.example",
+        "line": 6,
+        "declared": true
+      },
+      {
+        "file": "api/config.py",
+        "line": 11,
+        "default": "false"
+      }
+    ],
+    "REPORT_DIR": [
+      {
+        "file": "jobs/nightly.py",
+        "line": 10,
+        "default": "/var/reports"
+      }
+    ],
+    "VITE_API_URL": [
+      {
+        "file": "web/src/api.ts",
+        "line": 1
+      }
+    ]
+  },
+  "externals": [
+    {
+      "file": "api/payments.py",
+      "line": 2,
+      "module": "stripe",
+      "sdk": "Stripe",
+      "category": "external"
+    },
+    {
+      "file": "api/payments.py",
+      "line": 27,
+      "category": "sdk_call",
+      "sdk": "Stripe",
+      "module": "stripe.Webhook.construct_event"
+    },
+    {
+      "file": "api/payments.py",
+      "line": 31,
+      "category": "sdk_call",
+      "sdk": "Stripe",
+      "module": "stripe.Refund.create"
+    },
+    {
+      "file": "api/payments.py",
+      "line": 15,
+      "category": "sdk_call",
+      "sdk": "Stripe",
+      "module": "stripe.PaymentIntent.create"
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 2,
+      "module": "smtplib",
+      "sdk": "SMTP",
+      "category": "external"
+    },
+    {
+      "file": "worker/worker.py",
+      "line": 16,
+      "category": "sdk_call",
+      "sdk": "SMTP",
+      "module": "smtplib.SMTP"
+    }
+  ],
+  "queues": [
+    {
+      "file": "api/queue.py",
+      "line": 13,
+      "op": "produce",
+      "call": "_client.lpush",
+      "target": "queue_name"
+    },
+    {
+      "file": "api/queue.py",
+      "line": 17,
+      "op": "consume",
+      "call": "_client.brpop",
+      "target": "queue_name"
+    }
+  ],
+  "caches": [
+    {
+      "file": "api/cache.py",
+      "line": 4,
+      "module": "redis",
+      "sdk": "Redis",
+      "category": "cache_or_queue",
+      "kind": "client"
+    },
+    {
+      "file": "api/cache.py",
+      "line": 12,
+      "op": "get",
+      "call": "_client.get"
+    },
+    {
+      "file": "api/cache.py",
+      "line": 17,
+      "op": "setex",
+      "call": "_client.setex"
+    },
+    {
+      "file": "api/queue.py",
+      "line": 4,
+      "module": "redis",
+      "sdk": "Redis",
+      "category": "cache_or_queue",
+      "kind": "client"
+    }
+  ],
+  "http_clients": [
+    {
+      "file": "web/src/api.ts",
+      "line": 4,
+      "client": "fetch",
+      "method": "POST",
+      "url": "${BASE}/users",
+      "function": "signup"
+    },
+    {
+      "file": "web/src/api.ts",
+      "line": 14,
+      "client": "fetch",
+      "method": "GET",
+      "url": "${BASE}/products",
+      "function": "listProducts"
+    },
+    {
+      "file": "web/src/api.ts",
+      "line": 19,
+      "client": "fetch",
+      "method": "POST",
+      "url": "${BASE}/orders",
+      "function": "placeOrder"
+    },
+    {
+      "file": "web/src/api.ts",
+      "line": 29,
+      "client": "fetch",
+      "method": "GET",
+      "url": "${BASE}/orders/${id}",
+      "function": "getOrder"
+    }
+  ],
+  "dead_code": [
+    {
+      "file": "api/main.py",
+      "line": 62,
+      "symbol": "DELETE /api/orders/{order_id}",
+      "reason": "commented-out route"
+    },
+    {
+      "file": "api/main.py",
+      "line": 57,
+      "symbol": "refund",
+      "reason": "route guarded by ENABLE_LEGACY_REFUNDS (default off)"
+    },
+    {
+      "file": "api/services/orders.py",
+      "line": 52,
+      "symbol": "legacy_refund",
+      "reason": "only called from deactivated code"
+    }
+  ],
+  "feature_flags": {
+    "ENABLE_LEGACY_REFUNDS": {
+      "default": false,
+      "file": "api/config.py",
+      "line": 11,
+      "env": "ENABLE_LEGACY_REFUNDS"
+    }
+  }
+}

@@ -1,0 +1,1192 @@
+{
+  "schema": "flowmap/1",
+  "mode": "code",
+  "project": {
+    "name": "shop-demo",
+    "source": "examples/shop-demo",
+    "summary": "FastAPI shop: React storefront, Postgres, Redis cache + queue, Stripe payments, an e-mail worker and a nightly ETL cron.",
+    "generated_at": "2026-10-26T00:00:00Z"
+  },
+  "layers": [
+    {
+      "id": "client",
+      "label": "Client"
+    },
+    {
+      "id": "api",
+      "label": "HTTP API"
+    },
+    {
+      "id": "domain",
+      "label": "Domain services"
+    },
+    {
+      "id": "infra",
+      "label": "Infrastructure"
+    },
+    {
+      "id": "async",
+      "label": "Background"
+    }
+  ],
+  "groups": [
+    {
+      "id": "web",
+      "label": "web/ (storefront)"
+    },
+    {
+      "id": "api",
+      "label": "api/ (FastAPI)"
+    },
+    {
+      "id": "worker",
+      "label": "worker/"
+    },
+    {
+      "id": "jobs",
+      "label": "jobs/ + ops/"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "ui_storefront",
+      "label": "Storefront",
+      "subtitle": "React SPA",
+      "kind": "ui",
+      "tech": "react",
+      "layer": "client",
+      "group": "web",
+      "files": [
+        "web/src/api.ts",
+        "web/src/pages/Checkout.tsx",
+        "web/src/pages/Signup.tsx",
+        "web/src/pages/Products.tsx",
+        "web/src/pages/OrderStatus.tsx"
+      ],
+      "summary": "Browser UI. Pages call the API through the fetch wrappers in web/src/api.ts.",
+      "symbols": [
+        "signup",
+        "listProducts",
+        "placeOrder",
+        "getOrder",
+        "Checkout",
+        "Signup",
+        "Products",
+        "OrderStatus"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "web/src/api.ts",
+          "line": 1,
+          "note": "API base URL"
+        },
+        {
+          "file": "web/src/pages/Checkout.tsx",
+          "line": 9
+        }
+      ]
+    },
+    {
+      "id": "ep_signup",
+      "label": "Sign up",
+      "subtitle": "POST /api/users",
+      "kind": "entrypoint",
+      "tech": "http",
+      "layer": "api",
+      "group": "api",
+      "files": [
+        "api/main.py"
+      ],
+      "summary": "Registers a user. Returns 201, or 409 if the e-mail is taken.",
+      "symbols": [
+        "signup"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/main.py",
+          "line": 11
+        }
+      ]
+    },
+    {
+      "id": "ep_login",
+      "label": "Log in",
+      "subtitle": "POST /api/login",
+      "kind": "entrypoint",
+      "tech": "http",
+      "layer": "api",
+      "group": "api",
+      "files": [
+        "api/main.py"
+      ],
+      "summary": "Checks credentials and returns a token string. No caller found in web/src.",
+      "symbols": [
+        "login"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/main.py",
+          "line": 19
+        },
+        {
+          "file": "api/main.py",
+          "line": 24,
+          "note": "token is just user-<id>"
+        }
+      ]
+    },
+    {
+      "id": "ep_products",
+      "label": "List products",
+      "subtitle": "GET /api/products",
+      "kind": "entrypoint",
+      "tech": "http",
+      "layer": "api",
+      "group": "api",
+      "files": [
+        "api/main.py"
+      ],
+      "summary": "Returns in-stock products (cached).",
+      "symbols": [
+        "products"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/main.py",
+          "line": 27
+        }
+      ]
+    },
+    {
+      "id": "ep_checkout",
+      "label": "Checkout",
+      "subtitle": "POST /api/orders",
+      "kind": "entrypoint",
+      "tech": "http",
+      "layer": "api",
+      "group": "api",
+      "files": [
+        "api/main.py"
+      ],
+      "summary": "Creates and pays an order. 201 on success, 402 when the card is declined.",
+      "symbols": [
+        "checkout"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/main.py",
+          "line": 32
+        },
+        {
+          "file": "api/main.py",
+          "line": 37,
+          "note": "402 on PaymentDeclined"
+        }
+      ]
+    },
+    {
+      "id": "ep_order_status",
+      "label": "Order status",
+      "subtitle": "GET /api/orders/{id}",
+      "kind": "entrypoint",
+      "tech": "http",
+      "layer": "api",
+      "group": "api",
+      "files": [
+        "api/main.py"
+      ],
+      "summary": "Reads one order; 404 if missing.",
+      "symbols": [
+        "order_status"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/main.py",
+          "line": 40
+        }
+      ]
+    },
+    {
+      "id": "ep_refund",
+      "label": "Legacy refund",
+      "subtitle": "POST /api/orders/{id}/refund",
+      "kind": "entrypoint",
+      "tech": "http",
+      "layer": "api",
+      "group": "api",
+      "files": [
+        "api/main.py",
+        "api/config.py"
+      ],
+      "summary": "Only registered when ENABLE_LEGACY_REFUNDS is true; the default is false, so the route is off.",
+      "symbols": [
+        "refund"
+      ],
+      "status": "deactivated",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/main.py",
+          "line": 56
+        },
+        {
+          "file": "api/config.py",
+          "line": 11,
+          "note": "flag defaults to false"
+        }
+      ]
+    },
+    {
+      "id": "tr_stripe_webhook",
+      "label": "Stripe webhook",
+      "subtitle": "POST /api/webhooks/stripe",
+      "kind": "trigger",
+      "tech": "stripe",
+      "layer": "api",
+      "group": "api",
+      "files": [
+        "api/main.py",
+        "api/payments.py"
+      ],
+      "summary": "Stripe calls this endpoint. The signature is verified locally with STRIPE_WEBHOOK_SECRET, then the order is reconciled.",
+      "symbols": [
+        "stripe_webhook",
+        "parse_webhook"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/main.py",
+          "line": 48
+        },
+        {
+          "file": "api/payments.py",
+          "line": 27
+        }
+      ]
+    },
+    {
+      "id": "tr_cron",
+      "label": "Nightly cron",
+      "subtitle": "0 2 * * *",
+      "kind": "trigger",
+      "tech": "cron",
+      "layer": "async",
+      "group": "jobs",
+      "files": [
+        "ops/crontab"
+      ],
+      "summary": "System crontab runs the nightly ETL at 02:00.",
+      "symbols": [],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "ops/crontab",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "svc_users",
+      "label": "User Service",
+      "subtitle": "register \u00b7 authenticate",
+      "kind": "service",
+      "tech": "python",
+      "layer": "domain",
+      "group": "api",
+      "files": [
+        "api/services/users.py"
+      ],
+      "summary": "Registration (unique e-mail) and password check. Passwords are hashed with unsalted SHA-256.",
+      "symbols": [
+        "register_user",
+        "authenticate",
+        "_hash",
+        "EmailTaken"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/services/users.py",
+          "line": 15
+        },
+        {
+          "file": "api/services/users.py",
+          "line": 11,
+          "note": "unsalted sha256"
+        }
+      ]
+    },
+    {
+      "id": "hub_catalog",
+      "label": "Catalog Service",
+      "subtitle": "api/services/catalog.py",
+      "kind": "hub",
+      "tech": "python",
+      "layer": "domain",
+      "group": "api",
+      "files": [
+        "api/services/catalog.py",
+        "api/cache.py"
+      ],
+      "ports": [
+        "Cache",
+        "DB"
+      ],
+      "summary": "Lists in-stock products through a Redis read-through cache (TTL 300 s).",
+      "symbols": [
+        "list_products",
+        "cached_get",
+        "cached_set"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/services/catalog.py",
+          "line": 6
+        }
+      ]
+    },
+    {
+      "id": "hub_orders",
+      "label": "Order Service",
+      "subtitle": "api/services/orders.py",
+      "kind": "hub",
+      "tech": "python",
+      "layer": "domain",
+      "group": "api",
+      "files": [
+        "api/services/orders.py",
+        "api/payments.py",
+        "api/queue.py"
+      ],
+      "ports": [
+        "DB",
+        "Payments",
+        "Queue"
+      ],
+      "summary": "Order lifecycle: create, charge via Stripe, enqueue fulfilment, reconcile webhooks, legacy refunds.",
+      "symbols": [
+        "create_order",
+        "get_order",
+        "reconcile_payment",
+        "legacy_refund"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/services/orders.py",
+          "line": 7
+        },
+        {
+          "file": "api/services/orders.py",
+          "line": 40
+        }
+      ]
+    },
+    {
+      "id": "ds_postgres",
+      "label": "PostgreSQL",
+      "subtitle": "users \u00b7 products \u00b7 orders",
+      "kind": "datastore",
+      "tech": "postgres",
+      "layer": "infra",
+      "group": "api",
+      "hub": "hub_orders",
+      "port": "DB",
+      "files": [
+        "api/db.py",
+        "docker-compose.yml"
+      ],
+      "summary": "Primary database (SQLAlchemy). Tables: users, products, orders.",
+      "symbols": [
+        "User",
+        "Product",
+        "Order",
+        "get_session"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/db.py",
+          "line": 12
+        },
+        {
+          "file": "api/db.py",
+          "line": 19
+        },
+        {
+          "file": "api/db.py",
+          "line": 27
+        },
+        {
+          "file": "docker-compose.yml",
+          "line": 12
+        }
+      ]
+    },
+    {
+      "id": "ext_stripe",
+      "label": "Stripe API",
+      "subtitle": "PaymentIntent \u00b7 Refund",
+      "kind": "external",
+      "tech": "stripe",
+      "layer": "infra",
+      "group": "api",
+      "hub": "hub_orders",
+      "port": "Payments",
+      "files": [
+        "api/payments.py"
+      ],
+      "summary": "Stripe SDK. Card errors are turned into PaymentDeclined.",
+      "symbols": [
+        "charge",
+        "refund"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/payments.py",
+          "line": 15
+        },
+        {
+          "file": "api/payments.py",
+          "line": 31
+        }
+      ]
+    },
+    {
+      "id": "q_orders",
+      "label": "orders queue",
+      "subtitle": "Redis list queue:orders",
+      "kind": "queue",
+      "tech": "redis",
+      "layer": "infra",
+      "group": "api",
+      "hub": "hub_orders",
+      "port": "Queue",
+      "files": [
+        "api/queue.py"
+      ],
+      "summary": "LPUSH by the API, BRPOP by the worker. Payload: {order_id, email}.",
+      "symbols": [
+        "enqueue",
+        "dequeue",
+        "ORDERS_QUEUE"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/queue.py",
+          "line": 8
+        },
+        {
+          "file": "api/queue.py",
+          "line": 13
+        },
+        {
+          "file": "api/queue.py",
+          "line": 17
+        }
+      ]
+    },
+    {
+      "id": "cache_redis",
+      "label": "Redis cache",
+      "subtitle": "products:all \u00b7 300 s",
+      "kind": "datastore",
+      "tech": "redis",
+      "layer": "infra",
+      "group": "api",
+      "hub": "hub_catalog",
+      "port": "Cache",
+      "files": [
+        "api/cache.py"
+      ],
+      "summary": "JSON values with a TTL; the same Redis instance as the queue (REDIS_URL).",
+      "symbols": [
+        "cached_get",
+        "cached_set"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/cache.py",
+          "line": 8
+        },
+        {
+          "file": "api/cache.py",
+          "line": 16
+        }
+      ]
+    },
+    {
+      "id": "hub_worker",
+      "label": "Order Worker",
+      "subtitle": "worker/worker.py",
+      "kind": "hub",
+      "tech": "python",
+      "layer": "async",
+      "group": "worker",
+      "files": [
+        "worker/worker.py"
+      ],
+      "ports": [
+        "Email",
+        "DB"
+      ],
+      "summary": "Long-running consumer: e-mails a confirmation, then marks the order fulfilled.",
+      "symbols": [
+        "main",
+        "handle",
+        "send_confirmation"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "worker/worker.py",
+          "line": 28
+        },
+        {
+          "file": "docker-compose.yml",
+          "line": 7,
+          "note": "worker service"
+        }
+      ]
+    },
+    {
+      "id": "ext_smtp",
+      "label": "SMTP",
+      "subtitle": "order confirmation",
+      "kind": "external",
+      "tech": "smtp",
+      "layer": "infra",
+      "group": "worker",
+      "hub": "hub_worker",
+      "port": "Email",
+      "files": [
+        "worker/worker.py"
+      ],
+      "summary": "smtplib against SMTP_HOST.",
+      "symbols": [
+        "send_confirmation"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "worker/worker.py",
+          "line": 16
+        }
+      ]
+    },
+    {
+      "id": "job_nightly",
+      "label": "Nightly ETL",
+      "subtitle": "jobs/nightly.py",
+      "kind": "job",
+      "tech": "python",
+      "layer": "async",
+      "group": "jobs",
+      "files": [
+        "jobs/nightly.py"
+      ],
+      "summary": "Aggregates yesterday's orders by status and writes a CSV.",
+      "symbols": [
+        "main",
+        "extract",
+        "load"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "jobs/nightly.py",
+          "line": 30
+        }
+      ]
+    },
+    {
+      "id": "ds_reports",
+      "label": "Sales report CSV",
+      "subtitle": "$REPORT_DIR/sales-<day>.csv",
+      "kind": "datastore",
+      "tech": "file",
+      "layer": "infra",
+      "group": "jobs",
+      "files": [
+        "jobs/nightly.py"
+      ],
+      "summary": "Local file output; REPORT_DIR defaults to /var/reports.",
+      "symbols": [
+        "load"
+      ],
+      "status": "active",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "jobs/nightly.py",
+          "line": 23
+        },
+        {
+          "file": "jobs/nightly.py",
+          "line": 10
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_ui_signup",
+      "from": "ui_storefront",
+      "to": "ep_signup",
+      "kind": "main",
+      "mechanism": "http",
+      "sync": "sync",
+      "label": "POST",
+      "payload": "{email, password}",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "web/src/api.ts",
+          "line": 4
+        }
+      ]
+    },
+    {
+      "id": "e_ui_products",
+      "from": "ui_storefront",
+      "to": "ep_products",
+      "kind": "main",
+      "mechanism": "http",
+      "sync": "sync",
+      "label": "GET",
+      "payload": "-> [{id, name, price}]",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "web/src/api.ts",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "id": "e_ui_checkout",
+      "from": "ui_storefront",
+      "to": "ep_checkout",
+      "kind": "main",
+      "mechanism": "http",
+      "sync": "sync",
+      "label": "POST",
+      "payload": "{user_id, items: [{product_id, qty}]}",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "web/src/api.ts",
+          "line": 19
+        }
+      ]
+    },
+    {
+      "id": "e_ui_status",
+      "from": "ui_storefront",
+      "to": "ep_order_status",
+      "kind": "main",
+      "mechanism": "http",
+      "sync": "sync",
+      "label": "GET",
+      "payload": "-> {id, status, total}",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "web/src/api.ts",
+          "line": 29
+        }
+      ]
+    },
+    {
+      "id": "e_signup_users",
+      "from": "ep_signup",
+      "to": "svc_users",
+      "kind": "main",
+      "mechanism": "call",
+      "sync": "sync",
+      "label": "register_user()",
+      "payload": "(email, password)",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/main.py",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "id": "e_login_users",
+      "from": "ep_login",
+      "to": "svc_users",
+      "kind": "main",
+      "mechanism": "call",
+      "sync": "sync",
+      "label": "authenticate()",
+      "payload": "(email, password)",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/main.py",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "id": "e_products_catalog",
+      "from": "ep_products",
+      "to": "hub_catalog",
+      "kind": "main",
+      "mechanism": "call",
+      "sync": "sync",
+      "label": "list_products()",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/main.py",
+          "line": 29
+        }
+      ]
+    },
+    {
+      "id": "e_checkout_orders",
+      "from": "ep_checkout",
+      "to": "hub_orders",
+      "kind": "main",
+      "mechanism": "call",
+      "sync": "sync",
+      "label": "create_order()",
+      "payload": "(user_id, items)",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/main.py",
+          "line": 35
+        }
+      ]
+    },
+    {
+      "id": "e_status_orders",
+      "from": "ep_order_status",
+      "to": "hub_orders",
+      "kind": "main",
+      "mechanism": "call",
+      "sync": "sync",
+      "label": "get_order()",
+      "payload": "(order_id)",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/main.py",
+          "line": 42
+        }
+      ]
+    },
+    {
+      "id": "e_webhook_orders",
+      "from": "tr_stripe_webhook",
+      "to": "hub_orders",
+      "kind": "main",
+      "mechanism": "call",
+      "sync": "sync",
+      "label": "reconcile_payment()",
+      "payload": "Stripe Event {type, data.object.id}",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/main.py",
+          "line": 51
+        }
+      ]
+    },
+    {
+      "id": "e_refund_orders",
+      "from": "ep_refund",
+      "to": "hub_orders",
+      "kind": "main",
+      "mechanism": "call",
+      "sync": "sync",
+      "label": "legacy_refund()",
+      "payload": "(order_id)",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/main.py",
+          "line": 58
+        }
+      ]
+    },
+    {
+      "id": "e_users_pg",
+      "from": "svc_users",
+      "to": "ds_postgres",
+      "kind": "dependency",
+      "mechanism": "sql",
+      "sync": "sync",
+      "label": "users",
+      "payload": "SELECT / INSERT users",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/services/users.py",
+          "line": 17
+        },
+        {
+          "file": "api/services/users.py",
+          "line": 20
+        }
+      ]
+    },
+    {
+      "id": "e_catalog_cache",
+      "from": "hub_catalog",
+      "to": "cache_redis",
+      "kind": "dependency",
+      "port": "Cache",
+      "mechanism": "cache",
+      "sync": "sync",
+      "label": "GET / SETEX",
+      "payload": "products:all -> [{id, name, price}]",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/services/catalog.py",
+          "line": 7
+        },
+        {
+          "file": "api/services/catalog.py",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "id": "e_catalog_pg",
+      "from": "hub_catalog",
+      "to": "ds_postgres",
+      "kind": "dependency",
+      "port": "DB",
+      "mechanism": "sql",
+      "sync": "sync",
+      "label": "products",
+      "payload": "SELECT products WHERE stock > 0 (cache miss only)",
+      "condition": "cache miss",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/services/catalog.py",
+          "line": 11
+        }
+      ]
+    },
+    {
+      "id": "e_orders_pg",
+      "from": "hub_orders",
+      "to": "ds_postgres",
+      "kind": "dependency",
+      "port": "DB",
+      "mechanism": "sql",
+      "sync": "sync",
+      "label": "orders",
+      "payload": "INSERT / UPDATE orders(status, payment_intent)",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/services/orders.py",
+          "line": 14
+        },
+        {
+          "file": "api/services/orders.py",
+          "line": 25
+        }
+      ]
+    },
+    {
+      "id": "e_orders_stripe",
+      "from": "hub_orders",
+      "to": "ext_stripe",
+      "kind": "dependency",
+      "port": "Payments",
+      "mechanism": "http",
+      "sync": "sync",
+      "label": "charge()",
+      "payload": "PaymentIntent.create(amount, currency, receipt_email, confirm=True)",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/services/orders.py",
+          "line": 18
+        },
+        {
+          "file": "api/payments.py",
+          "line": 15
+        }
+      ]
+    },
+    {
+      "id": "e_orders_queue",
+      "from": "hub_orders",
+      "to": "q_orders",
+      "kind": "dependency",
+      "port": "Queue",
+      "mechanism": "queue",
+      "sync": "async",
+      "label": "LPUSH",
+      "payload": "{order_id, email}",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "api/services/orders.py",
+          "line": 28
+        },
+        {
+          "file": "api/queue.py",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "id": "e_queue_worker",
+      "from": "q_orders",
+      "to": "hub_worker",
+      "kind": "main",
+      "mechanism": "queue",
+      "sync": "async",
+      "label": "BRPOP",
+      "payload": "{order_id, email}",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "worker/worker.py",
+          "line": 30
+        },
+        {
+          "file": "api/queue.py",
+          "line": 17
+        }
+      ]
+    },
+    {
+      "id": "e_worker_smtp",
+      "from": "hub_worker",
+      "to": "ext_smtp",
+      "kind": "dependency",
+      "port": "Email",
+      "mechanism": "other",
+      "sync": "sync",
+      "label": "send_message",
+      "payload": "EmailMessage(To, Subject: Order #<id> confirmed)",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "worker/worker.py",
+          "line": 17
+        }
+      ]
+    },
+    {
+      "id": "e_worker_pg",
+      "from": "hub_worker",
+      "to": "ds_postgres",
+      "kind": "dependency",
+      "port": "DB",
+      "mechanism": "sql",
+      "sync": "sync",
+      "label": "fulfilled",
+      "payload": "UPDATE orders SET status='fulfilled'",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "worker/worker.py",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "id": "e_cron_job",
+      "from": "tr_cron",
+      "to": "job_nightly",
+      "kind": "main",
+      "mechanism": "event",
+      "sync": "async",
+      "label": "02:00",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "ops/crontab",
+          "line": 2
+        }
+      ],
+      "payload": "python -m jobs.nightly"
+    },
+    {
+      "id": "e_job_pg",
+      "from": "job_nightly",
+      "to": "ds_postgres",
+      "kind": "dependency",
+      "mechanism": "sql",
+      "sync": "sync",
+      "label": "aggregate",
+      "payload": "SELECT status, COUNT(*), SUM(total) FROM orders GROUP BY status",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "jobs/nightly.py",
+          "line": 15
+        }
+      ]
+    },
+    {
+      "id": "e_job_csv",
+      "from": "job_nightly",
+      "to": "ds_reports",
+      "kind": "main",
+      "mechanism": "file",
+      "sync": "sync",
+      "label": "write CSV",
+      "payload": "status, orders, revenue",
+      "confidence": "high",
+      "evidence": [
+        {
+          "file": "jobs/nightly.py",
+          "line": 23
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "id": "checkout",
+      "name": "Checkout & pay",
+      "kind": "happy",
+      "actor": "Shopper",
+      "trigger": "ui_storefront",
+      "description": "From 'Pay now' to a fulfilled order: create the order, charge Stripe, queue fulfilment, e-mail the customer.",
+      "steps": [
+        {
+          "node": "ui_storefront",
+          "description": "Shopper clicks Pay now; Checkout.tsx calls placeOrder().",
+          "evidence": {
+            "file": "web/src/pages/Checkout.tsx",
+            "line": 9
+          }
+        },
+        {
+          "node": "ep_checkout",
+          "edge": "e_ui_checkout",
+          "description": "POST /api/orders with the cart.",
+          "payload": "{user_id, items}",
+          "evidence": {
+            "file": "web/src/api.ts",
+            "line": 19
+          }
+        },
+        {
+          "node": "hub_orders",
+          "edge": "e_checkout_orders",
+          "description": "create_order() loads the user and products and computes the total.",
+          "evidence": {
+            "file": "api/services/orders.py",
+            "line": 7
+          }
+        },
+        {
+          "node": "ds_postgres",
+          "edge": "e_orders_pg",
+          "description": "INSERT the order with status = pending.",
+          "payload": "orders(user_id, total, status='pending')",
+          "evidence": {
+            "file": "api/services/orders.py",
+            "line": 14
+          }
+        },
+        {
+          "node": "ext_stripe",
+          "edge": "e_orders_stripe",
+          "description": "charge(): Stripe PaymentIntent.create with confirm=True.",
+          "payload": "{amount, currency: usd, receipt_email}",
+          "evidence": {
+            "file": "api/payments.py",
+            "line": 15
+          }
+        },
+        {
+          "node": "ds_postgres",
+          "edge": "e_orders_pg",
+          "description": "Store the payment_intent and set status = paid.",
+          "payload": "status='paid'",
+          "evidence": {
+            "file": "api/services/orders.py",
+            "line": 25
+          }
+        },
+        {
+          "node": "q_orders",
+          "edge": "e_orders_queue",
+          "description": "Enqueue a fulfilment job (async side effect).",
+          "payload": "{order_id, email}",
+          "evidence": {
+            "file": "api/services/orders.py",
+            "line": 28
+          }
+        },
+        {
+          "node": "hub_worker",
+          "edge": "e_queue_worker",
+          "description": "The worker BRPOPs the job.",
+          "payload": "{order_id, email}",
+          "evidence": {
+            "file": "worker/worker.py",
+            "line": 30
+          }
+        },
+        {
+          "node": "ext_smtp",
+          "edge": "e_worker_smtp",
+          "description": "Send the 'Order #id confirmed' e-mail.",
+          "evidence": {
+            "file": "worker/worker.py",
+            "line": 17
+          }
+        },
+        {
+          "node": "ds_postgres",
+          "edge": "e_worker_pg",
+          "description": "Mark the order fulfilled.",
+          "payload": "status='fulfilled'",
+          "evidence": {
+            "file": "worker/worker.py",
+            "line": 24
+          }
+        }
+      ]
+    }
+  ]
+}

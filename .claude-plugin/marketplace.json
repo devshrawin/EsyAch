@@ -1,0 +1,12 @@
+{
+  "name": "flowmap",
+  "owner": { "name": "devshrawin" },
+  "plugins": [
+    {
+      "name": "flowmap",
+      "source": "./",
+      "description": "Interactive n8n-style flow maps of codebases (data paths) and SRS + screenshots (user journeys).",
+      "version": "0.1.0"
+    }
+  ]
+}
