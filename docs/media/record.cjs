@@ -1,7 +1,7 @@
 // Records the README animations from the example HTML files (Chromium video -> GIF via ffmpeg).
 // Usage: node docs/media/record.cjs            (writes docs/media/*.gif)
 // Playwright videos do not show the mouse, so a fake cursor with a click ripple is injected.
-const { chromium } = require("playwright");
+const { launch } = require("../../tests/launch.cjs");
 const { execFileSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
@@ -32,7 +32,7 @@ const CURSOR = () => {
 };
 
 async function scene(name, file, fn, { speed = 1, trimStart = 1.2, fps = 10, width = 1000, colors = 128 } = {}) {
-  const browser = await chromium.launch();
+  const browser = await launch();
   const dir = fs.mkdtempSync(path.join(require("os").tmpdir(), "rec-"));
   const ctx = await browser.newContext({ viewport: { width: W, height: H }, recordVideo: { dir, size: { width: W, height: H } } });
   await ctx.addInitScript(CURSOR);

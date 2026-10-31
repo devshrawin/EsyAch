@@ -1,8 +1,8 @@
 // Time first render, expand-all and a flow selection on a big graph.  Usage: node tests/perf.cjs big.html shot.png
-const { chromium } = require("playwright");
+const { launch } = require("./launch.cjs");
 const path = require("path");
 (async () => {
-  const b = await chromium.launch();
+  const b = await launch();
   const p = await b.newPage({ viewport: { width: 1600, height: 900 } });
   const errors = [];
   p.on("pageerror", (e) => errors.push(String(e)));

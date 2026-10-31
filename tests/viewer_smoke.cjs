@@ -2,7 +2,7 @@
 // Usage: node tests/viewer_smoke.cjs <flowmap.html> [outDir]
 // Covers: search, flow replay, detail levels, groups, edit (label, add node, connect, undo),
 // save JSON, save HTML (re-opened to prove edits persist), PNG/SVG/Mermaid export, print.
-const { chromium } = require("playwright");
+const { launch } = require("./launch.cjs");
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
@@ -43,7 +43,7 @@ async function grab(page, trigger) {
 const nodeCount = (page) => page.locator(".react-flow__node").count();
 
 (async () => {
-  const browser = await chromium.launch();
+  const browser = await launch();
   const { page, external, errors } = await open(browser, html);
   const graph = await page.evaluate(() => JSON.parse(document.getElementById("flowmap-data").textContent));
 
@@ -160,6 +160,21 @@ const nodeCount = (page) => page.locator(".react-flow__node").count();
   await page.waitForTimeout(500);
   const book = await page.locator("iframe[data-flowmap-print]").getAttribute("srcdoc");
   ok(book && (book.match(/<section class="flow">/g) || []).length === graph.flows.length, "print book has one section per flow");
+
+  // start-here card, "?" button and deep links (automated browsers never see the card unless #tour=1)
+  ok((await page.locator("[data-testid=welcome]").count()) === 0, "Start here card stays away in automated browsers");
+  const tour = await open(browser, html + "#tour=1");
+  ok((await tour.page.locator("[data-testid=welcome]").count()) === 1, "#tour=1 shows the Start here card");
+  await tour.page.locator("[data-testid=welcome-play]").click();
+  await tour.page.waitForTimeout(500);
+  ok((await tour.page.locator("[data-testid=welcome]").count()) === 0 && (await tour.page.locator(".fm-caption").count()) === 1,
+    "Play on the card closes it and starts the first flow");
+  await tour.page.locator("[data-testid=help-btn]").click();
+  ok((await tour.page.locator("[data-testid=welcome]").count()) === 1, "? button brings the card back");
+  ok(tour.external.length === 0 && tour.errors.length === 0, "Start here card: no network, no page errors");
+  const dl = await open(browser, html + `#flow=${graph.flows[1].id}&step=2`);
+  ok((await dl.page.locator(".fm-caption").innerText()).startsWith("2/"), "deep link #flow=…&step=2 opens that flow at step 2");
+  ok((await dl.page.locator("[data-testid=welcome]").count()) === 0, "a deep link hides the Start here card");
 
   ok(external.length === 0, "no network requests");
   ok(errors.length === 0, `no page errors${errors.length ? ": " + errors.join(" | ") : ""}`);

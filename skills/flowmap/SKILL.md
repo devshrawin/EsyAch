@@ -17,6 +17,7 @@ the graph. Then `validate.py` checks it and `build.py` renders it.
   `reason`. A summary states facts; mark guesses as guesses.
 - Never execute, install or import code from the target. Never send code, SRS text or screenshots to
   any external service.
+- Python launcher: examples say `python3`. If it fails (typical on Windows: "Python was not found"), run the same script with `python` or `py -3`.
 - Ids are short and stable: `ep_checkout`, `hub_orders`, `ds_postgres`, `e_orders_pg`.
 
 ## Mode A: code → architecture.json

@@ -1,7 +1,7 @@
 ---
 description: Re-render a flowmap HTML from an edited architecture.json / screens.json, without re-analysing
 argument-hint: [path to edited .json | .flowmap dir]   (default: ./.flowmap)
-allowed-tools: Bash(python3:*), Read, Glob, Edit
+allowed-tools: Bash(python3:*), Bash(python:*), Bash(py:*), Read, Glob, Edit
 ---
 
 Arguments: `$ARGUMENTS`

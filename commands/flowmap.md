@@ -1,12 +1,12 @@
 ---
 description: Map a codebase (or an SRS + screenshots) into an interactive n8n-style flow map HTML
 argument-hint: <local path | GitHub URL | .zip>   or   spec <srs file> --screens <folder | zip>
-allowed-tools: Bash(python3:*), Read, Glob, Grep, Write, Edit
+allowed-tools: Bash(python3:*), Bash(python:*), Bash(py:*), Read, Glob, Grep, Write, Edit
 ---
 
 Use the **flowmap** skill. Arguments: `$ARGUMENTS`
 
-Scripts live in `${CLAUDE_PLUGIN_ROOT}/scripts`. Never run, install or import anything from the
+Scripts live in `${CLAUDE_PLUGIN_ROOT}/scripts`. Examples below say `python3`; on Windows that name is often a Store stub that fails with "Python was not found", so use `python` or `py -3` instead (try `python3 --version` first). Never run, install or import anything from the
 target, and never upload its code, text or images anywhere.
 
 ## Pick the mode

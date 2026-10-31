@@ -62,11 +62,11 @@ def run(cmd, **kw):
 
 
 def arch():
-    return json.loads(ARCH.read_text())
+    return json.loads(ARCH.read_text(encoding="utf-8"))
 
 
 def spec_graph():
-    return json.loads(SCREENS.read_text())
+    return json.loads(SCREENS.read_text(encoding="utf-8"))
 
 
 def inv(root, display=None):
@@ -180,9 +180,9 @@ def _():
     t = TMP / "hostile"
     (t / ".git").mkdir(parents=True)
     marker = TMP / "PWNED"
-    (t / ".git" / "config").write_text(f"[core]\n\tfsmonitor = touch {marker}\n")
-    (t / "app.py").write_text("print('hi')\n")
-    (t / "setup.py").write_text(f"open('{marker}','w')\n")
+    (t / ".git" / "config").write_text(f"[core]\n\tfsmonitor = touch {marker}\n", encoding="utf-8")
+    (t / "app.py").write_text("print('hi')\n", encoding="utf-8")
+    (t / "setup.py").write_text(f"open('{marker}','w')\n", encoding="utf-8")
     inv(t)
     run([PY, str(ROOT / "scripts/ingest.py"), str(t)])
     assert not marker.exists()
@@ -302,11 +302,11 @@ def _():
 def _():
     r = TMP / "walk"
     r.mkdir()
-    (r / ".gitignore").write_text("secret/\n*.log\n!keep.log\n")
+    (r / ".gitignore").write_text("secret/\n*.log\n!keep.log\n", encoding="utf-8")
     for rel in ["a.py", "secret/b.py", "x.log", "keep.log", "package-lock.json", "node_modules/m.js", "img.png"]:
         (r / rel).parent.mkdir(parents=True, exist_ok=True)
-        (r / rel).write_text("x")
-    (r / "big.txt").write_text("y" * 1_100_000)
+        (r / rel).write_text("x", encoding="utf-8")
+    (r / "big.txt").write_text("y" * 1_100_000, encoding="utf-8")
     files, skipped = fm_common.walk_repo(r)
     names = sorted(f for f, _ in files)
     assert names == [".gitignore", "a.py", "keep.log"], names
@@ -317,9 +317,12 @@ def _():
 def _():
     r = TMP / "symrepo"
     r.mkdir()
-    (r / "a.py").write_text("x = 1\n")
-    os.symlink("/etc", r / "etc_link")
-    os.symlink("/etc/hostname", r / "host_link")
+    (r / "a.py").write_text("x = 1\n", encoding="utf-8")
+    try:
+        os.symlink("/etc", r / "etc_link")
+        os.symlink("/etc/hostname", r / "host_link")
+    except OSError as exc:  # Windows without Developer Mode / admin cannot create symlinks
+        raise Skip(f"cannot create symlinks here: {exc.strerror}")
     files, skipped = fm_common.walk_repo(r)
     assert [f for f, _ in files] == ["a.py"] and skipped.get("symlink") == 2
     return f"skipped={skipped}"
@@ -329,8 +332,8 @@ def _():
 def _():
     r = TMP / "broken"
     r.mkdir()
-    (r / "bad.py").write_text("def broken(:\n")
-    (r / "ok.py").write_text("import os\nX = os.getenv('A')\n")
+    (r / "bad.py").write_text("def broken(:\n", encoding="utf-8")
+    (r / "ok.py").write_text("import os\nX = os.getenv('A')\n", encoding="utf-8")
     d = inv(r)
     bad = next(t for t in d["tree"] if t["path"] == "bad.py")
     assert "parse_error" in bad and "A" in d["env_vars"]
@@ -341,7 +344,7 @@ def _():
 def _():
     r = TMP / "express"
     r.mkdir()
-    (r / "server.js").write_text("const app = require('express')();\napp.get('/health', h);\nrouter.post('/api/items', create);\n// app.delete('/old', x)\n")
+    (r / "server.js").write_text("const app = require('express')();\napp.get('/health', h);\nrouter.post('/api/items', create);\n// app.delete('/old', x)\n", encoding="utf-8")
     d = inv(r)
     got = sorted((e["method"], e["path"]) for e in d["entrypoints"] if e["kind"] == "http_route")
     assert got == [("GET", "/health"), ("POST", "/api/items")] and any(x["reason"] == "commented-out route" for x in d["dead_code"])
@@ -352,8 +355,8 @@ def _():
 def _():
     r = TMP / "polyglot"
     r.mkdir()
-    (r / "main.go").write_text('package main\nfunc main() {\n http.HandleFunc("/ping", ping)\n r.GET("/users", list)\n}\n')
-    (r / "Api.java").write_text('class Api {\n @PostMapping("/orders")\n void create() {}\n}\n')
+    (r / "main.go").write_text('package main\nfunc main() {\n http.HandleFunc("/ping", ping)\n r.GET("/users", list)\n}\n', encoding="utf-8")
+    (r / "Api.java").write_text('class Api {\n @PostMapping("/orders")\n void create() {}\n}\n', encoding="utf-8")
     d = inv(r)
     paths = sorted(e["path"] for e in d["entrypoints"] if e["kind"] == "http_route")
     assert paths == ["/orders", "/ping", "/users"], paths
@@ -362,10 +365,10 @@ def _():
 
 @case("INV-17", "Inventory", "Files containing NUL bytes are treated as binary", "skipped as binary")
 def _():
-    r = TMP / "nul"
+    r = TMP / "nulbytes"  # not "nul": that is a reserved device name on Windows
     r.mkdir()
     (r / "data.txt").write_bytes(b"abc\x00def")
-    (r / "a.py").write_text("x=1\n")
+    (r / "a.py").write_text("x=1\n", encoding="utf-8")
     files, skipped = fm_common.walk_repo(r)
     assert [f for f, _ in files] == ["a.py"] and skipped.get("binary") == 1
     return str(skipped)
@@ -375,7 +378,7 @@ def _():
 def _():
     r = TMP / "nest"
     r.mkdir()
-    (r / "users.controller.ts").write_text("@Controller('users')\nexport class UsersController {\n  @Get()\n  list() {}\n  @Post(':id/ban')\n  ban() {}\n}\n")
+    (r / "users.controller.ts").write_text("@Controller('users')\nexport class UsersController {\n  @Get()\n  list() {}\n  @Post(':id/ban')\n  ban() {}\n}\n", encoding="utf-8")
     got = sorted((e["method"], e["path"]) for e in inv(r)["entrypoints"] if e["kind"] == "http_route")
     assert got == [("GET", "/users"), ("POST", "/users/:id/ban")], got
     return str(got)
@@ -392,7 +395,7 @@ def _():
 
 @case("VAL-02", "Validate", "Mode B fixture validates (images, boxes, requirement IDs vs SRS)", "OK, 0 errors")
 def _():
-    spec = json.loads((SPEC / ".flowmap" / "spec_text.json").read_text())
+    spec = json.loads((SPEC / ".flowmap" / "spec_text.json").read_text(encoding="utf-8"))
     rep = validate.validate(spec_graph(), None, SPEC / "screens", spec)
     assert not rep.errors, rep.errors
     return f"OK, {len(rep.warnings)} warnings"
@@ -471,7 +474,7 @@ def _():
 def _():
     g = spec_graph()
     g["requirements"].append({"id": "FR-77", "text": "invented"})
-    spec = json.loads((SPEC / ".flowmap" / "spec_text.json").read_text())
+    spec = json.loads((SPEC / ".flowmap" / "spec_text.json").read_text(encoding="utf-8"))
     e = errs(g, None, SPEC / "screens", spec)
     assert "not in the SRS" in e
     return next(l for l in e.splitlines() if "FR-77" in l)
@@ -485,7 +488,7 @@ def _():
 @case("VAL-17", "Validate", "Malformed JSON exits 1 with a message (no traceback)", "ERROR cannot read")
 def _():
     p = TMP / "bad.json"
-    p.write_text("{not json")
+    p.write_text("{not json", encoding="utf-8")
     r = run([PY, str(ROOT / "scripts/validate.py"), str(p)])
     assert r.returncode == 1 and "cannot read" in r.stdout and "Traceback" not in r.stderr, r.stdout + r.stderr
     return r.stdout.strip()[:80]
@@ -531,9 +534,9 @@ def _():
 
 @case("SRS-04", "SRS", "Plain-text SRS (numbered headings, no Markdown)", "19 requirements, sections detected")
 def _():
-    txt = re.sub(r"^#+\s*", "", (SPEC / "srs.md").read_text(), flags=re.M).replace("**", "")
+    txt = re.sub(r"^#+\s*", "", (SPEC / "srs.md").read_text(encoding="utf-8"), flags=re.M).replace("**", "")
     p = TMP / "srs.txt"
-    p.write_text(txt)
+    p.write_text(txt, encoding="utf-8")
     d = spec_extract.extract(p)
     assert _ids(d) == _ids(srs("md")) and len(d["sections"]) >= 6, len(d["sections"])
     return f"{len(d['requirements'])} reqs, {len(d['sections'])} sections"
@@ -549,7 +552,7 @@ def _():
 @case("SRS-06", "SRS", "Real-looking e-mail / phone flagged; example.com ignored", "2 PII hits, masked")
 def _():
     p = TMP / "pii.md"
-    p.write_text("# X\n- **FR-1** (High): Contact maria.lopez@acme-corp.io or +44 7700 900123. Test jane@example.com.\n")
+    p.write_text("# X\n- **FR-1** (High): Contact maria.lopez@acme-corp.io or +44 7700 900123. Test jane@example.com.\n", encoding="utf-8")
     d = spec_extract.extract(p)
     kinds = sorted(x["kind"] for x in d["pii"])
     assert kinds == ["email", "phone"] and all("…" in x["value"] for x in d["pii"]), d["pii"]
@@ -559,7 +562,7 @@ def _():
 @case("SRS-07", "SRS", "Dotted IDs like REQ-3.2 and US-4 extracted", "REQ-3.2, US-4")
 def _():
     p = TMP / "dotted.md"
-    p.write_text("## 3 Billing\n- REQ-3.2: Invoices are PDF.\n- US-4 (Must): As a user I pay.\n")
+    p.write_text("## 3 Billing\n- REQ-3.2: Invoices are PDF.\n- US-4 (Must): As a user I pay.\n", encoding="utf-8")
     ids = [r["id"] for r in spec_extract.extract(p)["requirements"]]
     assert ids == ["REQ-3.2", "US-4"], ids
     return str(ids)
@@ -568,7 +571,7 @@ def _():
 @case("SRS-08", "SRS", "Unsupported SRS format refused", "SystemExit")
 def _():
     p = TMP / "srs.rtf"
-    p.write_text("x")
+    p.write_text("x", encoding="utf-8")
     try:
         spec_extract.extract(p)
     except SystemExit as exc:
@@ -721,7 +724,7 @@ def _():
 # ====================================================================== hotspot accuracy
 @case("HS-01", "Hotspots", "Every hotspot matches the true element box (IoU >= 0.9)", "all hotspots, all variants")
 def _():
-    truth = json.loads(TRUTH.read_text())
+    truth = json.loads(TRUTH.read_text(encoding="utf-8"))
 
     def iou(a, b):
         ax2, ay2, bx2, by2 = a[0] + a[2], a[1] + a[3], b[0] + b[2], b[1] + b[3]
@@ -742,7 +745,7 @@ def _():
 # ====================================================================== build
 @case("BLD-01", "Build", "Mode A HTML has no external script/style/image/font references", "0 http(s) src/href, no @import url(http")
 def _():
-    html = (SHOP / ".flowmap" / "flowmap.html").read_text()
+    html = (SHOP / ".flowmap" / "flowmap.html").read_text(encoding="utf-8")
     ext = re.findall(r"""(?:src|href)\s*=\s*["']https?://""", html) + re.findall(r"@import\s+url\(\s*['\"]?https?://", html)
     assert not ext, ext[:3]
     return f"{len(html) // 1024} KB, 0 external refs"
@@ -787,7 +790,7 @@ def _():
     g["nodes"][0]["image"] = "gone.png"
     p = TMP / "missing" / "screens.json"
     p.parent.mkdir()
-    p.write_text(json.dumps(g))
+    p.write_text(json.dumps(g), encoding="utf-8")
     r = run([PY, str(ROOT / "scripts/build.py"), str(p), "-o", str(TMP / "missing" / "o.html"), "--screens", str(SPEC / "screens")])
     assert r.returncode == 0 and "not found" in r.stderr
     return r.stderr.strip()[:90]
@@ -796,7 +799,7 @@ def _():
 @case("BLD-06", "Build", "Template without the data placeholder is refused", "SystemExit")
 def _():
     t = TMP / "tpl.html"
-    t.write_text("<html></html>")
+    t.write_text("<html></html>", encoding="utf-8")
     try:
         fm_build.build(arch(), t)
     except SystemExit as exc:
@@ -817,14 +820,14 @@ def _():
 # ====================================================================== packaging
 @case("PKG-01", "Packaging", "plugin.json is valid with name/version/description", "flowmap 0.x")
 def _():
-    p = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
+    p = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
     assert p["name"] == "flowmap" and p["version"] and p["description"]
     return f"{p['name']} {p['version']}"
 
 
 @case("PKG-02", "Packaging", "marketplace.json lists plugin 'flowmap' in marketplace 'flowmap' (install flowmap@flowmap)", "source ./")
 def _():
-    m = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
+    m = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
     assert m["name"] == "flowmap" and m["plugins"][0]["name"] == "flowmap" and m["plugins"][0]["source"] == "./"
     return "flowmap@flowmap"
 
@@ -832,9 +835,9 @@ def _():
 @case("PKG-03", "Packaging", "Commands and skill have frontmatter", "description in each; skill name=flowmap")
 def _():
     for f in ["commands/flowmap.md", "commands/flowmap-update.md", "skills/flowmap/SKILL.md"]:
-        t = (ROOT / f).read_text()
+        t = (ROOT / f).read_text(encoding="utf-8")
         assert t.startswith("---") and "description:" in t.split("---")[1], f
-    assert "name: flowmap" in (ROOT / "skills/flowmap/SKILL.md").read_text()
+    assert "name: flowmap" in (ROOT / "skills/flowmap/SKILL.md").read_text(encoding="utf-8")
     return "3/3"
 
 
@@ -842,7 +845,7 @@ def _():
 def _():
     refs = set()
     for f in (ROOT / "commands").glob("*.md"):
-        refs |= set(re.findall(r"scripts/(\w+\.py)", f.read_text()))
+        refs |= set(re.findall(r"scripts/(\w+\.py)", f.read_text(encoding="utf-8")))
     missing = [r for r in refs if not (ROOT / "scripts" / r).exists()]
     assert not missing, missing
     return ", ".join(sorted(refs))
@@ -850,6 +853,8 @@ def _():
 
 @case("PKG-05", "Packaging", "Prebuilt viewer is newer than every viewer source file", "dist mtime >= src mtimes")
 def _():
+    if os.environ.get("CI"):
+        raise Skip("file mtimes are not meaningful after a fresh checkout")
     dist = (ROOT / "viewer/dist/index.html").stat().st_mtime
     stale = [p.name for p in (ROOT / "viewer/src").glob("*") if p.stat().st_mtime > dist + 1]
     assert not stale, stale
@@ -861,7 +866,7 @@ def _():
     std = set(sys.stdlib_module_names) | {"fm_common", "fm_spec", "inventory", "build", "validate"}
     bad = []
     for f in (ROOT / "scripts").glob("*.py"):
-        for m in re.finditer(r"^\s*(?:from|import)\s+([\w.]+)", f.read_text(), re.M):
+        for m in re.finditer(r"^\s*(?:from|import)\s+([\w.]+)", f.read_text(encoding="utf-8"), re.M):
             mod = m.group(1).split(".")[0]
             if mod not in std and mod not in ("PIL", "pypdf"):
                 bad.append(f"{f.name}:{mod}")
@@ -871,7 +876,7 @@ def _():
 
 @case("PKG-07", "Packaging", "README documents install, both modes, editing and exports", "all keywords present")
 def _():
-    t = (ROOT / "README.md").read_text()
+    t = (ROOT / "README.md").read_text(encoding="utf-8")
     for k in ["/plugin marketplace add devshrawin/EsyAch", "/plugin install flowmap@flowmap", "spec", "flowmap-update", "Export"]:
         assert k in t, k
     return "ok"
@@ -905,11 +910,11 @@ def run_browser():
         RESULTS.append(dict(id="BRW-00", area="Browser", title="Browser suite ran", expected="results file", steps="",
                             status="FAIL", actual=(r.stderr or r.stdout)[-400:], ms=0))
         return
-    RESULTS.extend(json.loads(out.read_text()))
+    RESULTS.extend(json.loads(out.read_text(encoding="utf-8")))
 
 
 def report(path_md: Path, path_json: Path, label: str):
-    path_json.write_text(json.dumps(RESULTS, indent=1) + "\n")
+    path_json.write_text(json.dumps(RESULTS, indent=1) + "\n", encoding="utf-8")
     tot = {s: sum(1 for r in RESULTS if r["status"] == s) for s in ("PASS", "FAIL", "SKIP")}
     areas = []
     for r in RESULTS:
@@ -927,7 +932,7 @@ def report(path_md: Path, path_json: Path, label: str):
             icon = {"PASS": "✅ PASS", "FAIL": "❌ FAIL", "SKIP": "⏭ SKIP"}[r["status"]]
             esc = lambda s: str(s).replace("|", "\\|").replace("\n", " ")
             lines.append(f"| {r['id']} | {esc(r['title'])} | {esc(r['expected'])} | {esc(r['actual'])} | {icon} |")
-    path_md.write_text("\n".join(lines) + "\n")
+    path_md.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return tot
 
 

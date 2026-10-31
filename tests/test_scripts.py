@@ -54,12 +54,12 @@ class Walk(unittest.TestCase):
     def test_gitignore_lockfiles_binaries(self):
         with tempfile.TemporaryDirectory() as d:
             r = Path(d)
-            (r / ".gitignore").write_text("secret/\n*.log\n!keep.log\n")
+            (r / ".gitignore").write_text("secret/\n*.log\n!keep.log\n", encoding="utf-8")
             for rel, data in {"a.py": "x", "secret/b.py": "x", "x.log": "x", "keep.log": "x",
                               "package-lock.json": "{}", "node_modules/m.js": "x", "img.png": "x"}.items():
                 (r / rel).parent.mkdir(parents=True, exist_ok=True)
-                (r / rel).write_text(data)
-            (r / "big.txt").write_text("y" * 1_100_000)
+                (r / rel).write_text(data, encoding="utf-8")
+            (r / "big.txt").write_text("y" * 1_100_000, encoding="utf-8")
             files, skipped = fm_common.walk_repo(r)
             names = sorted(f for f, _ in files)
             self.assertEqual(names, [".gitignore", "a.py", "keep.log"])
@@ -96,12 +96,12 @@ class InventoryShop(unittest.TestCase):
 
 class Validate(unittest.TestCase):
     def test_fixture_is_valid(self):
-        rep = validate.validate(json.loads(ARCH.read_text()), SHOP)
+        rep = validate.validate(json.loads(ARCH.read_text(encoding="utf-8")), SHOP)
         self.assertEqual(rep.errors, [])
         self.assertEqual(rep.warnings, [])
 
     def test_catches_broken_flow_and_bad_evidence(self):
-        g = json.loads(ARCH.read_text())
+        g = json.loads(ARCH.read_text(encoding="utf-8"))
         g["flows"][0]["steps"][2]["edge"] = "e_ui_signup"
         g["nodes"][0]["evidence"] = [{"file": "web/src/api.ts", "line": 9999}]
         errs = "\n".join(validate.validate(g, SHOP).errors)
@@ -109,7 +109,7 @@ class Validate(unittest.TestCase):
         self.assertIn("beyond end of file", errs)
 
     def test_inferred_edge_rules(self):
-        g = json.loads(ARCH.read_text())
+        g = json.loads(ARCH.read_text(encoding="utf-8"))
         g["edges"][0].update(inferred=True, confidence="high")
         errs = "\n".join(validate.validate(g).errors)
         self.assertIn("cannot be high confidence", errs)
@@ -118,14 +118,14 @@ class Validate(unittest.TestCase):
 
 class Build(unittest.TestCase):
     def test_build_embeds_and_escapes(self):
-        g = json.loads(ARCH.read_text())
+        g = json.loads(ARCH.read_text(encoding="utf-8"))
         g["project"]["summary"] = "tricky </script><!-- text"
         with tempfile.TemporaryDirectory() as d:
             src = Path(d) / "g.json"
-            src.write_text(json.dumps(g))
+            src.write_text(json.dumps(g), encoding="utf-8")
             out = Path(d) / "o.html"
             subprocess.run([sys.executable, str(ROOT / "scripts" / "build.py"), str(src), "-o", str(out)], check=True, capture_output=True)
-            html = out.read_text()
+            html = out.read_text(encoding="utf-8")
             self.assertNotIn("__FLOWMAP_DATA__", html)
             self.assertNotIn("tricky </script>", html)
             self.assertIn("tricky <\\/script><\\!--", html)

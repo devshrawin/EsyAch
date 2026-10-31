@@ -1,6 +1,6 @@
 // Browser half of the QA harness (Chromium, offline). Writes a JSON array of test results.
 // Usage: node tests/qa_browser.cjs <modeA.html> <modeB.html> <big.html> <out.json> <artifactDir>
-const { chromium } = require("playwright");
+const { launch } = require("./launch.cjs");
 const fs = require("fs");
 const path = require("path");
 
@@ -603,7 +603,7 @@ const misc = [
 ];
 
 (async () => {
-  browser = await chromium.launch();
+  browser = await launch();
   const suites = [[A, modeA], [B, modeB], [null, misc]];
   for (const [file, cases] of suites) {
     let s = file ? await open(file) : null;

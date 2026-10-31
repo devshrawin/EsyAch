@@ -1,13 +1,13 @@
 // Render a flowmap HTML offline in Chromium and save screenshots.
 // Usage: node tests/screenshot.cjs <flowmap.html> <out.png> [--flow <id>] [--step N] [--theme light]
 // Any non-file:// request is blocked and fails the run, which proves the file is offline-only.
-const { chromium } = require("playwright");
+const { launch } = require("./launch.cjs");
 const path = require("path");
 
 (async () => {
   const [, , html, out, ...rest] = process.argv;
   const opt = (k) => { const i = rest.indexOf(k); return i >= 0 ? rest[i + 1] : undefined; };
-  const browser = await chromium.launch();
+  const browser = await launch();
   const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, deviceScaleFactor: 1 });
   const external = [];
   const errors = [];
