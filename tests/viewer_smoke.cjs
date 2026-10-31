@@ -176,6 +176,22 @@ const nodeCount = (page) => page.locator(".react-flow__node").count();
   ok((await dl.page.locator(".fm-caption").innerText()).startsWith("2/"), "deep link #flow=…&step=2 opens that flow at step 2");
   ok((await dl.page.locator("[data-testid=welcome]").count()) === 0, "a deep link hides the Start here card");
 
+  // responsive: no page-level horizontal scroll, and the left panel is a slide-over on narrow screens
+  for (const [w, h] of [[1100, 700], [800, 600], [390, 800]]) {
+    const r = await open(browser, html + "#tour=0");
+    await r.page.setViewportSize({ width: w, height: h });
+    await r.page.waitForTimeout(300);
+    ok(await r.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `no horizontal page scroll at ${w}px`);
+    if (w <= 820) {
+      const left = r.page.locator(".fm-left");
+      ok((await left.boundingBox()).x < 0, `left panel is tucked away at ${w}px`);
+      await r.page.locator(".fm-panel-toggle").click();
+      await r.page.waitForTimeout(350);
+      ok((await left.boundingBox()).x >= 0, `panel toggle opens the left panel at ${w}px`);
+    }
+    await r.page.close();
+  }
+
   ok(external.length === 0, "no network requests");
   ok(errors.length === 0, `no page errors${errors.length ? ": " + errors.join(" | ") : ""}`);
   await browser.close();

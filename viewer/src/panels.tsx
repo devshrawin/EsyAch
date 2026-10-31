@@ -653,7 +653,7 @@ export function Menu({ label, icon, items, testid }: {
   return (
     <div className="fm-menu" ref={ref}>
       <button className="fm-btn fm-btn-text" data-testid={testid} onClick={() => setOpen(!open)}>
-        {icon && <Icon name={icon} size={15} />} {label} ▾
+        {icon && <Icon name={icon} size={15} />} <span className="fm-menu-label">{label}</span> ▾
       </button>
       {open && (
         <div className="fm-menu-pop">

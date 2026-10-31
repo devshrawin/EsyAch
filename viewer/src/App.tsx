@@ -105,6 +105,7 @@ function Viewer({ initial }: { initial: Graph }) {
   // "Start here" card: once per project per browser. #tour=1 forces it, #tour=0 or a #flow= link
   // hides it, and automated browsers (the test suites) never see it.
   const welcomeKey = `flowmap-welcome:${initial.project.name}`;
+  const [panelOpen, setPanelOpen] = useState(false); // narrow screens: the left panel is a slide-over
   const [welcome, setWelcome] = useState(() => {
     const h = location.hash;
     if (/[#&]tour=1\b/.test(h)) return true;
@@ -155,6 +156,8 @@ function Viewer({ initial }: { initial: Graph }) {
   const laidKey = useRef<string | null>(null);
   const viewRef = useRef(view);
   viewRef.current = view;
+  const graphRef = useRef(graph);
+  graphRef.current = graph;
   const [relayoutTick, setRelayoutTick] = useState(0);
   useEffect(() => {
     if (laidKey.current === key && relayoutTick === 0) return;
@@ -172,7 +175,14 @@ function Viewer({ initial }: { initial: Graph }) {
       setAuto(p);
       setRelayoutTick(0);
       // A different structure (level, groups, filters) gets re-fitted; the first fit is ReactFlow's own.
-      if (!first) setTimeout(() => rf.fitView({ padding: 0.15, duration: 400 }), 50);
+      if (!first) setTimeout(() => rf.fitView({ padding: 0.08, duration: 400 }), 50);
+      else setTimeout(() => {
+        // A wide map fits at a size nobody can read: start on the first flow's opening nodes instead.
+        if (rf.getZoom() >= 0.55) return;
+        const f = graphRef.current.flows[0];
+        const ids = [...new Set(f?.steps.slice(0, 4).map((s) => viewRef.current.nodeMap.get(s.node)).filter(Boolean) as string[])].map((id) => ({ id }));
+        if (ids.length) rf.fitView({ nodes: ids, padding: 0.3, maxZoom: 0.9, duration: 0 });
+      }, 150);
     });
     return () => { live = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -569,7 +579,7 @@ function Viewer({ initial }: { initial: Graph }) {
   }, [view, vById, flow, flowEdges, curEdge, animKey, outCount, sel, opts.level, theme, focusOn, reqEdgeSet]);
 
   const zoom = useStore((s) => s.transform[2]);
-  const zoomClass = zoom < 0.22 ? "fm-zoom-far fm-zoom-mid" : zoom < 0.45 ? "fm-zoom-mid" : "";
+  const zoomClass = zoom < 0.22 ? "fm-zoom-far fm-zoom-mid fm-zoom-lo" : zoom < 0.45 ? "fm-zoom-mid fm-zoom-lo" : zoom < 0.8 ? "fm-zoom-lo" : "";
 
   const groupCounts = useMemo(() => {
     const m = new Map<string, number>();
@@ -602,11 +612,14 @@ function Viewer({ initial }: { initial: Graph }) {
   }
 
   return (
-    <div className={`fm-app ${editMode ? "is-editing" : ""}`}>
+    <div className={`fm-app ${editMode ? "is-editing" : ""} ${panelOpen ? "panel-open" : ""}`}>
       <header className="fm-top">
+        <button className="fm-btn fm-panel-toggle" onClick={() => setPanelOpen((o) => !o)} title="Flows and filters" aria-label="Flows and filters" aria-expanded={panelOpen}>
+          <Icon name="layers" size={16} />
+        </button>
         <div className="fm-brand">
           <span className="fm-logo"><Icon name="bolt" size={14} stroke={2.4} /></span>
-          flowmap
+          <span className="fm-brand-name">flowmap</span>
         </div>
         <div className="fm-project">
           <strong>{graph.project.name}</strong>
@@ -619,7 +632,7 @@ function Viewer({ initial }: { initial: Graph }) {
           <span>{graph.flows.length} {graph.mode === "code" ? "flows" : "journeys"}</span>
         </div>
         <button className="fm-search-btn" onClick={() => setSearchOpen(true)} data-testid="search-btn">
-          <Icon name="search" size={14} /> Search <kbd>⌘K</kbd>
+          <Icon name="search" size={14} /> <span className="fm-search-label">Search</span> <kbd>⌘K</kbd>
         </button>
         <div className="fm-top-actions">
           <div className="fm-seg fm-mode">
@@ -633,8 +646,8 @@ function Viewer({ initial }: { initial: Graph }) {
               <button className="fm-btn fm-btn-text" onClick={addNode} data-testid="add-node"><Icon name="plus" size={15} /> Node</button>
             </>
           )}
-          <button className="fm-btn" onClick={() => setRelayoutTick((t) => t + 1)} title="Re-run auto layout (manual positions are kept)"><Icon name="layout" size={15} /></button>
-          <button className={`fm-btn fm-btn-text ${problems.length ? "c-warn" : "c-ok"}`} onClick={() => setProblemsOpen(!problemsOpen)} title="Checks">
+          <button className="fm-btn fm-hide-sm" onClick={() => setRelayoutTick((t) => t + 1)} title="Re-run auto layout (manual positions are kept)"><Icon name="layout" size={15} /></button>
+          <button className={`fm-btn fm-btn-text fm-hide-sm ${problems.length ? "c-warn" : "c-ok"}`} onClick={() => setProblemsOpen(!problemsOpen)} title="Checks">
             {problems.length ? `⚠ ${problems.length}` : "✓ valid"}
           </button>
           <Menu label="Save" icon="download" testid="save-menu" items={[
@@ -655,8 +668,8 @@ function Viewer({ initial }: { initial: Graph }) {
             "sep" as const,
             { label: isSpec ? "Print / PDF flow book" : "Print / PDF", hint: isSpec ? "coverage + every journey with screenshots" : "overview + one page per flow", onClick: exportPrint },
           ]} />
-          <button className="fm-btn" onClick={() => rf.fitView({ padding: 0.15, duration: 400 })} title="Fit to view"><Icon name="fit" size={16} /></button>
-          <button className="fm-btn fm-btn-text" onClick={() => { setSel(null); selectFlow(null); setWelcome(true); }} title="Show the Start here card" data-testid="help-btn">?</button>
+          <button className="fm-btn fm-hide-sm" onClick={() => rf.fitView({ padding: 0.08, duration: 400 })} title="Fit to view"><Icon name="fit" size={16} /></button>
+          <button className="fm-btn fm-btn-text fm-hide-sm" onClick={() => { setSel(null); selectFlow(null); setWelcome(true); }} title="Show the Start here card" data-testid="help-btn">?</button>
           <button className="fm-btn" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} title="Toggle theme">
             <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
           </button>
@@ -715,7 +728,7 @@ function Viewer({ initial }: { initial: Graph }) {
           minZoom={0.05}
           maxZoom={2.5}
           fitView
-          fitViewOptions={{ padding: 0.15 }}
+          fitViewOptions={{ padding: 0.08 }}
           proOptions={{ hideAttribution: true }}
           deleteKeyCode={null}
           onNodesChange={onNodesChange}

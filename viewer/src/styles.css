@@ -646,3 +646,43 @@ textarea.fm-input { resize: vertical; min-height: 38px; }
 .fm-welcome-tips { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 7px; color: var(--muted); font-size: 12px; }
 .fm-welcome-tips b { color: var(--text); font-weight: 600; }
 @media (max-width: 900px) { .fm-welcome { display: none; } }
+
+/* ------------------------------------------------------------------ declutter + responsive */
+.fm-btn-text { white-space: nowrap; grid-auto-flow: column; gap: 4px; }
+.fm-panel-toggle { display: none; }
+.fm-lightbox { background: rgba(12, 12, 14, 0.985); }
+/* Zoomed out, only the edges of the selected flow carry labels; hover an edge for the rest. */
+.fm-zoom-lo .fm-pill:not(.in-flow):not(.is-current):not(.fm-q-only),
+.fm-zoom-lo .fm-src-label { display: none; }
+
+@media (max-width: 1280px) {
+  .fm-stats, .fm-search-btn kbd { display: none; }
+  .react-flow__minimap { display: none; }
+}
+@media (max-width: 1060px) {
+  .fm-top { gap: 10px; }
+  .fm-brand-name, .fm-search-label, .fm-menu-label, .fm-project .fm-chip { display: none; }
+  .fm-project { flex: 1 1 0; }
+  .fm-search-btn { margin-left: 0; }
+}
+@media (max-width: 820px) {
+  .fm-app { grid-template-columns: 1fr; }
+  .fm-panel-toggle { display: inline-grid; }
+  .fm-left {
+    position: fixed; left: 0; top: 48px; bottom: 0; width: min(320px, 88vw); z-index: 40;
+    transform: translateX(-102%); transition: transform 0.2s ease; box-shadow: var(--shadow);
+  }
+  .panel-open .fm-left { transform: none; }
+  .fm-drawer, .fm-lb-side { position: fixed; right: 0; top: 48px; bottom: 0; width: min(360px, 100vw); z-index: 45; box-shadow: var(--shadow); }
+  .fm-lb-body { grid-template-columns: 1fr; }
+  .fm-lb-side { top: auto; height: 42vh; width: 100vw; border-top: 1px solid var(--border); }
+  .fm-caption { flex-wrap: wrap; max-width: 94%; bottom: 10px; }
+  .fm-edit-hint { white-space: normal; max-width: 94%; }
+  .fm-welcome { display: none; }
+}
+@media (max-width: 560px) {
+  .fm-hide-sm, .fm-project strong { display: none; }
+  .fm-top { padding: 0 8px; gap: 6px; }
+  .react-flow__controls { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .fm-left { transition: none; } }
