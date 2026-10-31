@@ -1,11 +1,11 @@
-# flowmap QA results (final run, after all fixes)
+# flowmap QA results (latest run)
 
-**140 test cases: 140 pass, 0 fail, 0 skipped.**
+**140 test cases: 137 pass, 0 fail, 3 skipped.**
 
 | Area | Pass | Fail | Skip |
 |---|---|---|---|
-| Ingest | 12 | 0 | 0 |
-| Inventory | 18 | 0 | 0 |
+| Ingest | 10 | 0 | 2 |
+| Inventory | 17 | 0 | 1 |
 | Validate | 18 | 0 | 0 |
 | SRS | 8 | 0 | 0 |
 | Screens | 6 | 0 | 0 |
@@ -24,8 +24,8 @@
 |---|---|---|---|---|
 | ING-01 | Local path resolves to itself | kind=local, root = the folder | kind=local | ✅ PASS |
 | ING-02 | Zip input: extracted, single top folder unwrapped, same inventory as the folder | same entry points / calls as the local path | 14 entry points, 37 calls (identical) | ✅ PASS |
-| ING-03 | GitHub URL: shallow clone then inventory | clone succeeds, inventory runs | cloned, depth=1, 1 file(s) | ✅ PASS |
-| ING-04 | owner/repo shorthand expands to a GitHub https URL | url=https://github.com/o/r.git | https://github.com/octocat/Spoon-Knife.git | ✅ PASS |
+| ING-03 | GitHub URL: shallow clone then inventory | clone succeeds, inventory runs | --no-network | ⏭ SKIP |
+| ING-04 | owner/repo shorthand expands to a GitHub https URL | url=https://github.com/o/r.git | --no-network | ⏭ SKIP |
 | ING-05 | Zip with ../ path traversal is rejected | UnsafeArchive, nothing written outside | rejected: path traversal in archive: '../escape.txt' | ✅ PASS |
 | ING-06 | Zip with an absolute path is rejected | UnsafeArchive | rejected: absolute path in archive: '/tmp/abs.txt' | ✅ PASS |
 | ING-07 | Zip bomb (high compression ratio) is rejected | UnsafeArchive before extraction | rejected: suspicious compression ratio for 'a.txt' | ✅ PASS |
@@ -51,7 +51,7 @@
 | INV-10 | Env vars incl. required os.environ[...] | 8 vars, STRIPE_SECRET_KEY required | DATABASE_URL, REDIS_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, SMTP_HOST, ENABLE_LEGACY_REFUNDS, REPORT_DIR, VITE_API_URL | ✅ PASS |
 | INV-11 | SDKs detected; SMTP send not misread as a queue | Stripe + SMTP externals; no smtp in queues | ['SMTP', 'Stripe'] | ✅ PASS |
 | INV-12 | .gitignore, lockfiles, node_modules, binaries and >1 MB files skipped | only a.py, keep.log, .gitignore kept | kept ['.gitignore', 'a.py', 'keep.log'], skipped {'skipped_dir': 1, 'gitignored': 2, 'over_1mb': 1, 'binary': 1, 'lockfile': 1} | ✅ PASS |
-| INV-13 | Symlinks are not followed (no escape from the repo) | a symlink to /etc is skipped | skipped={'symlink': 2} | ✅ PASS |
+| INV-13 | Symlinks are not followed (no escape from the repo) | a symlink to /etc is skipped | cannot create symlinks here: A required privilege is not held by the client | ⏭ SKIP |
 | INV-14 | A file with a syntax error does not crash the inventory | parse_error recorded, others analysed | invalid syntax (line 1) | ✅ PASS |
 | INV-15 | Express routes detected in JS | GET /health and POST /api/items | [('GET', '/health'), ('POST', '/api/items')] | ✅ PASS |
 | INV-16 | Go and Java routes via the regex fallback | Go HandleFunc + gin GET, Spring @PostMapping | ['/orders', '/ping', '/users'] | ✅ PASS |
@@ -72,13 +72,13 @@
 | VAL-08 | Circle attached to an undeclared hub port is caught | error 'not declared on hub' | node ds_postgres: port 'Nope' not declared on hub 'hub_orders' | ✅ PASS |
 | VAL-09 | Hotspot box outside 0-1 is caught | error 'box must be' | screen s_signin hotspot role_customer: box must be [x, y, w, h] in 0-1 and inside the image, got [0.9, 0.5, 0.3, 0.1] | ✅ PASS |
 | VAL-10 | Unknown requirement reference is caught | error 'unknown requirement' | edge e_signin_products: unknown requirement 'FR-999' | ✅ PASS |
-| VAL-11 | Missing screenshot file is caught | error 'image not found' | screen s_signin: image not found: /home/user/EsyAch/examples/shop-spec/screens/missing.png | ✅ PASS |
+| VAL-11 | Missing screenshot file is caught | error 'image not found' | screen s_signin: image not found: C:\Users\shrawin.sisodiya\Desktop\UR Files\Projects\EsyAch\examples\shop-spec\screens\missing.png | ✅ PASS |
 | VAL-12 | Journey step with an unknown variant is caught | error 'variant' | flow j_signin_fail step 2: variant 'nope' does not exist on s_signin | ✅ PASS |
 | VAL-13 | Self-loop edges are rejected in Mode A | error 'self-loop' | edge[23] loop: self-loop (only Mode B navigate edges may return to the same screen) | ✅ PASS |
 | VAL-14 | An action step that changes screen is rejected | error 'must stay' | flow[4] j_admin step 3: an action step without an edge must stay on the previous step's node | ✅ PASS |
 | VAL-15 | Requirement not present in the SRS extraction is caught (--spec) | error 'not in the SRS' | requirement FR-77: not in the SRS extraction (spec.json) | ✅ PASS |
 | VAL-16 | Duplicate node ids are caught | error 'duplicate id' | node[20] ui_storefront: duplicate id | ✅ PASS |
-| VAL-17 | Malformed JSON exits 1 with a message (no traceback) | ERROR cannot read | ERROR cannot read /tmp/flowmap-qa-sxc60roj/bad.json: Expecting property name enc | ✅ PASS |
+| VAL-17 | Malformed JSON exits 1 with a message (no traceback) | ERROR cannot read | ERROR cannot read C:\Users\SHRAWI~1.SIS\AppData\Local\Temp\flowmap-qa-e5fxf3w2\b | ✅ PASS |
 | VAL-18 | Requirement mapping without a reason is caught | error 'needs a reason' | screen s_signin: requirement FR-1 needs a 'reason' (why this screen satisfies it) | ✅ PASS |
 
 ## SRS
@@ -128,19 +128,19 @@
 
 | ID | Test case | Expected | Actual | Result |
 |---|---|---|---|---|
-| BLD-01 | Mode A HTML has no external script/style/image/font references | 0 http(s) src/href, no @import url(http | 2002 KB, 0 external refs | ✅ PASS |
+| BLD-01 | Mode A HTML has no external script/style/image/font references | 0 http(s) src/href, no @import url(http | 2006 KB, 0 external refs | ✅ PASS |
 | BLD-02 | Graph text containing </script> and <!-- cannot break out of the data tag | escaped as <\/script> <\!-- | data tag intact, JSON round-trips | ✅ PASS |
 | BLD-03 | Mode B screenshots embedded as WebP, max 1200 px wide | 8 data:image/webp assets, width <= 1200 | 8 images, widths [1200] | ✅ PASS |
 | BLD-04 | Output above the size limit prints a warning | WARNING ... larger than | WARNING: output is larger than 0 MB; consider fewer/smaller screenshots | ✅ PASS |
-| BLD-05 | Missing screenshot -> warning, build still succeeds | WARNING not found; HTML written | WARNING: 1 screenshot(s) not found in /home/user/EsyAch/examples/shop-spec/screens: ['gone | ✅ PASS |
-| BLD-06 | Template without the data placeholder is refused | SystemExit | template /tmp/flowmap-qa-sxc60roj/tpl.html has no single data placeholder; rebui | ✅ PASS |
+| BLD-05 | Missing screenshot -> warning, build still succeeds | WARNING not found; HTML written | WARNING: 1 screenshot(s) not found in C:\Users\shrawin.sisodiya\Desktop\UR Files\Projects\ | ✅ PASS |
+| BLD-06 | Template without the data placeholder is refused | SystemExit | template C:\Users\SHRAWI~1.SIS\AppData\Local\Temp\flowmap-qa-e5fxf3w2\tpl.html h | ✅ PASS |
 | BLD-07 | Mode B images cannot be read from outside the screens folder | ../ path not embedded | refused | ✅ PASS |
 
 ## Packaging
 
 | ID | Test case | Expected | Actual | Result |
 |---|---|---|---|---|
-| PKG-01 | plugin.json is valid with name/version/description | flowmap 0.x | flowmap 0.1.0 | ✅ PASS |
+| PKG-01 | plugin.json is valid with name/version/description | flowmap 0.x | flowmap 0.2.0 | ✅ PASS |
 | PKG-02 | marketplace.json lists plugin 'flowmap' in marketplace 'flowmap' (install flowmap@flowmap) | source ./ | flowmap@flowmap | ✅ PASS |
 | PKG-03 | Commands and skill have frontmatter | description in each; skill name=flowmap | 3/3 | ✅ PASS |
 | PKG-04 | Every script referenced by the commands exists | all present | build.py, gaps.py, ingest.py, inventory.py, screens_prep.py, spec_extract.py, validate.py | ✅ PASS |
@@ -168,7 +168,7 @@
 | VA-14 | Connect two nodes by dragging handles; drag a node | edge count +1; node keeps the dragged position | edges 23 -> 24, node moved 87 px | ✅ PASS |
 | VA-15 | Save JSON contains the edits (edited flag, reviewer evidence, pos) | label, new edge, pos saved; no view-only fields | architecture.json | ✅ PASS |
 | VA-16 | Download HTML with edits re-opens offline with the edits | edited label visible, 0 requests | shop-demo.flowmap.html | ✅ PASS |
-| VA-17 | Exports: PNG, vector SVG, Mermaid, JSON | valid files | PNG 887 KB, SVG 27 KB, Mermaid 68 lines | ✅ PASS |
+| VA-17 | Exports: PNG, vector SVG, Mermaid, JSON | valid files | PNG 852 KB, SVG 27 KB, Mermaid 68 lines | ✅ PASS |
 | VA-18 | Print / PDF book: overview + one section per flow | 11 flow sections with tables | 11 sections | ✅ PASS |
 | VA-19 | Light theme toggle | canvas turns light | rgb(244, 244, 246) | ✅ PASS |
 | VA-20 | Unsaved edits survive a reload (draft restore) | banner offers Restore; restore brings the edit back | restored | ✅ PASS |
@@ -202,7 +202,7 @@
 | VB-21 | Edit mode: draw a hotspot, link it, coverage updates live | new hotspot + edge; dead-control count drops after linking 'Forgot password?' | hotspots 5 -> 6, linked; Sign in amber badge cleared | ✅ PASS |
 | VB-22 | Edit mode: move a hotspot by dragging; delete a hotspot removes its links | box changes; edge removed | moved 60 px; edges 32 -> 31 | ✅ PASS |
 | VB-23 | Saved screens.json carries hotspot edits | new hotspot + user-evidence edge present | edits saved; embedded images not duplicated into the JSON | ✅ PASS |
-| VB-24 | Exported clickable prototype opens straight into the screens and navigates | prototype bar; hotspot click navigates; offline | 2147 KB, Sign in -> Products | ✅ PASS |
+| VB-24 | Exported clickable prototype opens straight into the screens and navigates | prototype bar; hotspot click navigates; offline | 2151 KB, Sign in -> Products | ✅ PASS |
 | VB-25 | Flow book: coverage + every journey step with its screenshot and highlighted hotspot | img per step; hotspot boxes; FR text | 22/22 step screenshots | ✅ PASS |
 | VB-29 | Mode B 'Download HTML with edits' keeps the embedded screenshots | re-opened file shows 7 thumbnails | 7 thumbnails, 2.1 MB | ✅ PASS |
 | VB-26 | SVG export embeds the screenshots | <image href=data:image/webp ...> per screen | 7 images | ✅ PASS |
@@ -213,7 +213,7 @@
 
 | ID | Test case | Expected | Actual | Result |
 |---|---|---|---|---|
-| PRF-01 | 600+ node graph: first render, expand all, select flow | each under 3 s; no errors | first 1814 ms (12 groups collapsed), expand 1262 ms, flow 1108 ms | ✅ PASS |
+| PRF-01 | 600+ node graph: first render, expand all, select flow | each under 3 s; no errors | first 1870 ms (12 groups collapsed), expand 991 ms, flow 617 ms | ✅ PASS |
 
 ## Security
 

@@ -1,0 +1,48 @@
+# Unit tests and the 140-case QA harness (including the offline browser tests) on every push and PR.
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Python unit tests
+        run: python -m unittest discover -s tests -p "test_*.py"
+      - name: Viewer typecheck and build
+        working-directory: viewer
+        run: |
+          npm ci
+          npx tsc --noEmit
+          npx vite build
+      - name: Prebuilt viewer is committed and current
+        shell: bash
+        run: git diff --stat --exit-code -- viewer/dist/index.html || echo "::warning::viewer/dist/index.html differs from a fresh build (non-fatal: bundler output can vary by platform)"
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: QA harness (offline)
+        shell: bash
+        env:
+          NODE_PATH: ${{ github.workspace }}/node_modules
+          PYTHONUTF8: '1'
+        run: python tests/qa.py --no-network

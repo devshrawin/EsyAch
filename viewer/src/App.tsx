@@ -16,6 +16,7 @@ import { nodeTypes, type NodeData } from "./nodes";
 import { Badge, EdgeDrawer, evText, FlowsTab, Menu, NodeDrawer, SearchPalette, ViewTab } from "./panels";
 import { assetSrc, badges, coverage } from "./coverage";
 import { Lightbox } from "./Lightbox";
+import { Welcome } from "./Welcome";
 import { CoverageTab, RequirementsTab } from "./specpanels";
 import { printSpecBook } from "./export";
 import type { Flow, GEdge, GNode, Graph } from "./types";
@@ -101,7 +102,21 @@ function Viewer({ initial }: { initial: Graph }) {
   const [focusId, setFocusId] = useState<string | null>(null);
   const stepListRef = useRef<HTMLOListElement>(null);
 
-  const say = (m: string) => {
+  // "Start here" card: once per project per browser. #tour=1 forces it, #tour=0 or a #flow= link
+  // hides it, and automated browsers (the test suites) never see it.
+  const welcomeKey = `flowmap-welcome:${initial.project.name}`;
+  const [welcome, setWelcome] = useState(() => {
+    const h = location.hash;
+    if (/[#&]tour=1\b/.test(h)) return true;
+    if (/[#&]tour=0\b/.test(h) || /[#&]flow=/.test(h) || navigator.webdriver) return false;
+    return !store(() => localStorage.getItem(welcomeKey), null);
+  });
+  const closeWelcome = () => {
+    setWelcome(false);
+    store(() => localStorage.setItem(welcomeKey, "1"), undefined);
+  };
+
+  const say =(m: string) => {
     setToast(m);
     setTimeout(() => setToast((t) => (t === m ? null : t)), 3200);
   };
@@ -176,6 +191,22 @@ function Viewer({ initial }: { initial: Graph }) {
   const focusOn = !flow && !!reqFocus;
   const curNode = vNode(curStep?.node);
   const curEdge = vEdge(curStep?.edge);
+
+  // Deep link: file.html#flow=<id>&step=3&play=1 opens straight into a replay (handy when presenting).
+  const deepLinked = useRef(false);
+  useEffect(() => {
+    if (deepLinked.current || !pos) return;
+    deepLinked.current = true;
+    const q = new URLSearchParams(location.hash.slice(1));
+    const id = q.get("flow");
+    const f = id ? graph.flows.find((x) => x.id === id) : undefined;
+    if (!f) return;
+    selectFlow(f.id);
+    const n = Number(q.get("step"));
+    if (Number.isInteger(n) && n > 0) setStep(Math.min(n, f.steps.length) - 1);
+    if (q.get("play") === "1") setPlaying(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pos]);
 
   const goTo = useCallback((i: number) => {
     if (!flow) return;
@@ -625,6 +656,7 @@ function Viewer({ initial }: { initial: Graph }) {
             { label: isSpec ? "Print / PDF flow book" : "Print / PDF", hint: isSpec ? "coverage + every journey with screenshots" : "overview + one page per flow", onClick: exportPrint },
           ]} />
           <button className="fm-btn" onClick={() => rf.fitView({ padding: 0.15, duration: 400 })} title="Fit to view"><Icon name="fit" size={16} /></button>
+          <button className="fm-btn fm-btn-text" onClick={() => { setSel(null); selectFlow(null); setWelcome(true); }} title="Show the Start here card" data-testid="help-btn">?</button>
           <button className="fm-btn" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} title="Toggle theme">
             <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
           </button>
@@ -744,6 +776,10 @@ function Viewer({ initial }: { initial: Graph }) {
           </div>
         )}
         {toast && <div className="fm-toast">{toast}</div>}
+        {welcome && !lb && !flow && pos && (
+          <Welcome graph={graph} onClose={closeWelcome}
+            onPlay={(f) => { closeWelcome(); selectFlow(f.id); setPlaying(true); }} />
+        )}
       </main>
 
       {selNode && (

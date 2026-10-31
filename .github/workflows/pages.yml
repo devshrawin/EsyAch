@@ -1,0 +1,38 @@
+# Publishes the two example maps as a live demo. One-time setup: Settings → Pages → Source: GitHub Actions.
+name: Demo site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp examples/shop-demo/.flowmap/flowmap.html _site/code-map.html
+          cp examples/shop-spec/.flowmap/flowmap.html _site/spec-map.html
+          cp docs/media/banner.svg _site/banner.svg
+          cp docs/site/index.html _site/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

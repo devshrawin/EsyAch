@@ -4,7 +4,8 @@
 
 <p>
   <a href="#-install"><img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-ff6d5a?style=flat-square"></a>
-  <a href="docs/QA.md"><img alt="tests" src="https://img.shields.io/badge/tests-140%2F140%20passing-4cc38a?style=flat-square"></a>
+  <a href="https://github.com/devshrawin/EsyAch/actions/workflows/test.yml"><img alt="tests" src="https://img.shields.io/github/actions/workflow/status/devshrawin/EsyAch/test.yml?branch=main&style=flat-square&label=tests"></a>
+  <a href="CHANGELOG.md"><img alt="version" src="https://img.shields.io/badge/version-0.2.0-111?style=flat-square"></a>
   <img alt="offline" src="https://img.shields.io/badge/output-1%20offline%20HTML%20file-5b9bd5?style=flat-square">
   <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-f5c542?style=flat-square">
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-c9cacf?style=flat-square"></a>
@@ -49,6 +50,10 @@ You need Python 3.9+. Nothing else: the viewer ships prebuilt.
 ```
 
 Claude prints the path of the result. **Double-click `.flowmap/flowmap.html`** and it opens in any browser.
+
+> **Windows:** if `python3` says *Python was not found* (the Microsoft Store stub), nothing to fix. Claude uses `python` or `py -3` instead.
+
+The first time a map opens, a **Start here** card offers a one-click replay. To present, open a map straight into a flow with `flowmap.html#flow=checkout&step=3&play=1`.
 
 <br>
 
@@ -180,6 +185,7 @@ flowchart LR
 - Target code is **never executed or installed**. Repos are shallow-cloned with hooks off; `.git/config` is never even read.
 - Zips are checked for path traversal, symlinks and zip bombs. Screenshots are size-capped.
 - You're warned if an SRS or screenshot seems to contain **real personal data** (e-mails, phone and card numbers).
+- No hooks, MCP servers, install scripts or dependencies. Full list: [Is it safe to install?](docs/is-it-safe.md)
 
 <br>
 
@@ -221,7 +227,7 @@ python3 tests/qa.py                                # full QA: 140 cases → docs
 node docs/media/record.cjs                         # re-record the README animations
 ```
 
-Docs: [schema](docs/schema.md) · [plan & limits](docs/PLAN.md) · [QA audit & test cases](docs/QA.md)
+Docs: [is it safe to install?](docs/is-it-safe.md) · [schema](docs/schema.md) · [plan & limits](docs/PLAN.md) · [QA audit & test cases](docs/QA.md) · [changelog](CHANGELOG.md) · [contributing](CONTRIBUTING.md) · [security](SECURITY.md)
 
 <br>
 

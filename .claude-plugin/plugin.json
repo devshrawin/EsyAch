@@ -1,6 +1,6 @@
 {
   "name": "flowmap",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Turn a codebase (or an SRS + screenshots) into an interactive, offline, n8n-style flow map with named, replayable flows.",
   "author": { "name": "devshrawin" },
   "homepage": "https://github.com/devshrawin/EsyAch",

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>flowmap: see how your code and product flow</title>
+<meta name="description" content="Point flowmap at a codebase, or at an SRS plus screenshots, and get an interactive, replayable, offline flow map.">
+<style>
+  :root { --bg:#1f2022; --panel:#2a2b2e; --border:#3d3e42; --text:#ececec; --muted:#9b9ea4; --accent:#ff6d5a; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#f4f4f6; --panel:#ffffff; --border:#dcdde2; --text:#1f2024; --muted:#6b6e76; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  main { max-width: 880px; margin: 0 auto; padding: 56px 20px 80px; }
+  img.banner { width:100%; height:auto; border-radius:14px; border:1px solid var(--border); display:block; }
+  h1 { font-size: clamp(28px, 5vw, 42px); line-height:1.15; margin: 36px 0 12px; letter-spacing:-0.5px; }
+  p.lead { color:var(--muted); font-size:18px; margin:0 0 28px; max-width: 640px; }
+  .cards { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px; }
+  a.card { display:block; padding:20px; background:var(--panel); border:1px solid var(--border); border-radius:14px; color:inherit; text-decoration:none; transition: border-color .15s, transform .15s; }
+  a.card:hover, a.card:focus-visible { border-color: var(--accent); transform: translateY(-2px); outline:none; }
+  a.card b { display:block; font-size:18px; margin-bottom:4px; }
+  a.card span { display:block; color:var(--muted); font-size:14px; line-height:1.5; }
+  a.card em { display:inline-block; margin-top:12px; color:var(--accent); font-style:normal; font-weight:600; font-size:14px; }
+  h2 { font-size:20px; margin:44px 0 10px; }
+  pre { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:14px; }
+  ul { color:var(--muted); padding-left:20px; }
+  li { margin:4px 0; }
+  li b { color:var(--text); }
+  footer { margin-top:56px; color:var(--muted); font-size:14px; }
+  footer a { color:var(--accent); }
+  @media (prefers-reduced-motion: reduce) { a.card { transition:none; } }
+</style>
+</head>
+<body>
+<main>
+  <img class="banner" src="banner.svg" alt="flowmap: see how your code and your product actually flow">
+  <h1>See how it actually flows.</h1>
+  <p class="lead">Point flowmap at a codebase, or at a requirements doc plus screenshots. Get an interactive map you can replay, click through, edit and share, in one offline HTML file.</p>
+
+  <div class="cards">
+    <a class="card" href="code-map.html">
+      <b>A codebase</b>
+      <span>A small shop (FastAPI, Postgres, Redis, Stripe, a worker, a cron job). 11 replayable flows, including failures and a flagged-off route.</span>
+      <em>Open the code map →</em>
+    </a>
+    <a class="card" href="spec-map.html">
+      <b>An SRS + screenshots</b>
+      <span>A shop spec and 8 screens. 5 journeys, a clickable prototype, and a Coverage panel that catches a contradiction and a missing screen.</span>
+      <em>Open the spec map →</em>
+    </a>
+  </div>
+
+  <h2>Things to try</h2>
+  <ul>
+    <li><b>Press Play</b> on the card that appears, and watch a request travel from the button to the database and back.</li>
+    <li><b>Ctrl+K</b> jumps to any node, requirement or flow.</li>
+    <li>In the spec map, open <b>Coverage</b> and click a finding.</li>
+    <li>Switch to <b>Edit</b>, rename something, then try <b>Export → SVG</b>.</li>
+  </ul>
+
+  <h2>Install</h2>
+  <pre>/plugin marketplace add devshrawin/EsyAch
+/plugin install flowmap@flowmap
+/flowmap ./my-project</pre>
+
+  <footer>
+    Everything runs on your machine. The maps make zero network requests. ·
+    <a href="https://github.com/devshrawin/EsyAch">Source on GitHub</a>
+  </footer>
+</main>
+</body>
+</html>

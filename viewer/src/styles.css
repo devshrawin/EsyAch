@@ -627,3 +627,22 @@ textarea.fm-input { resize: vertical; min-height: 38px; }
 .fm-proto { position: fixed; inset: 0; background: var(--bg); }
 .fm-proto-bar { height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 14px; background: var(--panel); border-bottom: 1px solid var(--border); }
 .fm-proto-journey { width: auto; margin-left: auto; }
+
+/* ------------------------------------------------------------------ start-here card */
+.fm-welcome {
+  position: absolute; right: 16px; top: 14px; z-index: 18; width: 330px; padding: 18px 18px 14px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow);
+  animation: fm-welcome-in 0.35s ease-out both;
+}
+@keyframes fm-welcome-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .fm-welcome { animation: none; } }
+.fm-welcome-x { position: absolute; right: 10px; top: 10px; }
+.fm-welcome-kicker { font-size: 10.5px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.fm-welcome h2 { margin: 4px 28px 6px 0; font-size: 18px; line-height: 1.2; }
+.fm-welcome-sum { margin: 0 0 10px; color: var(--muted); font-size: 12.5px; }
+.fm-welcome-stats { display: flex; gap: 12px; margin-bottom: 12px; color: var(--muted); font-size: 12px; }
+.fm-welcome-stats b { color: var(--text); font-size: 14px; }
+.fm-welcome-play { width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 12px; font-size: 13px; font-weight: 600; }
+.fm-welcome-tips { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 7px; color: var(--muted); font-size: 12px; }
+.fm-welcome-tips b { color: var(--text); font-weight: 600; }
+@media (max-width: 900px) { .fm-welcome { display: none; } }
