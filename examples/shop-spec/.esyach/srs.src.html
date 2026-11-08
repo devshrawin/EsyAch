@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en" data-register="paper" data-srs="srs.json">
+<head>
+<title>ShopDemo SRS: 15 of 16 screen requirements are on a screen</title>
+<link rel="stylesheet" href="kit.css" data-ve-kit>
+</head>
+<body>
+<nav class="ve-toc" aria-label="Sections"><div><a href="#system">System</a><a href="#coverage">Coverage</a><a href="#modules">Modules</a><a href="#journeys">Journeys</a><a href="#gaps">Gaps</a><a href="#trace">Trace</a><a href="#prototype">Prototype</a></div><span class="pos"></span></nav>
+<main>
+  <header>
+    <p class="eyebrow">SRS · ShopDemo Web Store v1.2</p>
+    <h1><span class="num">15 of 16</span> screen requirements are on a screen</h1>
+    <p class="lead">Customers buy and track orders; admins manage and refund them. <b>One screen contradicts the SRS, and the password-reset screen is missing.</b></p>
+    <p class="meta">srs.md · 19 requirements · 8 screenshots · 3 journeys</p>
+  </header>
+
+  <figure id="system">
+    <ve-flow label="Customers and admins use ShopDemo; it charges cards and sends e-mail.">
+      <ve-node id="customer" at="2 1" sub="shopper" data-ref="r-FR-6 r-FR-8 r-FR-13">Customer</ve-node>
+      <ve-node id="shop" at="2 2" sub="web store" key>ShopDemo</ve-node>
+      <ve-node id="admin" at="1 2" sub="store staff" data-ref="r-FR-14 r-FR-15">Admin</ve-node>
+      <ve-node id="card" at="3 2" sub="FR-11" data-ref="r-FR-11">Card payment</ve-node>
+      <ve-node id="mail" at="2 3" sub="FR-12" data-ref="r-FR-12">E-mail</ve-node>
+      <ve-edge from="customer" to="shop" label="buys, tracks"/>
+      <ve-edge from="admin" to="shop" label="refunds"/>
+      <ve-edge from="shop" to="card" label="charges" hot/>
+      <ve-edge from="shop" to="mail" label="receipt" async/>
+    </ve-flow>
+    <figcaption><span class="fig-n">Fig. 1</span>Two roles use one store; the store charges cards and e-mails receipts in the background.</figcaption>
+  </figure>
+
+  <section id="coverage">
+    <div class="sec-head"><p class="ve-label caps">Coverage</p><h2>Almost every screen requirement has a screen</h2></div>
+    <ve-coverage></ve-coverage>
+    <p>Three requirements have no interface: <ve-req id="FR-12"></ve-req> (e-mail), <ve-req id="NFR-1"></ve-req> (speed) and <ve-req id="NFR-2"></ve-req> (contrast). Test them outside the screens.</p>
+  </section>
+
+  <section id="modules">
+    <div class="sec-head"><p class="ve-label caps">Modules</p><h2>Authentication carries both problems</h2></div>
+    <ve-modules></ve-modules>
+  </section>
+
+  <section id="journeys">
+    <div class="sec-head"><p class="ve-label caps">Journeys</p><h2>A customer orders in seven steps</h2></div>
+    <figure class="ve-steps">
+      <ve-journey id="buy"></ve-journey>
+      <figcaption><span class="fig-n">Fig. 2</span>The order path crosses five screens; the outlined control is the one to press.</figcaption>
+    </figure>
+    <figure class="ve-steps">
+      <ve-journey id="wrong-password"></ve-journey>
+      <figcaption><span class="fig-n">Fig. 3</span>A wrong password keeps the user on Sign in, with the error state <ve-req id="FR-4"></ve-req> describes.</figcaption>
+    </figure>
+    <figure class="ve-steps">
+      <ve-journey id="admin"></ve-journey>
+      <figcaption><span class="fig-n">Fig. 4</span>An admin changes a status and refunds on one screen; nothing confirms the refund.</figcaption>
+    </figure>
+  </section>
+
+  <section id="gaps">
+    <div class="sec-head"><p class="ve-label caps">Gaps</p><h2>Fix the password rule and add the reset screen</h2></div>
+    <ve-gaps></ve-gaps>
+    <ve-ask id="pw" q="FR-2 asks for 8 characters; the screen says 6. Which is right?">
+      <ve-opt value="8" default note="the SRS is approved">8 characters: change the screen</ve-opt>
+      <ve-opt value="6">6 characters: change the SRS</ve-opt>
+    </ve-ask>
+    <ve-ask id="reset" q="FR-3 has no Reset Password screen. What next?">
+      <ve-opt value="design" default>Design the screen now</ve-opt>
+      <ve-opt value="defer">Move FR-3 to a later release</ve-opt>
+      <ve-opt value="drop">Drop FR-3</ve-opt>
+    </ve-ask>
+  </section>
+
+  <section id="trace">
+    <div class="sec-head"><p class="ve-label caps">Trace</p><h2>Every requirement, and the screens that carry it</h2></div>
+    <ve-trace></ve-trace>
+  </section>
+
+  <section id="prototype">
+    <div class="sec-head"><p class="ve-label caps">Prototype</p><h2>Click through the screens as the SRS describes them</h2></div>
+    <figure>
+      <ve-proto start="sign-in"></ve-proto>
+      <figcaption><span class="fig-n">Fig. 5</span>Every control goes where the SRS or the screenshots say; Sign in asks which role, and dashed controls lead nowhere.</figcaption>
+    </figure>
+  </section>
+
+  <section class="sources" aria-label="Sources"><p class="ve-label caps">Sources</p><p><code>examples/shop-spec/srs.md</code> · <code>examples/shop-spec/screens/01–08</code></p></section>
+</main>
+</body>
+</html>

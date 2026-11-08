@@ -1,0 +1,99 @@
+{
+  "tool": "esyach-screens-prep/1",
+  "root": "../screens",
+  "count": 8,
+  "screens": [
+    {
+      "file": "01-sign-in.png",
+      "width": 1280,
+      "height": 800,
+      "bytes": 24762,
+      "sha1": "88992b956b32",
+      "dhash": "000000000000003004300c300c3004300430013004300cd00430020000000000",
+      "order": 1,
+      "name_hint": "sign in",
+      "near_duplicates": [
+        "02-sign-in-error.png"
+      ]
+    },
+    {
+      "file": "02-sign-in-error.png",
+      "width": 1280,
+      "height": 800,
+      "bytes": 29349,
+      "sha1": "ed680d23547a",
+      "dhash": "00000000030004300c3004100c300c300430043000300cf00cd0032000000000",
+      "order": 2,
+      "name_hint": "sign in error",
+      "near_duplicates": [
+        "01-sign-in.png"
+      ]
+    },
+    {
+      "file": "03-products.png",
+      "width": 1280,
+      "height": 800,
+      "bytes": 125581,
+      "sha1": "fa2b297ae1a4",
+      "dhash": "a00c80019841c6108610863094d630c64e318610c61096b6b0c6318e00000000",
+      "order": 3,
+      "name_hint": "products",
+      "near_duplicates": []
+    },
+    {
+      "file": "04-cart.png",
+      "width": 1280,
+      "height": 800,
+      "bytes": 43043,
+      "sha1": "ad899e16c4e1",
+      "dhash": "b00c800d9013143296b896b896a1800040000000000000000000000000000000",
+      "order": 4,
+      "name_hint": "cart",
+      "near_duplicates": []
+    },
+    {
+      "file": "05-checkout.png",
+      "width": 1280,
+      "height": 800,
+      "bytes": 42191,
+      "sha1": "bb5a05221e75",
+      "dhash": "a00c200d8032803880389023803082308d30c530203000000000000000000000",
+      "order": 5,
+      "name_hint": "checkout",
+      "near_duplicates": []
+    },
+    {
+      "file": "06-order-confirmed.png",
+      "width": 1280,
+      "height": 800,
+      "bytes": 33867,
+      "sha1": "3684fe258c46",
+      "dhash": "a00c000400000098011806980558031803180118005000000000000000000000",
+      "order": 6,
+      "name_hint": "order confirmed",
+      "near_duplicates": []
+    },
+    {
+      "file": "07-order-status.png",
+      "width": 1280,
+      "height": 800,
+      "bytes": 33131,
+      "sha1": "dd2c22204975",
+      "dhash": "a00c80049801a202444b44cd1201800040000000000000000000000000000000",
+      "order": 7,
+      "name_hint": "order status",
+      "near_duplicates": []
+    },
+    {
+      "file": "08-admin-orders.png",
+      "width": 1280,
+      "height": 800,
+      "bytes": 40147,
+      "sha1": "fdf1cec94145",
+      "dhash": "b00c8004c4002489249924992489249900000000000000000000000000000000",
+      "order": 8,
+      "name_hint": "admin orders",
+      "near_duplicates": []
+    }
+  ]
+}

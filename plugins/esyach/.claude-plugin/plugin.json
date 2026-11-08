@@ -1,0 +1,10 @@
+{
+  "name": "esyach",
+  "description": "Turn SRS documents, screenshots, code, diffs and plans into figure-first HTML explainers: SRS walkthroughs, coverage audits, clickable prototypes, diagrams, reviews, slides",
+  "version": "2.0.0",
+  "author": {
+    "name": "devshrawin"
+  },
+  "repository": "https://github.com/devshrawin/EsyAch",
+  "license": "MIT"
+}

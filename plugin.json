@@ -1,0 +1,22 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "esyach",
+  "version": "2.0.0",
+  "description": "Turn SRS documents, screenshots, code, diffs and plans into figure-first HTML explainers: SRS walkthroughs, coverage audits, clickable prototypes, diagrams, reviews, slides",
+  "author": {
+    "name": "devshrawin"
+  },
+  "repository": "https://github.com/devshrawin/EsyAch",
+  "license": "MIT",
+  "keywords": [
+    "srs",
+    "requirements",
+    "prototype",
+    "coverage",
+    "diagrams",
+    "html",
+    "visualization",
+    "diff-review",
+    "slides"
+  ]
+}

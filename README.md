@@ -1,233 +1,110 @@
 <div align="center">
 
-<img src="docs/media/banner.svg" alt="flowmap: see how your code and your product actually flow" width="100%">
+# EsyAch
 
-<p>
-  <a href="#-install"><img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-ff6d5a?style=flat-square"></a>
-  <a href="docs/QA.md"><img alt="tests" src="https://img.shields.io/badge/tests-140%2F140%20passing-4cc38a?style=flat-square"></a>
-  <img alt="offline" src="https://img.shields.io/badge/output-1%20offline%20HTML%20file-5b9bd5?style=flat-square">
-  <img alt="python" src="https://img.shields.io/badge/python-3.9%2B-f5c542?style=flat-square">
-  <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-c9cacf?style=flat-square"></a>
-</p>
+**Turn a requirements document, and the screenshots that go with it, into one page a team can read in ten seconds.**
 
-**Point it at a codebase, or at a requirements doc plus screenshots.<br>
-Get an interactive, n8n-style map you can replay, click through, edit and share.**
+Coverage, journeys, contradictions, missing screens, a trace table and a clickable prototype, drawn from your SRS.<br>
+Plus every visual-explainer mode for code, diffs, plans and slides.
 
-[Install](#-install) · [Code maps](#-map-any-codebase) · [SRS → prototype](#-turn-an-srs--screenshots-into-a-clickable-prototype) · [Coverage](#-catch-the-gaps-before-they-ship) · [Edit](#-fix-it-yourself) · [Export](#-take-it-anywhere) · [FAQ](#-faq)
+[Install](#install) · [SRS explainer](#explain-an-srs) · [SRS review](#review-an-srs) · [Other modes](#every-other-mode) · [How it works](#how-it-works) · [Credits](#credits)
 
 </div>
 
----
+<img src="docs/media/srs-first-screen.png" alt="The first screen of an SRS page: the verdict '15 of 16 screen requirements are on a screen' above a diagram of customers and admins using the store" width="100%">
 
-## ✨ Why flowmap
-
-Most diagram tools draw boxes and arrows. flowmap shows **what actually happens**, as named flows you can **press Play on**:
-
-- 🧭 **"What happens when a user clicks Pay?"** Watch the request travel from the button to the API, the database, Stripe, the queue, the worker and the e-mail. Every step links to the exact `file:line`.
-- 📱 **"Does the app match the spec?"** Turn an SRS and a folder of screenshots into a **clickable prototype**, and get a list of **missing screens, contradictions and dead buttons**.
-- 🪄 **"The map is slightly wrong."** Fix it in the browser, save, re-render. Your edits survive the next analysis.
-- 🔒 **Everything stays on your machine.** The output is one self-contained HTML file that makes zero network requests.
-
-<br>
-
-## 🚀 Install
+## Install
 
 In Claude Code:
 
 ```text
 /plugin marketplace add devshrawin/EsyAch
-/plugin install flowmap@flowmap
+/plugin install esyach@esyach
 ```
 
-You need Python 3.9+. Nothing else: the viewer ships prebuilt.
+You need Node 18+ and Python 3.9+, with Pillow for screenshots and `pypdf` (or `pdftotext`) for PDF requirements. The browser check uses Playwright when it is installed.
 
 ```text
-/flowmap ./my-project                                   # a folder
-/flowmap https://github.com/acme/shop                   # a repo (shallow clone, never executed)
-/flowmap ./shop.zip                                     # a zip
-/flowmap spec requirements.pdf --screens ./screenshots  # SRS (PDF/DOCX/MD/TXT) + screenshots (folder or zip)
+/esyach:srs-explain requirements.pdf --screens ./screenshots   # SRS + screenshots → explainer with coverage and prototype
+/esyach:srs-explain requirements.docx                          # the document alone
+/esyach:srs-review  requirements.md                            # audit the writing before the build
 ```
 
-Claude prints the path of the result. **Double-click `.flowmap/flowmap.html`** and it opens in any browser.
+The page is written to `.esyach/srs.html` beside the SRS. Double-click it to open it in any browser.
 
-<br>
-
-## 🧭 Map any codebase
-
-<img src="docs/media/flow-replay.gif" alt="Replaying the Checkout flow: a dot travels from the storefront through the API, database, Stripe, queue and worker" width="100%">
-
-Claude reads the project (Python deeply; JS/TS, Go, Java and others by pattern) and builds:
+## Explain an SRS
 
 | | |
 |---|---|
-| ⚡ **Entry points** | HTTP routes, webhooks, cron jobs, CLIs, queue consumers. They carry the red bolt, the same as n8n triggers. |
-| 🧩 **Services as hubs** | The parts doing the work, with their **databases, caches, queues and SDKs** hanging underneath on dashed lines. |
-| 🎬 **Replayable flows** | One per entry point, **plus the failure paths** (card declined → 402, duplicate e-mail → 409) and side effects (enqueue → worker → e-mail). |
-| 🔎 **Evidence everywhere** | Every box, line and step cites `file:line`. Guesses are marked as guesses, with a confidence level. |
-| 💤 **Dead code** | Feature-flagged-off routes appear dimmed as *(Deactivated)*; commented-out routes are reported. |
+| **The answer first** | The headline is the verdict with its number. The lead names the two problems that matter. |
+| **Coverage** | Which UI requirements appear on a screen, with contradictions, gaps and open questions counted. Gaps are **computed** from the screens, not guessed. |
+| **Journeys** | One stepper per role: the screen of each step, the control to press outlined, and the requirement it shows. |
+| **Gaps** | Small multiples: *the SRS says 8 characters, the screen says 6*, *no Reset Password screen*, *"Forgot password?" leads nowhere*. |
+| **Decisions** | Each decision only you can make is a question on the page. Your answers go back to Claude in one reply. |
+| **Trace** | Every requirement, its screens and its status. Hover a row and its screens light up everywhere. |
+| **Prototype** | Click through the screenshots. A control with several outcomes asks which path to take. Dashed controls lead nowhere. |
 
-Detail levels (Overview / Structure / Detail), filters, groups you can collapse, and **Ctrl/Cmd + K** search keep big codebases readable. 600+ nodes render in about a second.
+<img src="docs/media/srs-journey.png" alt="A journey step: the Checkout screen with Place order outlined, the caption 'She enters the shipping address and the card, then places the order', and a step player" width="100%">
 
-<br>
+<img src="docs/media/srs-gaps.png" alt="Gap cards: a contradiction with 'SRS says' and 'Screen shows' side by side, a missing declined-card state, ambiguities, a requirement with no screen, and a control that leads nowhere" width="100%">
 
-## 📱 Turn an SRS + screenshots into a clickable prototype
+<img src="docs/media/srs-prototype.png" alt="The clickable prototype: Sign in is clicked and a chooser asks whether to continue as Customer, as Admin, or with wrong credentials" width="100%">
 
-<img src="docs/media/prototype.gif" alt="Clicking through the screenshots: Sign in, Products, Cart, Checkout, Order confirmed, Order status" width="100%">
+An SRS without IDs like `FR-1` still works. Every *shall / must / should* statement is numbered `R-001`, `R-002`, … and the page says so. Real-looking e-mails, phone numbers and card numbers in the SRS are flagged before anything is shared.
 
-- Every screenshot becomes a **screen card**, with the requirements it satisfies (`FR-1`, `FR-5`…) underneath.
-- Every button, link, tab and field becomes a **hotspot**. **Click it to go where it leads**, with Back and breadcrumbs, the same as the real app.
-- A button with several outcomes (*Sign in as Customer or Admin*, *card accepted or declined*) asks which path you want.
-- **Journeys** per role ("Customer places an order", "Admin refunds an order") play screen by screen. The control to press **pulses**, and the requirement text sits next to it.
-- Different states of one screen (empty, error, success) stack into one card, marked ×2.
+## Review an SRS
 
-<br>
+`/esyach:srs-review` judges the document itself: ambiguous wording, untestable targets, requirements that conflict, unspecified error states, and missing NFR areas. You get a verdict first, then one card per problem, each with a suggested rewrite to accept or reject.
 
-## 🎯 Catch the gaps before they ship
+## Every other mode
 
-<img src="docs/media/coverage.gif" alt="Coverage panel listing a contradiction and a missing screen; picking a requirement highlights the screens that satisfy it" width="100%">
+EsyAch carries the whole [visual-explainer](https://github.com/nicobailon/visual-explainer) toolkit. Each mode makes a figure-first HTML page instead of ASCII art:
 
-The **Coverage** panel cross-checks the SRS against the screens:
-
-| | Example from the bundled demo |
+| Command | Makes |
 |---|---|
-| 🔴 **Contradictions** | *FR-2 says passwords need 8+ characters; the sign-in screen says "Minimum 6".* |
-| 🔴 **Requirements with no screen** | *FR-3: there is no "Reset password" screen.* |
-| 🟠 **Controls that lead nowhere** | *"Forgot password?" goes nowhere.* |
-| 🟠 **Missing states** | *No screenshot shows the declined-card error that FR-11 describes.* |
-| 🟠 **Dead ends · unreachable screens · screens with no requirement** | Calculated, not guessed. |
-| ❓ **Inferred transitions** | Dashed with a **?**, so you know what to confirm. |
+| `/esyach:generate-web-diagram` | an architecture, flow or concept page |
+| `/esyach:diff-review` | a visual review of a branch, commit or PR, with a fix to accept per risk |
+| `/esyach:plan-review`, `/esyach:generate-visual-plan` | a plan you can answer, decision by decision |
+| `/esyach:project-recap` | what changed in a time window |
+| `/esyach:compare` | options drawn side by side, with a recommendation |
+| `/esyach:fact-check` | a page's claims checked against the code |
+| `/esyach:state-machine` | a state machine walked from your code, with every broken rule replayed |
+| `/esyach:generate-slides`, `/esyach:generate-video` | a slide deck (`--pptx` too) or a narrated MP4 |
 
-Pick any requirement to **light up every screen and transition that satisfies it**. It works the other way too, from a screen to its requirements.
+For a whole codebase, `tools/inventory.py` collects routes, calls, datastores and external SDKs with `file:line`, so architecture pages cite their evidence. Target code is never executed.
 
-<br>
-
-## 🪄 Fix it yourself
-
-<img src="docs/media/edit.gif" alt="Edit mode: dragging a node, connecting two nodes, labelling the edge and marking it reviewed" width="100%">
-
-Switch to **Edit** and:
-
-- drag, rename and re-describe anything; add or delete nodes and connections
-- **draw hotspots on screenshots** and link them to screens
-- rebuild flows step by step, or turn on **Record** and click edges
-- tick **✓ Reviewed** on what you've checked
-- Undo and redo; drafts survive a reload
-
-**Save** downloads `architecture.json` (or `screens.json`). Run `/flowmap-update` and the map re-renders **without re-analysing**. A later full analysis keeps everything you marked reviewed.
-
-<br>
-
-## 📤 Take it anywhere
-
-| Export | Best for |
-|---|---|
-| 🖼️ **PNG** · **SVG** (real vectors) | Slides, Figma, docs. Exports what you're looking at, with the selected flow highlighted. |
-| 🧜 **Mermaid** | Pasting into GitHub / Markdown. |
-| 🌐 **Interactive HTML** | Sending the whole explorer to someone. One file, works offline. |
-| 📱 **Clickable prototype** | Stakeholders who just want to click through the screens. |
-| 📄 **PDF flow book** | Reviews and sign-off: every flow or journey, step by step, with screenshots and the highlighted control. |
-| `{ }` **JSON** | Your own tooling. |
-
-<br>
-
-## 🧪 Try the bundled examples
-
-Download one (GitHub shows `.html` as source) and double-click it; nothing to install:
-
-| File | What it shows |
-|---|---|
-| [`examples/shop-demo/.flowmap/flowmap.html`](examples/shop-demo/.flowmap/flowmap.html) | A small shop codebase (FastAPI, Postgres, Redis, Stripe, worker, cron): **11 flows**, including failures and a flagged-off route. |
-| [`examples/shop-spec/.flowmap/flowmap.html`](examples/shop-spec/.flowmap/flowmap.html) | A shop SRS plus 8 mock screenshots: **5 journeys**, a clickable prototype, and a **planted gap and contradiction** for Coverage to catch. |
-
-<details>
-<summary><b>More screenshots</b></summary>
-<br>
-
-| | |
-|---|---|
-| ![Code map](docs/mode-a.png) | ![Screen map](docs/mode-b.png) |
-| Code map, n8n style | Screen map with gap badges |
-| ![Failure flow](docs/mode-a-failure.png) | ![Walkthrough](docs/mode-b-walkthrough.png) |
-| Failure path (card declined) | Journey walkthrough |
-| ![Groups](docs/mode-a-groups.png) | ![Vector export](docs/mode-a-export.png) |
-| Collapsed groups for big repos | SVG / PNG export |
-
-</details>
-
-<br>
-
-## ⚙️ How it works
+## How it works
 
 ```mermaid
 flowchart LR
-  A["📁 Code<br/><small>path · URL · zip</small>"] --> I["inventory.py<br/><small>routes · calls · DB · queues · env</small>"]
-  S["📄 SRS + 🖼️ screenshots"] --> X["spec_extract.py · screens_prep.py<br/><small>requirement IDs · grids · duplicates</small>"]
-  I --> C(("🤖 Claude<br/>analysis"))
-  X --> C
-  C --> J["architecture.json / screens.json<br/><small>every claim has evidence</small>"]
-  J --> V["validate.py"] --> B["build.py"] --> H["🌐 flowmap.html<br/><small>one offline file</small>"]
-  H -. "Edit → Save" .-> J
+  S["📄 SRS<br/><small>PDF · DOCX · MD · TXT</small>"] --> X["tools/extract_srs.py<br/><small>requirements · sections · PII</small>"]
+  I["🖼️ screenshots"] --> P["tools/screens_prep.py<br/><small>grid copies · WebP · duplicates</small>"]
+  X --> C(("Claude"))
+  P --> C
+  C --> M["srs.json<br/><small>screens · links · journeys · findings</small>"]
+  C --> H["srs.src.html<br/><small>headings · figures · SRS tags</small>"]
+  M --> R["kit/render.mjs<br/><small>checks the model · computes coverage · draws</small>"]
+  H --> R
+  R --> O["srs.html<br/><small>one file</small>"]
+  R --> L["browser check<br/><small>overlaps · tiny labels · overflow</small>"]
 ```
 
-- **Deterministic scripts** collect facts (Python standard library, no installs). **Claude** turns them into flows and journeys, citing evidence. **`validate.py`** rejects anything without evidence or with a broken link.
-- The viewer is React + React Flow + ELK, prebuilt into a single file and inlined with your data.
+- **Scripts collect facts.** Claude writes only a small model and the page's words. Requirements are read from the extraction, so the page cannot invent one.
+- **The renderer refuses a wrong model.** It reports unknown IDs, boxes outside the image, a mapping with no reason, and a contradiction with one side missing, each with its JSON path.
+- **Each screenshot is embedded once**, as WebP. The bundled example is 0.26 MB; the old canvas viewer made 2.2 MB.
+- **The render looks at its own page** at 390 px and 1280 px. It lists every overlap or unreadable label and gives Claude one contact sheet to check.
+- **Fonts** load from Google Fonts. Offline, the page falls back to system fonts. Nothing else is fetched.
 
-<br>
+Try it: open [`examples/shop-spec/.esyach/srs.html`](examples/shop-spec/.esyach/srs.html). It is built from a sample SRS and 8 mock screenshots with a planted contradiction (FR-2) and a planted gap (FR-3). The model behind it is [`srs.json`](examples/shop-spec/.esyach/srs.json).
 
-## 🔒 Private by design
+## Tests
 
-- Your code, SRS and screenshots **never leave your machine**. The HTML makes **zero network requests** (checked in tests with every request blocked).
-- Target code is **never executed or installed**. Repos are shallow-cloned with hooks off; `.git/config` is never even read.
-- Zips are checked for path traversal, symlinks and zip bombs. Screenshots are size-capped.
-- You're warned if an SRS or screenshot seems to contain **real personal data** (e-mails, phone and card numbers).
-
-<br>
-
-## ❓ FAQ
-
-<details><summary><b>Which languages does the code map understand?</b></summary>
-
-Python in depth (syntax tree: routes, call graph, feature flags, dead code). JavaScript/TypeScript by pattern (imports, cross-file calls, Express/Next/NestJS routes, fetch calls). Go, Java, Kotlin, Ruby, PHP, Rust and C# get a lighter pattern-based fallback. Claude reads the code itself to fill gaps and marks anything inferred.
-</details>
-
-<details><summary><b>How big a codebase can it handle?</b></summary>
-
-Tested at 600+ nodes: about 1 s to render, with groups collapsed automatically by folder. Use Overview level and groups to zoom out; open a group to zoom in.
-</details>
-
-<details><summary><b>How accurate are the hotspots on my screenshots?</b></summary>
-
-Claude reads each screenshot with a coordinate grid overlay. Boxes are usually close, and you can drag or resize any of them in Edit mode in seconds. Transitions the screenshots don't show are drawn dashed with a "?" and a reason.
-</details>
-
-<details><summary><b>Can I keep my corrections when I re-run the analysis?</b></summary>
-
-Yes. Anything you edited or ticked **Reviewed** is kept. To just re-draw after editing, use `/flowmap-update`, which never re-analyses.
-</details>
-
-<details><summary><b>Does it work without Claude?</b></summary>
-
-The viewer, validator and exports do. Any `architecture.json` / `screens.json` that follows [the schema](docs/schema.md) renders with `python3 scripts/build.py graph.json -o map.html`.
-</details>
-
-<br>
-
-## 🛠️ Development
-
-```bash
-(cd viewer && npm install && npm run build)        # after viewer changes
-tests/render_examples.sh                           # rebuild, validate, render the examples
-python3 tests/qa.py                                # full QA: 140 cases → docs/qa-results.md
-node docs/media/record.cjs                         # re-record the README animations
+```sh
+npm test   # version guard, kit, state machines, questions, SRS pages, Python tools
 ```
 
-Docs: [schema](docs/schema.md) · [plan & limits](docs/PLAN.md) · [QA audit & test cases](docs/QA.md)
+## Credits
 
-<br>
+EsyAch 2.0 is built on [visual-explainer](https://github.com/nicobailon/visual-explainer) by Nico Bailon (MIT), version 0.15.0. Its kit, renderer, browser check, reply loop, references and every non-SRS mode come from there. The SRS pipeline, model, tags and prototype are EsyAch's.
 
-<div align="center">
-
-**MIT licensed** · built as a [Claude Code](https://claude.com/claude-code) plugin<br>
-<sub>If flowmap saved you an afternoon of reading code, give it a ⭐</sub>
-
-</div>
+MIT licence: see [LICENSE](LICENSE).

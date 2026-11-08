@@ -1,0 +1,1382 @@
+{
+ "schema": "esyach-srs/1",
+ "project": {
+  "name": "ShopDemo Web Store",
+  "source": "srs.md",
+  "version": "1.2",
+  "summary": "Customers browse, buy and track orders; admins manage orders and refunds."
+ },
+ "extraction": "srs_text.json",
+ "manifest": "screens_manifest.json",
+ "screens_dir": "../screens",
+ "images": "web",
+ "actors": [
+  {
+   "id": "customer",
+   "label": "Customer",
+   "description": "A registered shopper who buys products."
+  },
+  {
+   "id": "admin",
+   "label": "Admin",
+   "description": "Store staff who manage orders and issue refunds."
+  }
+ ],
+ "modules": [
+  {
+   "id": "auth",
+   "label": "Authentication",
+   "summary": "Sign in by role; reset a forgotten password.",
+   "reqs": [
+    "FR-1",
+    "FR-2",
+    "FR-3",
+    "FR-4",
+    "FR-5"
+   ]
+  },
+  {
+   "id": "catalog",
+   "label": "Catalog",
+   "summary": "List and search products.",
+   "reqs": [
+    "FR-6",
+    "FR-7"
+   ]
+  },
+  {
+   "id": "checkout",
+   "label": "Cart and checkout",
+   "summary": "Cart, free-shipping rule, card payment, e-mail receipt.",
+   "reqs": [
+    "FR-8",
+    "BR-1",
+    "FR-9",
+    "FR-10",
+    "FR-11",
+    "FR-12"
+   ]
+  },
+  {
+   "id": "orders",
+   "label": "Orders",
+   "summary": "Order timeline for customers; table, status and refunds for admins.",
+   "reqs": [
+    "FR-13",
+    "FR-14",
+    "FR-15",
+    "FR-16"
+   ]
+  },
+  {
+   "id": "quality",
+   "label": "Quality",
+   "summary": "Speed and contrast targets.",
+   "reqs": [
+    "NFR-1",
+    "NFR-2"
+   ]
+  }
+ ],
+ "screens": [
+  {
+   "id": "sign-in",
+   "label": "Sign in",
+   "image": "01-sign-in.png",
+   "state": "default",
+   "entry": true,
+   "actors": [
+    "customer",
+    "admin"
+   ],
+   "purpose": "Sign in with e-mail, password and role",
+   "reqs": [
+    {
+     "id": "FR-1",
+     "reason": "Email and Password fields and a Sign in button"
+    },
+    {
+     "id": "FR-2",
+     "reason": "States a minimum password length under the field (6, not 8)",
+     "confidence": "med"
+    },
+    {
+     "id": "FR-5",
+     "reason": "Customer / Admin role tabs above the form"
+    }
+   ],
+   "hotspots": [
+    {
+     "id": "tab-customer",
+     "label": "Customer",
+     "kind": "tab",
+     "box": [
+      0.355,
+      0.381,
+      0.088,
+      0.05
+     ],
+     "in_place": true,
+     "note": "picks the Customer role"
+    },
+    {
+     "id": "tab-admin",
+     "label": "Admin",
+     "kind": "tab",
+     "box": [
+      0.443,
+      0.381,
+      0.069,
+      0.05
+     ],
+     "in_place": true,
+     "note": "picks the Admin role"
+    },
+    {
+     "id": "email",
+     "label": "Email",
+     "kind": "field",
+     "box": [
+      0.355,
+      0.485,
+      0.289,
+      0.053
+     ]
+    },
+    {
+     "id": "password",
+     "label": "Password",
+     "kind": "field",
+     "box": [
+      0.355,
+      0.589,
+      0.289,
+      0.053
+     ]
+    },
+    {
+     "id": "sign-in",
+     "label": "Sign in",
+     "kind": "button",
+     "box": [
+      0.355,
+      0.69,
+      0.073,
+      0.055
+     ]
+    },
+    {
+     "id": "forgot",
+     "label": "Forgot password?",
+     "kind": "link",
+     "box": [
+      0.543,
+      0.704,
+      0.102,
+      0.028
+     ]
+    }
+   ],
+   "variants": [
+    {
+     "id": "error",
+     "label": "Invalid credentials",
+     "image": "02-sign-in-error.png",
+     "state": "error",
+     "hotspots": [
+      {
+       "id": "tab-customer",
+       "label": "Customer",
+       "kind": "tab",
+       "box": [
+        0.355,
+        0.419,
+        0.088,
+        0.05
+       ],
+       "in_place": true,
+       "note": "picks the Customer role"
+      },
+      {
+       "id": "tab-admin",
+       "label": "Admin",
+       "kind": "tab",
+       "box": [
+        0.443,
+        0.419,
+        0.069,
+        0.05
+       ],
+       "in_place": true,
+       "note": "picks the Admin role"
+      },
+      {
+       "id": "email",
+       "label": "Email",
+       "kind": "field",
+       "box": [
+        0.355,
+        0.523,
+        0.289,
+        0.053
+       ]
+      },
+      {
+       "id": "password",
+       "label": "Password",
+       "kind": "field",
+       "box": [
+        0.355,
+        0.626,
+        0.289,
+        0.053
+       ]
+      },
+      {
+       "id": "sign-in",
+       "label": "Sign in",
+       "kind": "button",
+       "box": [
+        0.355,
+        0.728,
+        0.073,
+        0.054
+       ]
+      },
+      {
+       "id": "forgot",
+       "label": "Forgot password?",
+       "kind": "link",
+       "box": [
+        0.543,
+        0.741,
+        0.102,
+        0.028
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "products",
+   "label": "Products",
+   "image": "03-products.png",
+   "actors": [
+    "customer"
+   ],
+   "purpose": "Browse and search products, add them to the cart",
+   "reqs": [
+    {
+     "id": "FR-6",
+     "reason": "Each card shows name, price and Add to cart"
+    },
+    {
+     "id": "FR-7",
+     "reason": "Search products field above the list"
+    },
+    {
+     "id": "FR-16",
+     "reason": "Sign out in the header"
+    }
+   ],
+   "hotspots": [
+    {
+     "id": "nav-products",
+     "label": "Products",
+     "kind": "link",
+     "box": [
+      0.15,
+      0.025,
+      0.051,
+      0.03
+     ]
+    },
+    {
+     "id": "nav-cart",
+     "label": "Cart",
+     "kind": "link",
+     "box": [
+      0.218,
+      0.025,
+      0.044,
+      0.03
+     ]
+    },
+    {
+     "id": "nav-orders",
+     "label": "Orders",
+     "kind": "link",
+     "box": [
+      0.279,
+      0.025,
+      0.039,
+      0.03
+     ]
+    },
+    {
+     "id": "sign-out",
+     "label": "Sign out",
+     "kind": "link",
+     "box": [
+      0.928,
+      0.025,
+      0.047,
+      0.03
+     ]
+    },
+    {
+     "id": "search",
+     "label": "Search products",
+     "kind": "field",
+     "box": [
+      0.713,
+      0.12,
+      0.25,
+      0.053
+     ]
+    },
+    {
+     "id": "add-1",
+     "label": "Add to cart (Canvas Tote)",
+     "kind": "button",
+     "box": [
+      0.239,
+      0.429,
+      0.077,
+      0.041
+     ],
+     "in_place": true,
+     "note": "adds the product; the header cart count goes up"
+    },
+    {
+     "id": "add-2",
+     "label": "Add to cart (Desk Lamp)",
+     "kind": "button",
+     "box": [
+      0.552,
+      0.429,
+      0.077,
+      0.041
+     ],
+     "in_place": true,
+     "note": "adds the product; the header cart count goes up"
+    },
+    {
+     "id": "add-3",
+     "label": "Add to cart (Notebook Set)",
+     "kind": "button",
+     "box": [
+      0.866,
+      0.429,
+      0.077,
+      0.041
+     ],
+     "in_place": true,
+     "note": "adds the product; the header cart count goes up"
+    },
+    {
+     "id": "add-4",
+     "label": "Add to cart (Ceramic Mug)",
+     "kind": "button",
+     "box": [
+      0.239,
+      0.759,
+      0.077,
+      0.041
+     ],
+     "in_place": true,
+     "note": "adds the product; the header cart count goes up"
+    },
+    {
+     "id": "add-5",
+     "label": "Add to cart (Wireless Mouse)",
+     "kind": "button",
+     "box": [
+      0.552,
+      0.759,
+      0.077,
+      0.041
+     ],
+     "in_place": true,
+     "note": "adds the product; the header cart count goes up"
+    },
+    {
+     "id": "add-6",
+     "label": "Add to cart (Plant Pot)",
+     "kind": "button",
+     "box": [
+      0.866,
+      0.759,
+      0.077,
+      0.041
+     ],
+     "in_place": true,
+     "note": "adds the product; the header cart count goes up"
+    }
+   ]
+  },
+  {
+   "id": "cart",
+   "label": "Cart",
+   "image": "04-cart.png",
+   "actors": [
+    "customer"
+   ],
+   "purpose": "Review items and quantities, then check out",
+   "reqs": [
+    {
+     "id": "FR-8",
+     "reason": "Items with − 1 + quantity controls, Remove and a Subtotal"
+    },
+    {
+     "id": "BR-1",
+     "reason": "“You get free shipping (orders over $50)”"
+    },
+    {
+     "id": "FR-9",
+     "reason": "Checkout button in the summary"
+    }
+   ],
+   "hotspots": [
+    {
+     "id": "nav-products",
+     "label": "Products",
+     "kind": "link",
+     "box": [
+      0.15,
+      0.025,
+      0.051,
+      0.03
+     ]
+    },
+    {
+     "id": "nav-cart",
+     "label": "Cart",
+     "kind": "link",
+     "box": [
+      0.218,
+      0.025,
+      0.044,
+      0.03
+     ]
+    },
+    {
+     "id": "nav-orders",
+     "label": "Orders",
+     "kind": "link",
+     "box": [
+      0.279,
+      0.025,
+      0.039,
+      0.03
+     ]
+    },
+    {
+     "id": "sign-out",
+     "label": "Sign out",
+     "kind": "link",
+     "box": [
+      0.928,
+      0.025,
+      0.047,
+      0.03
+     ]
+    },
+    {
+     "id": "qty-1",
+     "label": "Quantity, Canvas Tote",
+     "kind": "other",
+     "box": [
+      0.251,
+      0.259,
+      0.044,
+      0.044
+     ],
+     "in_place": true,
+     "note": "changes the quantity"
+    },
+    {
+     "id": "remove-1",
+     "label": "Remove, Canvas Tote",
+     "kind": "button",
+     "box": [
+      0.536,
+      0.269,
+      0.045,
+      0.024
+     ],
+     "in_place": true,
+     "note": "removes the item"
+    },
+    {
+     "id": "qty-2",
+     "label": "Quantity, Desk Lamp",
+     "kind": "other",
+     "box": [
+      0.251,
+      0.335,
+      0.044,
+      0.044
+     ],
+     "in_place": true,
+     "note": "changes the quantity"
+    },
+    {
+     "id": "remove-2",
+     "label": "Remove, Desk Lamp",
+     "kind": "button",
+     "box": [
+      0.536,
+      0.345,
+      0.045,
+      0.024
+     ],
+     "in_place": true,
+     "note": "removes the item"
+    },
+    {
+     "id": "checkout",
+     "label": "Checkout",
+     "kind": "button",
+     "box": [
+      0.716,
+      0.289,
+      0.227,
+      0.054
+     ]
+    },
+    {
+     "id": "continue",
+     "label": "Continue shopping",
+     "kind": "link",
+     "box": [
+      0.038,
+      0.418,
+      0.121,
+      0.023
+     ]
+    }
+   ]
+  },
+  {
+   "id": "checkout",
+   "label": "Checkout",
+   "image": "05-checkout.png",
+   "actors": [
+    "customer"
+   ],
+   "purpose": "Enter shipping address and card, place the order",
+   "reqs": [
+    {
+     "id": "FR-10",
+     "reason": "Shipping address (Full name, Address) and Payment (Card number, Expiry, CVC)"
+    },
+    {
+     "id": "FR-11",
+     "reason": "Place order button with the total"
+    }
+   ],
+   "hotspots": [
+    {
+     "id": "nav-products",
+     "label": "Products",
+     "kind": "link",
+     "box": [
+      0.15,
+      0.025,
+      0.051,
+      0.03
+     ]
+    },
+    {
+     "id": "nav-cart",
+     "label": "Cart",
+     "kind": "link",
+     "box": [
+      0.218,
+      0.025,
+      0.044,
+      0.03
+     ]
+    },
+    {
+     "id": "nav-orders",
+     "label": "Orders",
+     "kind": "link",
+     "box": [
+      0.279,
+      0.025,
+      0.039,
+      0.03
+     ]
+    },
+    {
+     "id": "sign-out",
+     "label": "Sign out",
+     "kind": "link",
+     "box": [
+      0.928,
+      0.025,
+      0.047,
+      0.03
+     ]
+    },
+    {
+     "id": "name",
+     "label": "Full name",
+     "kind": "field",
+     "box": [
+      0.057,
+      0.296,
+      0.598,
+      0.053
+     ]
+    },
+    {
+     "id": "address",
+     "label": "Address",
+     "kind": "field",
+     "box": [
+      0.057,
+      0.4,
+      0.598,
+      0.053
+     ]
+    },
+    {
+     "id": "card",
+     "label": "Card number",
+     "kind": "field",
+     "box": [
+      0.057,
+      0.55,
+      0.29,
+      0.053
+     ]
+    },
+    {
+     "id": "expiry",
+     "label": "Expiry",
+     "kind": "field",
+     "box": [
+      0.356,
+      0.55,
+      0.145,
+      0.053
+     ]
+    },
+    {
+     "id": "cvc",
+     "label": "CVC",
+     "kind": "field",
+     "box": [
+      0.511,
+      0.55,
+      0.145,
+      0.053
+     ]
+    },
+    {
+     "id": "place-order",
+     "label": "Place order",
+     "kind": "button",
+     "box": [
+      0.716,
+      0.201,
+      0.227,
+      0.055
+     ]
+    },
+    {
+     "id": "back",
+     "label": "Back to cart",
+     "kind": "link",
+     "box": [
+      0.716,
+      0.276,
+      0.082,
+      0.022
+     ]
+    }
+   ]
+  },
+  {
+   "id": "order-confirmed",
+   "label": "Order confirmed",
+   "image": "06-order-confirmed.png",
+   "state": "success",
+   "actors": [
+    "customer"
+   ],
+   "purpose": "Confirm the order and its number",
+   "reqs": [
+    {
+     "id": "FR-11",
+     "reason": "“Order #1042 confirmed” with the amount charged"
+    }
+   ],
+   "hotspots": [
+    {
+     "id": "nav-products",
+     "label": "Products",
+     "kind": "link",
+     "box": [
+      0.15,
+      0.025,
+      0.051,
+      0.03
+     ]
+    },
+    {
+     "id": "nav-cart",
+     "label": "Cart",
+     "kind": "link",
+     "box": [
+      0.218,
+      0.025,
+      0.044,
+      0.03
+     ]
+    },
+    {
+     "id": "nav-orders",
+     "label": "Orders",
+     "kind": "link",
+     "box": [
+      0.279,
+      0.025,
+      0.039,
+      0.03
+     ]
+    },
+    {
+     "id": "sign-out",
+     "label": "Sign out",
+     "kind": "link",
+     "box": [
+      0.928,
+      0.025,
+      0.047,
+      0.03
+     ]
+    },
+    {
+     "id": "view-status",
+     "label": "View order status",
+     "kind": "button",
+     "box": [
+      0.432,
+      0.478,
+      0.136,
+      0.055
+     ]
+    },
+    {
+     "id": "continue",
+     "label": "Continue shopping",
+     "kind": "link",
+     "box": [
+      0.446,
+      0.556,
+      0.108,
+      0.024
+     ]
+    }
+   ]
+  },
+  {
+   "id": "order-status",
+   "label": "Order status",
+   "image": "07-order-status.png",
+   "actors": [
+    "customer"
+   ],
+   "purpose": "Follow one order on a timeline",
+   "reqs": [
+    {
+     "id": "FR-13",
+     "reason": "Timeline Paid, Packed, Shipped, Delivered with the current status"
+    }
+   ],
+   "hotspots": [
+    {
+     "id": "nav-products",
+     "label": "Products",
+     "kind": "link",
+     "box": [
+      0.15,
+      0.025,
+      0.051,
+      0.03
+     ]
+    },
+    {
+     "id": "nav-cart",
+     "label": "Cart",
+     "kind": "link",
+     "box": [
+      0.218,
+      0.025,
+      0.044,
+      0.03
+     ]
+    },
+    {
+     "id": "nav-orders",
+     "label": "Orders",
+     "kind": "link",
+     "box": [
+      0.279,
+      0.025,
+      0.039,
+      0.03
+     ]
+    },
+    {
+     "id": "sign-out",
+     "label": "Sign out",
+     "kind": "link",
+     "box": [
+      0.928,
+      0.025,
+      0.047,
+      0.03
+     ]
+    },
+    {
+     "id": "back",
+     "label": "Back to products",
+     "kind": "link",
+     "box": [
+      0.038,
+      0.448,
+      0.11,
+      0.022
+     ]
+    }
+   ]
+  },
+  {
+   "id": "admin-orders",
+   "label": "Order Management",
+   "image": "08-admin-orders.png",
+   "actors": [
+    "admin"
+   ],
+   "purpose": "See every order, change its status, refund it",
+   "reqs": [
+    {
+     "id": "FR-14",
+     "reason": "Orders table with a status menu per row"
+    },
+    {
+     "id": "FR-15",
+     "reason": "Refund button per order"
+    },
+    {
+     "id": "FR-16",
+     "reason": "Sign out in the header"
+    }
+   ],
+   "hotspots": [
+    {
+     "id": "nav-orders",
+     "label": "Order Management",
+     "kind": "link",
+     "box": [
+      0.188,
+      0.027,
+      0.11,
+      0.025
+     ]
+    },
+    {
+     "id": "sign-out",
+     "label": "Sign out",
+     "kind": "link",
+     "box": [
+      0.928,
+      0.025,
+      0.047,
+      0.03
+     ]
+    },
+    {
+     "id": "status-1",
+     "label": "Status, #1042",
+     "kind": "menu",
+     "box": [
+      0.541,
+      0.259,
+      0.067,
+      0.044
+     ],
+     "in_place": true,
+     "note": "changes the order's status"
+    },
+    {
+     "id": "refund-1",
+     "label": "Refund, #1042",
+     "kind": "button",
+     "box": [
+      0.773,
+      0.259,
+      0.059,
+      0.043
+     ],
+     "in_place": true,
+     "note": "issues a refund; no confirmation is shown"
+    },
+    {
+     "id": "status-2",
+     "label": "Status, #1041",
+     "kind": "menu",
+     "box": [
+      0.541,
+      0.335,
+      0.067,
+      0.044
+     ],
+     "in_place": true,
+     "note": "changes the order's status"
+    },
+    {
+     "id": "refund-2",
+     "label": "Refund, #1041",
+     "kind": "button",
+     "box": [
+      0.773,
+      0.335,
+      0.059,
+      0.043
+     ],
+     "in_place": true,
+     "note": "issues a refund; no confirmation is shown"
+    }
+   ]
+  }
+ ],
+ "links": [
+  {
+   "from": "sign-in",
+   "hotspot": "sign-in",
+   "to": "products",
+   "label": "Sign in",
+   "condition": "role Customer",
+   "reqs": [
+    "FR-1",
+    "FR-5"
+   ]
+  },
+  {
+   "from": "sign-in",
+   "hotspot": "sign-in",
+   "to": "admin-orders",
+   "label": "Sign in",
+   "condition": "role Admin",
+   "reqs": [
+    "FR-5"
+   ]
+  },
+  {
+   "from": "sign-in",
+   "hotspot": "sign-in",
+   "to": "sign-in",
+   "to_variant": "error",
+   "label": "Sign in",
+   "condition": "wrong e-mail or password",
+   "reqs": [
+    "FR-4"
+   ]
+  },
+  {
+   "from": "cart",
+   "hotspot": "checkout",
+   "to": "checkout",
+   "label": "Checkout",
+   "reqs": [
+    "FR-9"
+   ]
+  },
+  {
+   "from": "cart",
+   "hotspot": "continue",
+   "to": "products",
+   "label": "Continue shopping"
+  },
+  {
+   "from": "checkout",
+   "hotspot": "place-order",
+   "to": "order-confirmed",
+   "label": "Place order",
+   "condition": "card accepted",
+   "reqs": [
+    "FR-11"
+   ]
+  },
+  {
+   "from": "checkout",
+   "hotspot": "back",
+   "to": "cart",
+   "label": "Back to cart"
+  },
+  {
+   "from": "order-confirmed",
+   "hotspot": "view-status",
+   "to": "order-status",
+   "label": "View order status",
+   "reqs": [
+    "FR-13"
+   ]
+  },
+  {
+   "from": "order-confirmed",
+   "hotspot": "continue",
+   "to": "products",
+   "label": "Continue shopping"
+  },
+  {
+   "from": "order-status",
+   "hotspot": "back",
+   "to": "products",
+   "label": "Back to products"
+  },
+  {
+   "from": "admin-orders",
+   "hotspot": "nav-orders",
+   "to": "admin-orders",
+   "label": "Order Management",
+   "global": true
+  },
+  {
+   "from": "admin-orders",
+   "hotspot": "sign-out",
+   "to": "sign-in",
+   "label": "Sign out",
+   "reqs": [
+    "FR-16"
+   ],
+   "global": true
+  },
+  {
+   "from": "products",
+   "hotspot": "nav-products",
+   "to": "products",
+   "label": "Products",
+   "global": true
+  },
+  {
+   "from": "products",
+   "hotspot": "nav-cart",
+   "to": "cart",
+   "label": "Cart",
+   "global": true
+  },
+  {
+   "from": "products",
+   "hotspot": "nav-orders",
+   "to": "order-status",
+   "label": "Orders",
+   "inferred": true,
+   "confidence": "low",
+   "reason": "No order list is shown; Order #1042 is the only order screen",
+   "global": true
+  },
+  {
+   "from": "products",
+   "hotspot": "sign-out",
+   "to": "sign-in",
+   "label": "Sign out",
+   "reqs": [
+    "FR-16"
+   ],
+   "global": true
+  },
+  {
+   "from": "cart",
+   "hotspot": "nav-products",
+   "to": "products",
+   "label": "Products",
+   "global": true
+  },
+  {
+   "from": "cart",
+   "hotspot": "nav-cart",
+   "to": "cart",
+   "label": "Cart",
+   "global": true
+  },
+  {
+   "from": "cart",
+   "hotspot": "nav-orders",
+   "to": "order-status",
+   "label": "Orders",
+   "inferred": true,
+   "confidence": "low",
+   "reason": "No order list is shown; Order #1042 is the only order screen",
+   "global": true
+  },
+  {
+   "from": "cart",
+   "hotspot": "sign-out",
+   "to": "sign-in",
+   "label": "Sign out",
+   "reqs": [
+    "FR-16"
+   ],
+   "global": true
+  },
+  {
+   "from": "checkout",
+   "hotspot": "nav-products",
+   "to": "products",
+   "label": "Products",
+   "global": true
+  },
+  {
+   "from": "checkout",
+   "hotspot": "nav-cart",
+   "to": "cart",
+   "label": "Cart",
+   "global": true
+  },
+  {
+   "from": "checkout",
+   "hotspot": "nav-orders",
+   "to": "order-status",
+   "label": "Orders",
+   "inferred": true,
+   "confidence": "low",
+   "reason": "No order list is shown; Order #1042 is the only order screen",
+   "global": true
+  },
+  {
+   "from": "checkout",
+   "hotspot": "sign-out",
+   "to": "sign-in",
+   "label": "Sign out",
+   "reqs": [
+    "FR-16"
+   ],
+   "global": true
+  },
+  {
+   "from": "order-confirmed",
+   "hotspot": "nav-products",
+   "to": "products",
+   "label": "Products",
+   "global": true
+  },
+  {
+   "from": "order-confirmed",
+   "hotspot": "nav-cart",
+   "to": "cart",
+   "label": "Cart",
+   "global": true
+  },
+  {
+   "from": "order-confirmed",
+   "hotspot": "nav-orders",
+   "to": "order-status",
+   "label": "Orders",
+   "inferred": true,
+   "confidence": "low",
+   "reason": "No order list is shown; Order #1042 is the only order screen",
+   "global": true
+  },
+  {
+   "from": "order-confirmed",
+   "hotspot": "sign-out",
+   "to": "sign-in",
+   "label": "Sign out",
+   "reqs": [
+    "FR-16"
+   ],
+   "global": true
+  },
+  {
+   "from": "order-status",
+   "hotspot": "nav-products",
+   "to": "products",
+   "label": "Products",
+   "global": true
+  },
+  {
+   "from": "order-status",
+   "hotspot": "nav-cart",
+   "to": "cart",
+   "label": "Cart",
+   "global": true
+  },
+  {
+   "from": "order-status",
+   "hotspot": "nav-orders",
+   "to": "order-status",
+   "label": "Orders",
+   "inferred": true,
+   "confidence": "low",
+   "reason": "No order list is shown; Order #1042 is the only order screen",
+   "global": true
+  },
+  {
+   "from": "order-status",
+   "hotspot": "sign-out",
+   "to": "sign-in",
+   "label": "Sign out",
+   "reqs": [
+    "FR-16"
+   ],
+   "global": true
+  }
+ ],
+ "journeys": [
+  {
+   "id": "buy",
+   "name": "A customer places an order",
+   "actor": "customer",
+   "kind": "happy",
+   "steps": [
+    {
+     "screen": "sign-in",
+     "text": "Jane picks Customer, enters her e-mail and password, and signs in.",
+     "hotspot": "sign-in",
+     "req": "FR-5"
+    },
+    {
+     "screen": "products",
+     "text": "She adds a product; the cart count in the header goes up.",
+     "hotspot": "add-1",
+     "req": "FR-6"
+    },
+    {
+     "screen": "products",
+     "text": "She opens the cart from the header.",
+     "hotspot": "nav-cart",
+     "req": "FR-8"
+    },
+    {
+     "screen": "cart",
+     "text": "The cart lists items, quantities and the subtotal, and says shipping is free over $50.",
+     "hotspot": "checkout",
+     "req": "BR-1"
+    },
+    {
+     "screen": "checkout",
+     "text": "She enters the shipping address and the card, then places the order.",
+     "hotspot": "place-order",
+     "req": "FR-10"
+    },
+    {
+     "screen": "order-confirmed",
+     "text": "The confirmation shows order #1042 and the amount charged.",
+     "hotspot": "view-status",
+     "req": "FR-11"
+    },
+    {
+     "screen": "order-status",
+     "text": "The timeline shows the order is paid and packed.",
+     "req": "FR-13"
+    }
+   ]
+  },
+  {
+   "id": "wrong-password",
+   "name": "A customer types a wrong password",
+   "actor": "customer",
+   "kind": "failure",
+   "steps": [
+    {
+     "screen": "sign-in",
+     "text": "Jane types a wrong password and signs in.",
+     "hotspot": "sign-in",
+     "req": "FR-1"
+    },
+    {
+     "screen": "sign-in",
+     "text": "The form says “Invalid email or password”, keeps her e-mail and clears the password.",
+     "hotspot": "sign-in",
+     "req": "FR-4",
+     "variant": "error"
+    },
+    {
+     "screen": "products",
+     "text": "She types the right password and lands on the products.",
+     "req": "FR-5"
+    }
+   ]
+  },
+  {
+   "id": "admin",
+   "name": "An admin updates and refunds an order",
+   "actor": "admin",
+   "kind": "happy",
+   "steps": [
+    {
+     "screen": "sign-in",
+     "text": "The admin picks the Admin role.",
+     "hotspot": "tab-admin",
+     "req": "FR-5"
+    },
+    {
+     "screen": "sign-in",
+     "text": "They sign in and land on Order Management.",
+     "hotspot": "sign-in",
+     "req": "FR-5"
+    },
+    {
+     "screen": "admin-orders",
+     "text": "They change the status of order #1042.",
+     "hotspot": "status-1",
+     "req": "FR-14"
+    },
+    {
+     "screen": "admin-orders",
+     "text": "They refund order #1042. No screen confirms the refund.",
+     "hotspot": "refund-1",
+     "req": "FR-15"
+    }
+   ]
+  }
+ ],
+ "findings": [
+  {
+   "id": "f-pw",
+   "type": "contradiction",
+   "severity": "high",
+   "req": "FR-2",
+   "screen": "sign-in",
+   "hotspot": "password",
+   "text": "The sign-in form asks for 6 characters; the SRS asks for 8",
+   "srs_says": "Passwords shall be at least 8 characters long (FR-2)",
+   "screen_shows": "“Minimum 6 characters” under the password field"
+  },
+  {
+   "id": "f-declined",
+   "type": "missing_state",
+   "severity": "high",
+   "req": "FR-11",
+   "screen": "checkout",
+   "hotspot": "place-order",
+   "text": "No screenshot shows the declined-card error on Checkout"
+  },
+  {
+   "id": "f-refund",
+   "type": "ambiguity",
+   "severity": "med",
+   "req": "FR-15",
+   "screen": "admin-orders",
+   "hotspot": "refund-1",
+   "text": "FR-15 does not say how a refund is confirmed or what the customer sees"
+  },
+  {
+   "id": "f-search",
+   "type": "ambiguity",
+   "severity": "low",
+   "req": "FR-7",
+   "screen": "products",
+   "hotspot": "search",
+   "text": "FR-7 does not say how search matches: prefix, contains, or case"
+  }
+ ]
+}

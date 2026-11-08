@@ -1,0 +1,60 @@
+import { readFileSync, realpathSync } from "node:fs";
+
+const root = new URL("../", import.meta.url);
+
+function readJson(relativePath) {
+  try {
+    return JSON.parse(readFileSync(new URL(relativePath, root), "utf8"));
+  } catch (error) {
+    throw new Error(`${relativePath}: ${error.message}`);
+  }
+}
+
+const packageJson = readJson("package.json");
+const rootPluginManifest = readJson(".claude-plugin/plugin.json");
+const agentPluginManifest = readJson("plugin.json");
+const marketplace = readJson(".claude-plugin/marketplace.json");
+const pluginManifest = readJson("plugins/esyach/.claude-plugin/plugin.json");
+const skill = readFileSync(new URL("plugins/esyach/SKILL.md", root), "utf8");
+const marketplacePlugin = Array.isArray(marketplace?.plugins)
+  ? marketplace.plugins.find((plugin) => plugin?.source === "./plugins/esyach")
+  : undefined;
+const skillVersion = skill.match(/^metadata:\n(?:  .+\n)*?  version:\s*["']?([^"'\n]+)["']?\s*$/m)?.[1];
+
+const versions = [
+  ["package.json", packageJson?.version],
+  [".claude-plugin/plugin.json", rootPluginManifest?.version],
+  ["plugin.json", agentPluginManifest?.version],
+  [".claude-plugin/marketplace.json metadata.version", marketplace?.metadata?.version],
+  [
+    ".claude-plugin/marketplace.json plugins[esyach].version",
+    marketplacePlugin?.version,
+  ],
+  ["plugins/esyach/.claude-plugin/plugin.json", pluginManifest?.version],
+  ["plugins/esyach/SKILL.md metadata.version", skillVersion],
+];
+const expected = versions[0][1];
+const invalid =
+  typeof expected !== "string" ||
+  expected.length === 0 ||
+  versions.some(([, version]) => version !== expected);
+
+// Agent Plugins clients discover the skill only through this link.
+const linkedSkill = "skills/esyach/SKILL.md";
+const linkOk =
+  realpathSync(new URL(linkedSkill, root)) ===
+  realpathSync(new URL("plugins/esyach/SKILL.md", root));
+if (!linkOk) {
+  console.error(`${linkedSkill} must link to plugins/esyach/SKILL.md`);
+  process.exitCode = 1;
+}
+
+if (invalid) {
+  console.error("Version guard failed. All release metadata must match package.json:");
+  for (const [file, version] of versions) {
+    console.error(`  ${file}: ${version ?? "<missing>"}`);
+  }
+  process.exitCode = 1;
+} else if (linkOk) {
+  console.log(`Version guard passed: ${expected}`);
+}

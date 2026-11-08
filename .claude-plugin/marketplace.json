@@ -1,12 +1,41 @@
 {
-  "name": "flowmap",
-  "owner": { "name": "devshrawin" },
+  "name": "esyach",
+  "owner": {
+    "name": "devshrawin"
+  },
+  "metadata": {
+    "description": "Plugin distribution for esyach",
+    "version": "2.0.0",
+    "pluginRoot": "./plugins"
+  },
   "plugins": [
     {
-      "name": "flowmap",
-      "source": "./",
-      "description": "Interactive n8n-style flow maps of codebases (data paths) and SRS + screenshots (user journeys).",
-      "version": "0.1.0"
+      "name": "esyach",
+      "source": "./plugins/esyach",
+      "description": "Turn SRS documents, screenshots, code, diffs and plans into figure-first HTML explainers: SRS walkthroughs, coverage audits, clickable prototypes, diagrams, reviews, slides",
+      "version": "2.0.0",
+      "author": {
+        "name": "devshrawin"
+      },
+      "repository": "https://github.com/devshrawin/EsyAch",
+      "license": "MIT",
+      "keywords": [
+        "srs",
+        "requirements",
+        "prototype",
+        "diagrams",
+        "html",
+        "visualization"
+      ],
+      "category": "visualization",
+      "tags": [
+        "srs",
+        "requirements",
+        "diagrams",
+        "html-generation",
+        "code-review",
+        "slides"
+      ]
     }
   ]
 }

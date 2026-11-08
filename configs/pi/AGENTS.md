@@ -1,0 +1,9 @@
+Use the canonical `esyach` skill from `plugins/esyach/`.
+
+For Pi, prefer `pi install git:github.com/devshrawin/EsyAch` or install a local checkout with `pi install ./esyach`. The package metadata points to `./plugins/esyach` for the skill, `./plugins/esyach/commands` for prompts, and `./plugins/esyach/extension.ts` for the native `esyach` tool.
+
+Do not keep the old manual installer copies alongside a package install. The manual installer is skill/prompt-only and does not install the native Pi tool. If you previously used `install-pi.sh`, remove `~/.pi/agent/skills/esyach`, the copied `~/.pi/agent/prompts/{compare,diff-review,fact-check,generate-slides,generate-video,generate-visual-plan,generate-web-diagram,plan-review,project-recap,state-machine}.md` files, and stale `~/.pi/agent/prompts/s[h]are*.md` files before relying on the package.
+
+Activate with `$esyach` or slash commands such as `/diff-review`, `/plan-review`, `/generate-web-diagram`, and `/generate-slides` after restarting Pi. Generated pages go to the directory `prepare` reports (default `~/.agent/diagrams/`) and should open in the browser by default. Use `viewer: "glimpse"` only when the user wants a native Glimpse window and `glimpseui` is installed; use `viewer: "auto"` to try Glimpse and fall back to the browser.
+
+Command templates are convenience prompts; the skill itself is the source of behavior. The extension exposes one `esyach` tool: use `action: "prepare"` for planning visual explanations after generating or reviewing a substantial plan, architecture, diff, or implementation, and `action: "render"` as the finalizer for writing generated HTML. Ask before calling `esyach` with `action: "prepare"` unless the user explicitly requested visual output. `/generate-web-diagram` remains a prompt template command.

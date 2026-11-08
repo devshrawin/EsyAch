@@ -1,0 +1,96 @@
+{
+  "name": "esyach",
+  "version": "2.0.0",
+  "description": "Turn SRS documents, screenshots, code, diffs and plans into figure-first HTML explainers: SRS walkthroughs, coverage audits, clickable prototypes, diagrams, reviews, slides",
+  "scripts": {
+    "check:versions": "node scripts/check-versions.mjs",
+    "check:kit": "node scripts/check-kit.mjs",
+    "check:machine": "node scripts/check-machine.mjs",
+    "check:ask": "node scripts/check-ask.mjs",
+    "check:srs": "node scripts/check-srs.mjs",
+    "test:py": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "test": "npm run check:versions && npm run check:kit && npm run check:machine && npm run check:ask && npm run check:srs && npm run test:py"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/devshrawin/EsyAch#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devshrawin/EsyAch.git"
+  },
+  "bugs": {
+    "url": "https://github.com/devshrawin/EsyAch/issues"
+  },
+  "keywords": [
+    "srs",
+    "requirements",
+    "prototype",
+    "coverage",
+    "agent-skill",
+    "pi-package",
+    "claude-code-plugin",
+    "claude-marketplace",
+    "codex",
+    "antigravity",
+    "antigravity-cli",
+    "mcp",
+    "model-context-protocol",
+    "opencode",
+    "openclaw",
+    "cursor",
+    "diagrams",
+    "html",
+    "visualization",
+    "diff-review",
+    "plan-review",
+    "slides",
+    "pptx",
+    "powerpoint",
+    "video",
+    "mp4"
+  ],
+  "files": [
+    "plugins/esyach",
+    ".claude-plugin",
+    "configs",
+    "install-pi.sh",
+    "banner.png",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "bin": {
+    "esyach-mcp": "./plugins/esyach/mcp/server.mjs",
+    "esyach-pptx": "./plugins/esyach/pptx/export.mjs",
+    "esyach-video": "./plugins/esyach/video/render.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "node-html-parser": "^9.0.1",
+    "pptxgenjs": "^4.0.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.63.0"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "playwright-core": "^1.63.0"
+  },
+  "peerDependenciesMeta": {
+    "playwright-core": {
+      "optional": true
+    }
+  },
+  "pi": {
+    "extensions": [
+      "./plugins/esyach/extension.ts"
+    ],
+    "skills": [
+      "./plugins/esyach"
+    ],
+    "prompts": [
+      "./plugins/esyach/commands"
+    ],
+    "image": "./banner.png"
+  }
+}
